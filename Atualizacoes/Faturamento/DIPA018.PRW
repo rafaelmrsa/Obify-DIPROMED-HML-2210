@@ -12,7 +12,9 @@ User Function DIPA018()
 //³ Define Variaveis
 Local aArea     := GetArea()
 Local cCondicao 
-Local _aRadio   
+Local _aRadio 
+Local oTempTable
+  
 //Local aIndSD2   := {}
 xBotaoSai       := .T.
 _stru           := {}
@@ -318,8 +320,23 @@ AADD(_stru,{"RB_VENDA","N",15,4})
 AADD(_stru,{"RB_CUSTO","N",15,4})
 AADD(_stru,{"RB_MARGEM","N",09,4})
 AADD(_stru,{"RB_NFENTR","N",15,4})
+
+/*
 cArq:=Criatrab(_stru,.T.)
 DBUSEAREA(.T.,,cArq,"TRB")
+*/
+
+	If(oTempTable <> NIL)
+		oTempTable:Delete()
+		oTempTable := NIL
+	EndIf
+	oTempTable := FWTemporaryTable():New("TRB")
+	oTempTable:SetFields( _stru )
+	//oTempTable:AddIndex("1", {"CODIGO", "PRODUTO"} )
+	oTempTable:Create()
+
+	DbSelectArea("TRB")
+	//DbSetOrder(1)
 
 Return
 ************************

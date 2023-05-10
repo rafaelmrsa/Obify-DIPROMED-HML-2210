@@ -193,6 +193,7 @@ Private aSegTip		:= {}
 Private cLis_Pro	:= ""
 Private dDat_Ini	:= DtoS(dDataBase-180)
 Private dDat_Fim	:= DtoS(dDataBase)
+Private oTempTable
 
 DbSelectArea("SB1")
 DbSelectArea("SB2")
@@ -282,8 +283,25 @@ AAdd(_aCampos ,{"B2_QATU","N",_aTamSX3[1],_aTamSX3[2]})
 _aTamSX3 := TamSX3("B1_PRVMINI")
 AAdd(_aCampos ,{"B1_PRVMINI","N",_aTamSX3[1],_aTamSX3[2]})
 AAdd(_aCampos ,{"B1_PRVSUPE","N",_aTamSX3[1],_aTamSX3[2]})
+
+/*
 _cArqTrb1 := CriaTrab(_aCampos,.T.)
 DbUseArea(.T.,,_cArqTrb1,"TOP1",.F.,.F.)
+*/
+
+If(oTempTable <> NIL)
+	oTempTable:Delete()
+	oTempTable := NIL
+EndIf
+
+oTempTable := FWTemporaryTable():New("TOP1")
+oTempTable:SetFields( _aCampos )
+//oTempTable:AddIndex("1", {"B1_COD"} )
+oTempTable:Create()
+
+//DbSelectArea("TOP1")
+//TOP1->(DbSetOrder(1))
+
 
 ProcRegua(100)
 For xi := 1 to 60
@@ -337,7 +355,8 @@ Else
 EndIf
 
 QRY1->(DBCLOSEAREA("QRY1"))
-TOP1->(E_EraseArq(_cArqTrb1)) // JBS 12/12/2005
+//TOP1->(E_EraseArq(_cArqTrb1)) // JBS 12/12/2005
+oTempTable:Delete()
 FERASE("TOP020.DBF")
 Return
 
@@ -436,6 +455,7 @@ Private lCheck		:= .F.
 Private aTop_020	:= {}
 Private aSegTip		:= {}
 Private cLis_Pro	:= ""
+Private oTempTable
 
 ProcRegua(100)
 For xi := 1 to 20
@@ -500,8 +520,23 @@ AAdd(_aCampos ,{"B2_QATU","N",9,0})
 AAdd(_aCampos ,{"B1_PRVSUPE","N",10,4})
 AAdd(_aCampos ,{"B1_PRVMINI","N",10,4})
 
+/*
 _cArqTrb := CriaTrab(_aCampos,.T.)
 DbUseArea(.T.,,_cArqTrb,"TRB",.F.,.F.)
+*/
+
+If(oTempTable <> NIL)
+	oTempTable:Delete()
+	oTempTable := NIL
+EndIf
+
+oTempTable := FWTemporaryTable():New("TRB")
+oTempTable:SetFields( _aCampos )
+//oTempTable:AddIndex("1", {"B1_COD"} )
+oTempTable:Create()
+
+//DbSelectArea("TRB")
+//TRB->(DbSetOrder(1))
 
 ProcRegua(100)
 For xi := 1 to 30
@@ -555,7 +590,8 @@ Else
 EndIf
 
 QRY1->(DBCLOSEAREA("QRY1"))
-TRB->(E_EraseArq(_cArqTrb)) // JBS 12/12/2005
+//TRB->(E_EraseArq(_cArqTrb)) // JBS 12/12/2005
+oTempTable:Delete()
 
 Return
 /////////////////////

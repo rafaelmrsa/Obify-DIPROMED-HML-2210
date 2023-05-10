@@ -27,6 +27,7 @@ Local cOperador := Posicione("SU7",6,xFilial("SU7")+U_DipUsr(),"U7_COD") // MCVN
 Local cEstCli   := ""
 Local nPicmRet  := 0 
 Local cTesAmostra := ""
+Local lRet		:= .T.
 
 Private lMsHelpAuto := .T. 	// se .T. direciona as mensagens de help para o arq. de log
 Private lMsErroAuto := .F. 	//necessario a criacao, pois sera atualizado quando houver erro   
@@ -183,7 +184,7 @@ EndIF
 			Aviso("Erro!!!",cMensagem,{"Ok"},2,"Erro")
 			mostraerro()
 			DisarmTransaction()
-			Return(.F.)
+			lRet	:= .F.
 		Else
 			If __lSX8
 				ConfirmSX8()
@@ -236,6 +237,10 @@ EndIF
 	If __lSX8
 		ConfirmSX8()
 	EndIf
+
+	IF lRet = .F.
+		Return(.F.)
+	Endif
 //Else 
   //  While !lFinAmostra
 	//	AcertAmostra()

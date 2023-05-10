@@ -4555,7 +4555,6 @@ User Function VldTesCF(cTes,cProduto)
 			/*
 			-- FIM CUSTOMIZACAO PARA ST, REMOVER QDO ENTRAR TES INTELIGENTE
 			*/
-			
 		ElseIf cEmpAnt == "04"
 			If SB1->B1_PICM>0 .And. SA1->A1_EST<>"SP" .And. SA1->A1_TIPO=="F" .And. cTes$"503/506"
 				//_______________________________________________________________
@@ -4599,94 +4598,8 @@ User Function VldTesCF(cTes,cProduto)
 		cTes := ""
 	EndIf
 
-	/* INICIO CUSTOMIZACAO MONOFASICO - CST 04
-		-----------------------------------------------------------------------------
-		| Adicionadas regras para realizar o gatilho do TES com CST Monof·sico,		|
-		| conforme regra informada pelo departamento fiscal:						|
-		|																			|
-		|	MATRIZ: Vendas Internas (SP) c/ ST 	= 716								|
-		|	MATRIZ: Vendas Internas (SP) s/ ST 	= 715								|
-		|			Vendas Interestaduais 		= 717								|
-		|																			|
-		|	CD: 	Vendas Internas (SP) 		= 715								|
-		|			Vendas Interestaduais 		= 771								|
-		|																			|
-		| Thais Reis - Obify - 24/04/2023											|
-		-----------------------------------------------------------------------------
-		*/
-			
-		If cEmpAnt == "01" .And. cFilAnt == "01" 
-		cMonNCM := GetNewPar("ES_CST04_1","")
-			
-			If cTes == "501" .or. cTes == "625"
-				If AllTrim(SB1->B1_POSIPI)$cMonNCM .And. SA1->A1_EST=="SP"
-					cTes := "716"
-				EndIf
-			Endif
-
-
-			If cTes =="501" .and. !Empty(cGrpTrib) .and. SA1->A1_EST <> "SP"
-				DbSelectArea("SF7")
-				DbSetOrder(1)
-				DbSeek(xFilial("SF7")+cGrpTrib)
-				While SF7->F7_FILIAL+SF7->F7_GRTRIB==XFILIAL("SF7")+cGrpTrib
-					If SF7->F7_EST <> SA1->A1_EST 
-						cTes := "715"
-					EndIf
-					SF7->(dbSkip())
-				END
-			EndIf
-
-			If cTes =="501" .and. Empty(cGrpTrib) .and. SA1->A1_EST <> "SP"
-				DbSelectArea("SF7")
-				DbSetOrder(1)
-				DbSeek(xFilial("SF7")+cGrpTrib)
-				While SF7->F7_FILIAL+SF7->F7_GRTRIB==XFILIAL("SF7")+cGrpTrib
-					If SF7->F7_EST <> SA1->A1_EST 
-						cTes := "715"
-					EndIf
-					SF7->(dbSkip())
-				END
-			EndIf
-
-			If cTes =="501" .or. cTes="801" .and. !Empty(cGrpTrib) .and. Len(Alltrim(cGrpTrib)) == 6 
-				DbSelectArea("SF7")
-				DbSetOrder(1)
-				DbSeek(xFilial("SF7")+cGrpTrib)
-				While SF7->F7_FILIAL+SF7->F7_GRTRIB==XFILIAL("SF7")+cGrpTrib
-					If SF7->F7_EST == SA1->A1_EST .and. SF7->F7_GRPCLI == SA1->A1_GRPTRIB
-						cTes := "717"
-					EndIf
-					SF7->(dbSkip())
-				END
-			EndIf
-
-		Else
-		
-		If cEmpAnt == "01"  .And. cFilAnt == "04"
-			cMonNCM := GetNewPar("ES_CST04_1","")
-			
-			
-			If cTes == "501" .or. cTes == "752"
-				If AllTrim(SB1->B1_POSIPI)$cMonNCM .And. SA1->A1_EST=="SP"
-					cTes := "715"
-				EndIf
-
-				If AllTrim(SB1->B1_POSIPI)$cMonNCM .And. SA1->A1_EST<>"SP"
-					cTes := "771"
-				EndIf
-
-			Endif
-		
-		Endif
-	Endif
-		/* FIM CUSTOMIZACAO MONOFASICO - CST 04 */
-
 RestArea(aAreaSB1)
 Return cTes
-
-
-
 /*
 ‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±

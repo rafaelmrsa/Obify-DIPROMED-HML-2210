@@ -19,6 +19,7 @@ Local aArea		 := GetArea()
 Local cCadastro  := ""
 Local cTRB 		 := ""
 Local cIndTRB	 := ""
+Local oTempTable
 PRIVATE cMarca	 := ""
 PRIVATE aStrut 	 := {}
 PRIVATE aRotina  := {{ "Confirmar"	,"u_DipReqSC2()", 0 , 2}}
@@ -40,9 +41,24 @@ AADD(aStrut,{"C2_DESCRI"	,"C",50})
 AADD(aStrut,{"C2_QUANT"		,"N",11,2})
 AADD(aStrut,{"C2_RECNO"		,"N",10})
 
+/*
 // cria a tabela temporária              
 cTRB := CriaTrab(aStrut, .T.)
 dbUseArea(.T.,,cTRB,"TRBSC2")
+*/
+
+If(oTempTable <> NIL)
+	oTempTable:Delete()
+	oTempTable := NIL
+EndIf
+oTempTable := FWTemporaryTable():New("TRBSC2")
+oTempTable:SetFields( aStrut )
+oTempTable:AddIndex("1", {"C2_NUM", "C2_ITEM","C2_SEQUEN","C2_PRODUTO"} )
+oTempTable:Create()
+
+//DbSelectArea("TRBSC2")
+//TRBSC2->(DbSetOrder(1))
+
 
 aCampos  := {}     	    
 AADD(aCampos,{"C2_OK"     , "" ,"" 			 , }) 
@@ -57,18 +73,21 @@ If DipMonSC2()
 	dbSelectArea("TRBSC2")
 	TRBSC2->(dbGoTop())
 	
+	/*
 	cIndTRB := CriaTrab(Nil,.F.)
 	
 	TRBSC2->(DbCreateIndex(cIndTRB,"C2_NUM+C2_ITEM+C2_SEQUEN+C2_PRODUTO",{|| C2_NUM+C2_ITEM+C2_SEQUEN+C2_PRODUTO },.F.))
 	TRBSC2->(DbClearInd())
 	TRBSC2->(DbSetIndex(cIndTRB))
+	*/
 	TRBSC2->(DbSetOrder(1))
 	 
 	cMarca := GetMark()
 	MarkBrow("TRBSC2","C2_OK",,aCampos,,cMarca,"U_DipMarSC2()")	
 EndIf	                     
 
-TRBSC2->(dbCloseArea()) 
+TRBSC2->(dbCloseArea())
+oTempTable:Delete()
 RestArea(aArea)        
                        
 Return

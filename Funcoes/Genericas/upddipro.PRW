@@ -365,6 +365,8 @@ Local cEmpr     := ""
 Local cPath     := ""
 Local nI        := 0
 Local nJ        := 0
+Local oSQL
+oSQL := TSqlStatement()
 
 cTexto  += "Inicio da Atualizacao" + " SX2" + CRLF + CRLF
 
@@ -558,8 +560,8 @@ For nI := 1 To Len( aSX2 )
 	Else
 
 		If  !( StrTran( Upper( AllTrim( SX2->X2_UNICO ) ), " ", "" ) == StrTran( Upper( AllTrim( aSX2[nI][12]  ) ), " ", "" ) )
-			If MSFILE( RetSqlName( aSX2[nI][1] ),RetSqlName( aSX2[nI][1] ) + "_UNQ"  )
-				TcInternal( 60, RetSqlName( aSX2[nI][1] ) + "|" + RetSqlName( aSX2[nI][1] ) + "_UNQ" )
+			If MSFILE( oSQL:RetSqlName( aSX2[nI][1] ),oSQL:RetSqlName( aSX2[nI][1] ) + "_UNQ"  )
+				TcInternal( 60, oSQL:RetSqlName( aSX2[nI][1] ) + "|" + oSQL:RetSqlName( aSX2[nI][1] ) + "_UNQ" )
 				cTexto += "Foi alterada chave unica da tabela " + aSX2[nI][1] + CRLF
 			Else
 				cTexto += "Foi criada   chave unica da tabela " + aSX2[nI][1] + CRLF
@@ -25039,6 +25041,8 @@ Local aEstrut   := {}
 Local nI        := 0
 Local nJ        := 0
 Local lAlt      := .F.
+Local oSQL
+oSQL := TSqlStatement()
 
 aEstrut := { 'INDICE' , 'ORDEM' , 'CHAVE', 'DESCRICAO', 'DESCSPA'  , ;
              'DESCENG', 'PROPRI', 'F3'   , 'NICKNAME' , 'SHOWPESQ' }
@@ -25324,7 +25328,7 @@ For nI := 1 To Len( aSIX )
                                Next nJ
 
                                If lDelInd
-                                               TcInternal( 60, RetSqlName( aSIX[nI][1] ) + '|' + RetSqlName( aSIX[nI][1] ) + aSIX[nI][2] ) // Exclui sem precisar baixar o TOP
+                                               TcInternal( 60, oSQL:RetSqlName( aSIX[nI][1] ) + '|' + oSQL:RetSqlName( aSIX[nI][1] ) + aSIX[nI][2] ) // Exclui sem precisar baixar o TOP
                                EndIf
 
                 EndIf
@@ -25610,15 +25614,19 @@ Return NIL
 */
 Static Function MyOpenSM0(lShared)
 
-Local lOpen := .F.
-Local nLoop := 0
+Local lOpen 	:= .F.
+Local nLoop 	:= 0
+Local cAlias	:= "SM0"
+Local cFile		:= "SYS_COMPANY"
+Local cDrv		:= "TOPCONN"
 
 For nLoop := 1 To 20
-	dbUseArea( .T., , "SIGAMAT.EMP", "SM0", lShared, .F. )
+	//dbUseArea( .T., , "SIGAMAT.EMP", "SM0", lShared, .F. )
+	USE (cFile) ALIAS (cAlias) SHARED NEW VIA (cDrv)
 
 	If !Empty( Select( "SM0" ) )
 		lOpen := .T.
-		dbSetIndex( "SIGAMAT.IND" )
+		//dbSetIndex( "SIGAMAT.IND" )
 		Exit
 	EndIf
 

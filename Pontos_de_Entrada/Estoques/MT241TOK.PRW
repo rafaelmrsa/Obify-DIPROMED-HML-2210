@@ -56,7 +56,7 @@ Begin Sequence
 		DbSetOrder(1)
 		DbSeek(xFilial("SB1")+aCols[ee,aScan(aHeader, { |x| Alltrim(x[2]) == "D3_COD"})])
 		If Rastro(SB1->B1_COD) .and. ;
-			Empty(aCols[ee,aScan(aHeader, { |x| Alltrim(x[2]) == "D3_LOTECTL"})]) .AND. CTM <> '497'
+			Empty(aCols[ee,aScan(aHeader, { |x| Alltrim(x[2]) == "D3_LOTECTL"})])
 			MsgInfo("Preencha o campo Lote. "+SB1->B1_COD,"Atenção!!!")
 			_lRetorno := .F. 
 			Break  // JBS 18/08/2010

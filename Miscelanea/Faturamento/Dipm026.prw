@@ -441,7 +441,10 @@ Local nId_SX1
 Local aRegs	:= {}
 Local aArea := GetArea()
 Local lRet  := .T.
-                   
+
+Local oFWSX1 as object
+Local aPergunte	:= {}
+
 AAdd(aRegs,{"01","Codigo da Transportadora","mv_ch1","C",06,0,0,"G","mv_par01","" ,"" ,"","SA4"})
 AAdd(aRegs,{"02","Numero do Conhecimento  ","mv_ch2","C",09,0,0,"G","mv_par02","" ,"" ,"",""}) //Giovani Zago 21/11/11
 
@@ -450,6 +453,131 @@ If cNome == 'RELATO'
     AAdd(aRegs,{"04","Emissao ate             ","mv_ch4","D",08,0,0,"G","mv_par04","" ,"" ,"",""})
 EndIf
 
+oFWSX1 := FWSX1Util():New()
+oFWSX1:AddGroup(ALLTRIM(cPerg))
+oFWSX1:SearchGroup()
+aPergunte := oFWSX1:GetGroup(ALLTRIM(cPerg))
+
+IF Empty(aPergunte[2])
+
+	For nId_SX1:=1 to Len(aRegs)
+
+		Begin Transaction
+			cExec	:=	"INSERT INTO "+MPSysSqlName("SX1")+ " " + CRLF
+			cExec	+=	"(	X1_GRUPO, " + CRLF
+			cExec	+=	"	X1_ORDEM, " + CRLF
+			cExec	+=	"	X1_PERGUNT, " + CRLF
+				cExec	+=	"	X1_PERSPA, " + CRLF
+				cExec	+=	"	X1_PERENG, " + CRLF
+			cExec	+=	"	X1_VARIAVL, " + CRLF
+			cExec	+=	"	X1_TIPO, " + CRLF
+			cExec	+=	"	X1_TAMANHO, " + CRLF
+			cExec	+=	"	X1_DECIMAL, " + CRLF
+			cExec	+=	"	X1_PRESEL, " + CRLF
+			cExec	+=	"	X1_GSC, " + CRLF
+				cExec	+=	"	X1_VALID, " + CRLF
+			cExec	+=	"	X1_VAR01, " + CRLF
+				cExec	+=	"	X1_DEF01, " + CRLF
+				cExec	+=	"	X1_DEFSPA1, " + CRLF
+				cExec	+=	"	X1_DEFENG1, " + CRLF
+				cExec	+=	"	X1_CNT01, " + CRLF
+				cExec	+=	"	X1_VAR02, " + CRLF
+				cExec	+=	"	X1_DEF02, " + CRLF
+				cExec	+=	"	X1_DEFSPA2, " + CRLF
+				cExec	+=	"	X1_DEFENG2, " + CRLF
+				cExec	+=	"	X1_CNT02, " + CRLF
+				cExec	+=	"	X1_VAR03, " + CRLF
+				cExec	+=	"	X1_DEF03, " + CRLF
+				cExec	+=	"	X1_DEFSPA3, " + CRLF
+				cExec	+=	"	X1_DEFENG3, " + CRLF
+				cExec	+=	"	X1_CNT03, " + CRLF
+				cExec	+=	"	X1_VAR04, " + CRLF
+				cExec	+=	"	X1_DEF04, " + CRLF
+				cExec	+=	"	X1_DEFSPA4, " + CRLF
+				cExec	+=	"	X1_DEFENG4, " + CRLF
+				cExec	+=	"	X1_CNT04, " + CRLF
+				cExec	+=	"	X1_VAR05, " + CRLF
+				cExec	+=	"	X1_DEF05, " + CRLF
+				cExec	+=	"	X1_DEFSPA5, " + CRLF
+				cExec	+=	"	X1_DEFENG5, " + CRLF
+				cExec	+=	"	X1_CNT05, " + CRLF
+			cExec	+=	"	X1_F3, " + CRLF
+				cExec	+=	"	X1_PYME, " + CRLF
+				cExec	+=	"	X1_GRPSXG, " + CRLF
+				cExec	+=	"	X1_HELP, " + CRLF
+				cExec	+=	"	X1_PICTURE, " + CRLF
+				cExec	+=	"	X1_IDFIL, " + CRLF
+			cExec	+=	"	D_E_L_E_T_, " + CRLF
+			cExec	+=	"	R_E_C_N_O_, " + CRLF
+			cExec	+=	"	R_E_C_D_E_L_) " + CRLF
+			cExec	+=	"	VALUES ( " + CRLF
+			cExec	+=	"	'"+cPerg+"', " + CRLF
+			cExec	+=	"	'"+aRegs[nId_SX1][01]+"', " + CRLF
+			cExec	+=	"	'"+aRegs[nId_SX1][02]+"', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'"+aRegs[nId_SX1][03]+"', " + CRLF
+			cExec	+=	"	'"+aRegs[nId_SX1][04]+"', " + CRLF
+			cExec	+=	"	"+cValToChar(aRegs[nId_SX1][05])+", " + CRLF
+			cExec	+=	"	"+cValToChar(aRegs[nId_SX1][06])+", " + CRLF
+			cExec	+=	"	"+cValToChar(aRegs[nId_SX1][07])+", " + CRLF
+			cExec	+=	"	'"+aRegs[nId_SX1][08]+"', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'"+aRegs[nId_SX1][09]+"', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'"+aRegs[nId_SX1][13]+"', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	ISNULL((SELECT MAX(R_E_C_N_O_) + 1 FROM "+MPSysSqlName("SX1")+ "),1),
+			cExec	+=	"	'') "
+
+			nErro := TcSqlExec(cExec)
+					
+			If nErro != 0
+				MsgStop("Erro na execução da query: "+TcSqlError(), "Atenção")
+				DisarmTransaction()
+			EndIf
+
+		End Transaction
+
+		If nErro != 0
+			Exit
+		Endif
+	Next nId_SX1
+ENDIF
+aSize(aPergunte,0)
+oFWSX1:Destroy()
+
+FreeObj(oFWSX1)
+
+/*
 DbSelectArea("SX1")
 DbSetOrder(1)
 
@@ -480,6 +608,7 @@ For nId_SX1:=1 to Len(aRegs)
 	
 	Endif
 Next nId_SX1
+*/
 
 RestArea(aArea)
 

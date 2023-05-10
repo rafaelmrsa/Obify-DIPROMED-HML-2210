@@ -1,3 +1,7 @@
+#INCLUDE "FIVEWIN.CH"
+#INCLUDE "FONT.CH"
+#INCLUDE "COLORS.CH"
+
 /*====================================================================================\
 |Programa  | DIPG008       | Autor | RODRIGO FRANCO             | Data | 10/08/2001   |
 |=====================================================================================|
@@ -15,9 +19,6 @@
 |Rafael    | 24/01/05 - Apresentar estoque do produto alternativo                     |
 |GIOVANI   | 16/06/2011 - INCUBADORA CLEAN TRACE                                      |
 \====================================================================================*/
-#INCLUDE "FIVEWIN.CH"
-#INCLUDE "FONT.CH"
-#INCLUDE "COLORS.CH"
 
 #xtranslate bSETGET(<uVar>) => {|u| If(PCount() == 0, <uVar>, <uVar> := u) }
 #Translate MSGBOX( => IW_MsgBox(

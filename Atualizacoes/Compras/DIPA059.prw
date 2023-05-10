@@ -96,7 +96,8 @@ Private nVal1 	:= 0
 Private nVal2 	:= 0
 Private oVal1
 Private oVal2
-Private oMark     
+Private oMark 
+Private oTempTable   
 
 aObjects := {}
 
@@ -112,6 +113,7 @@ If SF1->(dbSeek(xFilial("SF1")+cNF+cSerie+cFornec+cLoja))
 	Return .F.
 EndIf
 
+
 aadd(aStrut,{"OK"    	 , "C" ,2,0})
 aadd(aStrut,{"ALLOK"   	 , "C" ,2,0})
 aadd(aStrut,{"F2_DOC"    , AvSx3("F2_DOC" ,2)     ,AvSx3("F2_DOC" ,3)     ,AvSx3("F2_DOC"    ,4)})
@@ -122,6 +124,7 @@ aadd(aStrut,{"F2_LOJA"   , AvSx3("F2_LOJA" ,2)    ,AvSx3("F2_LOJA" ,3)    ,AvSx3
 aadd(aStrut,{"F2_VALBRUT", AvSx3("F2_VALBRUT" ,2) ,AvSx3("F2_VALBRUT" ,3) ,AvSx3("F2_VALBRUT",4)})
 aadd(aStrut,{"REC"		 , "N",12,0})
 
+/*
 cArqTRB := CriaTrab(aStrut, .T.)
 DBUSEAREA(.T.,,cArqTRB,"TRB_NF")
 
@@ -131,6 +134,19 @@ TRB_NF->(DbCreateIndex(cIndTRB,"F2_DOC+F2_SERIE+DTOS(F2_EMISSAO)" ,{|| F2_DOC+F2
 TRB_NF->(DbClearInd())
 TRB_NF->(DbSetIndex(cIndTRB))
 TRB_NF->(DbSetOrder(1))
+*/
+
+If(oTempTable <> NIL)
+	oTempTable:Delete()
+	oTempTable := NIL
+EndIf
+oTempTable := FWTemporaryTable():New("TRB_NF")
+oTempTable:SetFields( aStrut )
+oTempTable:AddIndex("1", {"F2_DOC", "F2_SERIE","F2_EMISSAO"} )
+oTempTable:Create()
+
+DbSelectArea("TRB_NF")
+DbSetOrder(1)
 
 cSQL := "SELECT "
 cSQL +=	"	F2_DOC, F2_SERIE, F2_EMISSAO, F2_CLIENTE, F2_LOJA, F2_VALBRUT, R_E_C_N_O_ REC"
@@ -195,6 +211,8 @@ DEFINE MSDIALOG oDlg TITLE "Doctos de Saída" From aSize[7],005 TO aSize[6],aSize
 ACTIVATE MSDIALOG oDlg ON INIT (EnchoiceBar(oDlg,{|| GravaNF(),oDlg:End()},{|| oDlg:End()}))
 
 TRB_NF->(dbCloseArea())
+
+oTempTable:Delete()
 
 Return 
 /*

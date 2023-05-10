@@ -17,6 +17,7 @@ User Function DipAprPro()
 Local _cUM 			:= ""
 Local _cDescri 		:= ""  
 Local cSQL 			:= ""
+Local oTempTable
 Private cCadastro 	:= "Cadastro Especifico"
 Private cDelFunc 	:= "AllwaysTrue"
 Private aCampo 		:= {}
@@ -43,8 +44,22 @@ aAdd(_aStruct,{"RB_LOTECTL","C",10,0})
 aAdd(_aStruct,{"RB_QTDBLOQ","N",12,2})
 aAdd(_aStruct,{"RB_DTVALID","D",08,0})
 
+/*
 _cArq := Criatrab(_aStruct,.T.)
 dbUseArea(.T.,,_cArq,"TRBBLQ")   
+*/
+
+	If(oTempTable <> NIL)
+		oTempTable:Delete()
+		oTempTable := NIL
+	EndIf
+	oTempTable := FWTemporaryTable():New("TRBBLQ")
+	oTempTable:SetFields( _aStruct )
+	//oTempTable:AddIndex("1", {"RB_FILIAL", "RB_XSTATUS", "RB_PRODUTO"} )
+	oTempTable:Create()
+
+	DbSelectArea("TRBBLQ")
+	//DbSetOrder(1)
 
 cSQL := " SELECT "
 cSQL += " 	B8_FILIAL, B8_XSTATUS, B8_PRODUTO, B8_LOTECTL, B8_DTVALID, DD_SALDO, B8_EMPENHO "
@@ -95,12 +110,12 @@ While !QRYSB8->(Eof())
 EndDo
 QRYSB8->(dbCloseArea())
 
-_cIndex := Criatrab(Nil,.F.)
-_cChave := "RB_FILIAL+RB_XSTATUS+RB_PRODUTO+DTOS(RB_DTVALID)"
+//_cIndex := Criatrab(Nil,.F.)
+//_cChave := "RB_FILIAL+RB_XSTATUS+RB_PRODUTO+DTOS(RB_DTVALID)"
          
 dbSelectArea("TRBBLQ")
-Indregua("TRBBLQ",_cIndex,_cChave,,,"Selecionando Registros...")
-dbSetIndex(_cIndex+Ordbagext())
+//Indregua("TRBBLQ",_cIndex,_cChave,,,"Selecionando Registros...")
+//dbSetIndex(_cIndex+Ordbagext())
 
 aCampos:={{"Produto"  ,"RB_PRODUTO","C",15,0,"@!"},;
 		  {"Descrição","RB_DESCRIC","C",50,0,"@!"},;
@@ -112,6 +127,7 @@ aCampos:={{"Produto"  ,"RB_PRODUTO","C",15,0,"@!"},;
 MBrowse( 6,1,22,75,"TRBBLQ",acampos,,,,,aCores)
 
 dbCloseArea("TRBBLQ")
+oTempTable:Delete()
 FERASE(_cArq+".DBF")
 FERASE(_cIndex+Ordbagext())
 

@@ -602,7 +602,6 @@ ConOut("Licitação - DEPOIS do MSExecAuto   -  Gerando PedidoAntes do MSExecAuto 
 		mostraerro()
 		DisarmTransaction()
 		cPediGera :=".F."
-		Return .F.
 		
 	Else
 		If __lSX8
@@ -655,7 +654,7 @@ Else
 	ApMsgInfo( 'Não encontrado itens para gerar o pedido.', 'ATENÇÃO' )
 EndIf
 ConfirmSX8()
-End Transaction 
+End Transaction
 cPediGera :=".T."
 Return(lret)        
 

@@ -367,6 +367,7 @@ Local cArqExcell:= "\Excell-DBF\Lista_"+DtoS(Date())+"_"+StrTran(Time(),":","")
 Local cDestino 	:= "C:\EXCELL-DBF\" 
 Local aTamSX3 	:= {}  
 Local aTmpDir   := {}
+Local oTempTable
 DEFAULT aCols  	:= {}
 
 If Len(aCols) > 0
@@ -397,12 +398,26 @@ If Len(aCols) > 0
 	aAdd(_aStrut ,{"OBS4","C",200,0})
 	aAdd(_aStrut ,{"OBS5","C",200,0})
 	
+	/*
 	_cArqTrb := CriaTrab(_aStrut,.T.)
 	DbUseArea(.T.,,_cArqTrb,"TRBREL",.F.,.F.)
 	
 	_cChave  := 'PRODUTO'
 	IndRegua("TRBREL",_cArqTrb,_cChave,,,"Criando Indice...")
-	
+	*/
+
+	If(oTempTable <> NIL)
+		oTempTable:Delete()
+		oTempTable := NIL
+	EndIf
+	oTempTable := FWTemporaryTable():New("TRBREL")
+	oTempTable:SetFields( _aStrut )
+	//oTempTable:AddIndex("1", {"CODIGO", "PRODUTO"} )
+	oTempTable:Create()
+
+	DbSelectArea("TRBREL")
+	//DbSetOrder(1)
+
 	For nI:=1 to Len(aCols)
 	
 	    TRBREL->(RecLock("TRBREL",.T.))
@@ -426,9 +441,11 @@ If Len(aCols) > 0
 	Next nI
 	
 	DbSelectArea("TRBREL")	
-	COPY TO &cArqExcell VIA "DBFCDX"          
+	/*COPY TO &cArqExcell VIA "DBFCDX"          
 	
-	FRename(cArqExcell+".dtc",cArqExcell+".xls")
+	FRename(cArqExcell+".dtc",cArqExcell+".xls")*/
+
+	FRename(cArqExcell+".dtc",cArqExcell+".xlsx")
 	
 	MakeDir(cDestino)
 	CpyS2T(cArqExcell+".xls",cDestino,.T.)
@@ -438,7 +455,9 @@ If Len(aCols) > 0
 	For nI:= 1 to Len(aTmpDir)
 		fErase(cDestino+aTmpDir[nI,1])
 	Next nI 
-	TRBREL->(dbCloseArea()) 
+	TRBREL->(dbCloseArea())
+
+	oTempTable:Delete()
 	
 	u_GDToExcel(_aStrut,aCols,Alltrim(FunName()))
 	

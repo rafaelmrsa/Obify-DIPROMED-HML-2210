@@ -217,6 +217,8 @@ local cQuery
 local aEstruWork:={}
 Local lTranspAd := .T.
 
+Local oTempTable
+
 lTranspAd := EdiValid('TRANSPAD')
 If !lTranspAd
 	Return(lTranspAd)
@@ -246,8 +248,19 @@ If Select("WORK_EDI") > 0
 	DBCloseArea()
 EndIf
 
+/*
 cFileEDI:=CriaTrab(aEstrEDI,.T.)
 DbUseArea(.T.,,cFileEDI,"WORK_EDI",.F.,.F.)
+*/
+	If(oTempTable <> NIL)
+		oTempTable:Delete()
+		oTempTable := NIL
+	EndIf
+	oTempTable := FWTemporaryTable():New("WORK_EDI")
+	oTempTable:SetFields( aEstrEDI )
+	oTempTable:Create()
+
+	DbSelectArea("WORK_EDI")
 
 aadd(ACPOSSF,{"WKFLAG"     ,, ""})
 If !lTemEDI

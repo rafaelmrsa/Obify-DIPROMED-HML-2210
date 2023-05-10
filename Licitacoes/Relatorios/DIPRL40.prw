@@ -176,6 +176,8 @@ Local cEmail     := Alltrim(Posicione("SA3",1,xFilial("SA3")+MV_PAR05,"A3_EMAIL"
 // Alterado para gravar arquivos na pasta protheus_data - Por Sandro em 19/11/09. 
 Local cArqExcell := "\Excell-DBF\"+U_DipUsr()+"-DIPRL40 - "+If(MV_PAR16=1,"Sintético","Analítico")
 
+Local oTempTable
+
 Private QRY1     := ""  
 Private _cChave  := ""
 Private TRB  
@@ -326,18 +328,25 @@ If MV_PAR17	= 1
 		_aTamSX3 := TamSX3("UA4_TOTAL")
 		AAdd(_aCampos ,{"TOTAL","N",_aTamSX3[1],_aTamSX3[2]})
 	Endif
-	
+
+/*	
 _cArqTrb := CriaTrab(_aCampos,.T.)
 DbUseArea(.T.,,_cArqTrb,"TRB",.F.,.F.)
 _cChave  := "VENDEDOR+CLIENTE+DTOC(DT_ASSIN)+EDITAL"
 IndRegua("TRB",_cArqTrb,_cChave,,,"Criando Indice...(Edital)")
+*/
+	If(oTempTable <> NIL)
+		oTempTable:Delete()
+		oTempTable := NIL
+	EndIf
+	oTempTable := FWTemporaryTable():New("TRB")
+	oTempTable:SetFields( _aCampos )
+	//oTempTable:AddIndex("1", {"EDITAL", "PREGAO"} )
+	oTempTable:Create()
+
+	DbSelectArea("TRB")
 
 EndIf
-
-                                                         
-
-  
-
 
 ProcRegua(600)
 For _x := 1 to 450
@@ -724,10 +733,11 @@ If cWorkFlow == "N"
 		For _x := 1 to 1000
 			IncProc("Gerando Arquivo. . . ")
 		Next
-		COPY TO &cArqExcell VIA "DBFCDX"
+		/*COPY TO &cArqExcell VIA "DBFCDX"
 	   //	MsgInfo("Arquivo gerado com sucesso!") //Giovani Zago 30/08/2011  
 	   
-	   FRename(cArqExcell+".dtc",cArqExcell+".xls")
+	   FRename(cArqExcell+".dtc",cArqExcell+".xls")*/
+	   FRename(cArqExcell+".dtc",cArqExcell+".xlsx")
 	
 		MakeDir(cDestino) // CRIA DIRETÓRIO CASO NÃO EXISTA
 		CpyS2T(cArqExcell+".xls",cDestino,.T.) // COPIA ARQUIVO PARA MAQUINA DO USUÁRIO
@@ -735,6 +745,7 @@ If cWorkFlow == "N"
 		Ferase(_cArqTrb+".DBF")
 		Ferase(_cArqTrb+OrdBagExt()) 
 		TRB->(DbCloseArea())
+		oTempTable:Delete()
 		
 	EndIf
 Else

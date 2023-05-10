@@ -190,6 +190,19 @@ Local nDipTam 	:= 0
 DEFAULT cPedido := ""             
 DEFAULT lTrava	:= .F.
 
+Begin Transaction
+	cQuery := "UPDATE "+MPSysSqlName("SX1")+ " SET X1_GSC = '" + IIF(lTrava=.T.,"S","G") +"' "
+	cQuery += "WHERE D_E_L_E_T_ = '' AND "
+	cQuery += "X1_GRUPO  = 'MT461A' AND X1_ORDEM = '05' "
+	nErro := TcSqlExec(cQuery)
+							
+	If nErro != 0
+		MsgStop("Erro na execução da query: "+TcSqlError(), "Atenção")
+		DisarmTransaction()
+	EndIf
+End Transaction
+
+/*
 dbSelectArea("SX1")
 dbSetOrder(1)   
 
@@ -214,6 +227,7 @@ If SX1->(DbSeek(PadR("MT461A",nDipTam)+"05"))
 		EndIf
 	SX1->(MsUnlock())
 EndIf
+*/
 
 If FindFunction('SetMVValue')
 	SetMVValue("MT461A","MV_PAR05",cPedido) 

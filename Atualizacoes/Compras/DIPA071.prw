@@ -290,9 +290,9 @@ For nI := 1 To Len(aStruSB1)
 		aAdd(aDadSB1,{"B1_XCXFECH","",nil})    		
 	ElseIf aStruSB1[nI,1]=="B1_XVLDCXE"
 		aAdd(aDadSB1,{"B1_XVLDCXE","",nil})    		
-	ElseIf ( Type("SB1->"+aStruSB1[nI,1])=="C" .And. !Empty(&("SB1->"+aStruSB1[nI,1])) ) .Or.;
-		   ( Type("SB1->"+aStruSB1[nI,1])=="N" .And. &("SB1->"+aStruSB1[nI,1])>0 ) .Or.;
-		   ( Type("SB1->"+aStruSB1[nI,1])=="D" .ANd. !Empty(DtoS(&("SB1->"+aStruSB1[nI,1]))) )
+	ElseIf ( "SB1->"+aStruSB1[nI,1]=="C" .And. !Empty(&("SB1->"+aStruSB1[nI,1])) ) .Or.;
+		   ( "SB1->"+aStruSB1[nI,1]=="N" .And. &("SB1->"+aStruSB1[nI,1])>0 ) .Or.;
+		   ( "SB1->"+aStruSB1[nI,1]=="D" .ANd. !Empty(DtoS(&("SB1->"+aStruSB1[nI,1]))) )
 		aAdd(aDadSB1,{aStruSB1[nI,1],&("SB1->"+aStruSB1[nI,1]),nil})
 	EndIf
 Next nI    

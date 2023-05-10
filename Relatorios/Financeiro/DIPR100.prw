@@ -1,5 +1,4 @@
-/*
- =====================================================================================
+/*====================================================================================\
 |Programa  | DIPR100    | Autor | Reginaldo Borges              | Data | 22/04/2019   |
 |=====================================================================================|
 |Descrição | Disparar e-mail para os clintes com títulos próximos a vencer e          |
@@ -11,10 +10,9 @@
 |Uso       | Especifico DIPROMED                                                      |
 |=====================================================================================|
 |........................................Histórico....................................|
-|RBorges   | DD/MM/AA - Descrição                                                     |
+|RBorges    | DD/MM/AA - Descrição                                                     |
 |          | 																		  |
-======================================================================================
-*/
+\====================================================================================*/
 
 #INCLUDE "RWMAKE.CH"
 #INCLUDE "AP5MAIL.CH"
@@ -178,7 +176,6 @@ If Len(aEmDipr100) > 0
 	Msgbody(nDiasVenc,nDiasVenc_R,dDataVenc,@cAssunto,@cMsgbody,@cMsgCabe)
 	
 	ENV_100(cEmail,cAssunto,aEmDip100b,cMsgbody,cMsgCabe)
-
 	
 	
 EndIf
@@ -314,8 +311,7 @@ If !lAutOk
 			lAutOk := .T.
 	EndIf
 EndIf
-
-
+	
 If lResult .And. lAutOk
 	SEND MAIL FROM cFrom ;
 	TO      	Lower(cEmailTo);
@@ -360,7 +356,7 @@ Static Function Msgbody(nDiasVenc,nDiasVenc_R,dDataVenc,cAssunto,cMsgbody,cMsgCa
 
 If     nDiasVenc == -3
 
-	/*cAssunto := "Comunicado de titulo(s) a vencer!"
+	cAssunto := "Comunicado de titulo(s) a vencer!"
 	
 	cMsgCabe := ''+ENTER
 	cMsgCabe += '<font face="Arial" size=4><B> DIPROMED COMÉRCIO E IMPORTAÇÃO LTDA. </B></font>'+ENTER
@@ -380,21 +376,12 @@ If     nDiasVenc == -3
 	cMsgbody += ''+ENTER
 	cMsgbody += '<font face="Arial" size=2> Srs. clientes, favor se atentarem a boletos de email, na qual não pertence a Dipromed. Estão sendo enviados boletos com descontos dos bancos Santander e banco do Brasil. Trata-se de (FRAUDE) onde os Srs. clientes devem consultar a  </font>'+ENTER 
 	cMsgbody += '<font face="Arial" size=2> Dipromed para verificar a veracidade das informações. </font>'+ENTER
-	cMsgbody += ''+ENTER*/
+	cMsgbody += ''+ENTER
 
-
-	cAssunto := "[ERRATA] Comunicado de titulo(s) a vencer!"
-
-	cMsgCabe := ''+ENTER
-	cMsgCabe += '<font face="Arial" size=4><B> DIPROMED COMÉRCIO E IMPORTAÇÃO LTDA. </B></font>'+ENTER
-	cMsgCabe += ''+ENTER
-	cMsgCabe += '<font face="Arial" size=2><B>Prezado (a) Senhor (a),</B></font>'+ENTER
-	cMsgCabe += '<font face="Arial" size=2> Favor desconsiderar e-mail de cobrança enviados nos dias 21 e 24 de abril, foi um erro de configuração do sistema!  Pedimos desculpas pelo transtorno e estamos à disposição para esclarecer qualquer dúvida. </font>'+ENTER
-	cMsgCabe += ''+ENTER
 
 ElseIf nDiasVenc == 1 .Or. nDiasVenc == 3 .Or. nDiasVenc_R == 1
 	
-	/*cAssunto := "Titulo(s) vencido(s)!"
+	cAssunto := "Titulo(s) vencido(s)!"
 	
 	cMsgCabe := ''+ENTER
 	cMsgCabe += '<font face="Arial" size=4><B> DIPROMED COMÉRCIO E IMPORTAÇÃO LTDA </B></font>'+ENTER
@@ -415,21 +402,12 @@ ElseIf nDiasVenc == 1 .Or. nDiasVenc == 3 .Or. nDiasVenc_R == 1
 	cMsgbody += '<font face="Arial" size=2> Com os antecipados agradecimentos pela atenção que a presente merecer, firmamo-nos.</font>'+ENTER
 	cMsgbody += ''+ENTER
 	cMsgbody += '<font face="Arial" color=#FF0000 size=3><B> Caso o pagamento já tenha sido efetuado, por favor, desconsidere este aviso. </B></font>'+ENTER
-	cMsgbody += ''+ENTER*/
+	cMsgbody += ''+ENTER
 	
-
-	cAssunto := "[ERRATA] Titulo(s) vencido(s)!"
-
-	cMsgCabe := ''+ENTER
-	cMsgCabe += '<font face="Arial" size=4><B> DIPROMED COMÉRCIO E IMPORTAÇÃO LTDA. </B></font>'+ENTER
-	cMsgCabe += ''+ENTER
-	cMsgCabe += '<font face="Arial" size=2><B>Prezado (a) Senhor (a),</B></font>'+ENTER
-	cMsgCabe += '<font face="Arial" size=2> Favor desconsiderar e-mail de cobrança enviados nos dias 21 e 24 de abril, foi um erro de configuração do sistema!  Pedimos desculpas pelo transtorno e estamos à disposição para esclarecer qualquer dúvida. </font>'+ENTER
-	cMsgCabe += ''+ENTER
 	
 Else
 	
-	/*cAssunto := EncodeUTF8("Quite seu boleto hoje e evite cartório!","cp1252")
+	cAssunto := EncodeUTF8("Quite seu boleto hoje e evite cartório!","cp1252")
 	
 	cMsgCabe := ''+ENTER
 	cMsgCabe += '<font face="Arial" size=4><B> DIPROMED COMÉRCIO E IMPORTAÇÃO LTDA </B></font>'+ENTER
@@ -446,17 +424,7 @@ Else
 	cMsgbody += '<font face="Arial" size=2> Qualquer dúvida entre em contato conosco através do(s) telefone(s): 11-3646-0160 ramal 0179 com Daniele Baraldi, ramal 0178 com Sidnéia Domingos</font>'+ENTER
 	cMsgbody += ''+ENTER
 	cMsgbody += '<font face="Arial" color=#FF0000 size=3><B> Caso o pagamento já tenha sido efetuado, por favor, desconsidere este aviso. </B></font>'+ENTER
-	cMsgbody += ''+ENTER*/
-
-	
-	cAssunto := EncodeUTF8("[ERRATA] Quite seu boleto hoje e evite cartório!","cp1252")
-
-	cMsgCabe := ''+ENTER
-	cMsgCabe += '<font face="Arial" size=4><B> DIPROMED COMÉRCIO E IMPORTAÇÃO LTDA. </B></font>'+ENTER
-	cMsgCabe += ''+ENTER
-	cMsgCabe += '<font face="Arial" size=2><B>Prezado (a) Senhor (a),</B></font>'+ENTER
-	cMsgCabe += '<font face="Arial" size=2> Favor desconsiderar e-mail de cobrança enviados nos dias 21 e 24 de abril, foi um erro de configuração do sistema!  Pedimos desculpas pelo transtorno e estamos à disposição para esclarecer qualquer dúvida. </font>'+ENTER
-	cMsgCabe += ''+ENTER
+	cMsgbody += ''+ENTER
 		
 EndIf
 

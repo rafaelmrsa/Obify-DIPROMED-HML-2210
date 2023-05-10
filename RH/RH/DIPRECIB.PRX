@@ -1315,8 +1315,8 @@ LI ++
 
 LI ++
 @ LI,000 PSAY "| H A B E R E S "		//"| H A B E R E S "
-@ LI,046 PSAY "  D E D U C C I O N E S"		//"  D E D U C C I O N E S"
-@ LI,090 PSAY "  B A S E S 		//"  B A S E S 
+@ LI,046 PSAY "  D E D U C C I O N E S "		//"  D E D U C C I O N E S"
+@ LI,090 PSAY "  B A S E S " 		//  B A S E S 
 @ LI,131 PSAY "|"
 
 LI ++

@@ -1372,8 +1372,8 @@ aCposSX1:={"X1_PERGUNT","X1_PERSPA","X1_PERENG","X1_VARIAVL","X1_TIPO","X1_TAMAN
 dbSelectArea("SX1")
 dbSetOrder(1)
 
-
 For nX:=1 to Len(aPergs)
+
 	lAltera := .F.
 	If MsSeek(cPerg+Right(aPergs[nX][11], 2))
 		If (ValType(aPergs[nX][Len(aPergs[nx])]) = "B" .And.;
@@ -1389,12 +1389,44 @@ For nX:=1 to Len(aPergs)
 	
 	If ! Found() .Or. lAltera
 		RecLock("SX1",If(lAltera, .F., .T.))
+		
+		Begin Transaction
+			cQuery := "UPDATE "+MPSysSqlName("SX1")+ " SET X1_GRUPO = " + cLocal +", X1_ORDEM = '" +Right(aPergs[nX][11], 2)+ "' "
+			cQuery += "WHERE D_E_L_E_T_ = '' AND "
+			cQuery += "X1_GRUPO  = '" + cPerg + "' AND X1_ORDEM = '" +Right(aPergs[nX][11], 2)+ "'"
+
+			nErro := TcSqlExec(cQuery)						
+			If nErro != 0
+				MsgStop("Erro na execução da query: "+TcSqlError(), "Atenção")
+				DisarmTransaction()
+			EndIf
+
+		End Transaction
+		
+		/*
 		Replace X1_GRUPO with cPerg
 		Replace X1_ORDEM with Right(aPergs[nX][11], 2)
+		*/
+
 		For nj:=1 to Len(aCposSX1)
 			If 	Len(aPergs[nX]) >= nJ .And. aPergs[nX][nJ] <> Nil .And.;
 				FieldPos(AllTrim(aCposSX1[nJ])) > 0
-				Replace &(AllTrim(aCposSX1[nJ])) With aPergs[nx][nj]
+				
+				Begin Transaction
+					cQuery := "UPDATE "+MPSysSqlName("SX1")+ " SET " + &(AllTrim(aCposSX1[nJ])) + " = " + aPergs[nx][nj] +" "
+					cQuery += "WHERE D_E_L_E_T_ = '' AND "
+					cQuery += "X1_GRUPO  = '" + cPerg + "' AND X1_ORDEM = '" +Right(aPergs[nX][11], 2)+ "'"
+
+					nErro := TcSqlExec(cQuery)						
+					If nErro != 0
+						MsgStop("Erro na execução da query: "+TcSqlError(), "Atenção")
+						DisarmTransaction()
+					EndIf
+
+				End Transaction
+				
+				//Replace &(AllTrim(aCposSX1[nJ])) With aPergs[nx][nj]
+
 			Endif
 		Next nj
 		MsUnlock()

@@ -471,13 +471,13 @@ If Len(_aDados) == 0
 	SX3->(DbSeek("SB1"))
 	While SX3->(!Eof()) .and. SX3->X3_ARQUIVO == "SB1"
 		lGrv := .T.
-		If AllTrim(SX3->X3_CAMPO) != "B1_FILIAL" .And. Type("M->"+AllTrim(SX3->X3_CAMPO)) != "U"  //.And. !(AllTrim(SX3->X3_CAMPO) $ "B1_PICMRET/B1_PICMENT/B1_ARTIGST")
+		If AllTrim(SX3->X3_CAMPO) != "B1_FILIAL" .And. "M->"+AllTrim(SX3->X3_CAMPO) != "U"  //.And. !(AllTrim(SX3->X3_CAMPO) $ "B1_PICMRET/B1_PICMENT/B1_ARTIGST")
 			
 			If AllTrim(SX3->X3_CAMPO) == "B1_ADMIN"
 				cPara := ""
 			EndIf
 			
-			If Type("lCopia")=="L" .And. lCopia 
+			If lCopia=="L" .And. lCopia 
 			    If SX3->X3_TIPO<>"N"
 					If Empty(&("M->"+AllTrim(SX3->X3_CAMPO))) .And. !Empty(SX3->X3_RELACAO)
 						//&("M->"+AllTrim(SX3->X3_CAMPO)) := &(SX3->X3_RELACAO)

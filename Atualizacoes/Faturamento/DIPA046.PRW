@@ -343,7 +343,7 @@ do case
 		
 	case nOpc = 11 // JBS 12/08/2010 - Avalia se cria novo endereco para mercadoria  e ou devolve no endereco original
 	
-	     If type("lDip46GrD3") <> "U"
+	     If lDip46GrD3 <> "U"
 	         If lDip46GrD3 
 	            Return(1)
 	         Else
@@ -1580,7 +1580,7 @@ Local lRet := .F.
 
 Begin Sequence
 
-	If !(Type("lDip46GrD3") <> "U" .And. lDip46GrD3)
+	If !(lDip46GrD3 <> "U" .And. lDip46GrD3)
 		break
 	EndIf
 
@@ -1808,7 +1808,7 @@ For nId := 1 to len(aRecSD2)
 		// processo de cancelamento de NFS e a mercadoria da nota fiscal que esta
 		// sendo devolvida estiver no cliente.
 		//---------------------------------------------------------------------------------------------
-		If Type("lDip46GrD3") <> "U" .And. lDip46GrD3
+		If lDip46GrD3 <> "U" .And. lDip46GrD3
 			_cGera := 'N'
 		Else
 			_cGera := ' '

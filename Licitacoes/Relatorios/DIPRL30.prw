@@ -453,8 +453,8 @@ Local aPutSX1 := {}
 
 cPerg := PADR(cPerg, Len(SX1->X1_GRUPO)," " ) // Incluido por Sandro em 18/11/09.
 
-AADD (aPutSX1, {cPerg,"01","Código Edital  ?","","","mv_ch01","C",06,0,0,"G","","mv_par01","","","","","","","","","","","","","","","","","","","","","","","","","UA1","","","","","",""})
-AADD (aPutSX1, {cPerg,"02","Salvar Como    ?","","","mv_ch02","C",30,0,0,"G","","mv_par02","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""})
+AADD (aPutSX1, {cPerg,"01","Código Edital  ?","","","mv_ch1","C",06,0,0,"G","","mv_par01","","","","","","","","","","","","","","","","","","","","","","","","","UA1","","","","","",""})
+AADD (aPutSX1, {cPerg,"02","Salvar Como    ?","","","mv_ch2","C",30,0,0,"G","","mv_par02","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""})
 
 u_AtuSX1(aPutSX1)
 
@@ -527,6 +527,134 @@ User Function AtuSX1(aPerg)
 Local nX
 Local lFound := .F.
 
+Local oFWSX1 as object
+Local aPergunte	:= {}
+
+oFWSX1 := FWSX1Util():New()
+oFWSX1:AddGroup(ALLTRIM(aPerg[1][1]))
+oFWSX1:SearchGroup()
+aPergunte := oFWSX1:GetGroup(ALLTRIM(aPerg[1][1]))
+
+IF Empty(aPergunte[2])
+
+	For nX:=1 to Len(aPerg)
+
+		Begin Transaction
+			cExec	:=	"INSERT INTO "+MPSysSqlName("SX1")+ " " + CRLF
+			cExec	+=	"(	X1_GRUPO, " + CRLF
+			cExec	+=	"	X1_ORDEM, " + CRLF
+			cExec	+=	"	X1_PERGUNT, " + CRLF
+				cExec	+=	"	X1_PERSPA, " + CRLF
+				cExec	+=	"	X1_PERENG, " + CRLF
+			cExec	+=	"	X1_VARIAVL, " + CRLF
+			cExec	+=	"	X1_TIPO, " + CRLF
+			cExec	+=	"	X1_TAMANHO, " + CRLF
+			cExec	+=	"	X1_DECIMAL, " + CRLF
+			cExec	+=	"	X1_PRESEL, " + CRLF
+			cExec	+=	"	X1_GSC, " + CRLF
+				cExec	+=	"	X1_VALID, " + CRLF
+			cExec	+=	"	X1_VAR01, " + CRLF
+				cExec	+=	"	X1_DEF01, " + CRLF
+				cExec	+=	"	X1_DEFSPA1, " + CRLF
+				cExec	+=	"	X1_DEFENG1, " + CRLF
+				cExec	+=	"	X1_CNT01, " + CRLF
+				cExec	+=	"	X1_VAR02, " + CRLF
+				cExec	+=	"	X1_DEF02, " + CRLF
+				cExec	+=	"	X1_DEFSPA2, " + CRLF
+				cExec	+=	"	X1_DEFENG2, " + CRLF
+				cExec	+=	"	X1_CNT02, " + CRLF
+				cExec	+=	"	X1_VAR03, " + CRLF
+				cExec	+=	"	X1_DEF03, " + CRLF
+				cExec	+=	"	X1_DEFSPA3, " + CRLF
+				cExec	+=	"	X1_DEFENG3, " + CRLF
+				cExec	+=	"	X1_CNT03, " + CRLF
+				cExec	+=	"	X1_VAR04, " + CRLF
+				cExec	+=	"	X1_DEF04, " + CRLF
+				cExec	+=	"	X1_DEFSPA4, " + CRLF
+				cExec	+=	"	X1_DEFENG4, " + CRLF
+				cExec	+=	"	X1_CNT04, " + CRLF
+				cExec	+=	"	X1_VAR05, " + CRLF
+				cExec	+=	"	X1_DEF05, " + CRLF
+				cExec	+=	"	X1_DEFSPA5, " + CRLF
+				cExec	+=	"	X1_DEFENG5, " + CRLF
+				cExec	+=	"	X1_CNT05, " + CRLF
+			cExec	+=	"	X1_F3, " + CRLF
+				cExec	+=	"	X1_PYME, " + CRLF
+				cExec	+=	"	X1_GRPSXG, " + CRLF
+				cExec	+=	"	X1_HELP, " + CRLF
+				cExec	+=	"	X1_PICTURE, " + CRLF
+				cExec	+=	"	X1_IDFIL, " + CRLF
+			cExec	+=	"	D_E_L_E_T_, " + CRLF
+			cExec	+=	"	R_E_C_N_O_, " + CRLF
+			cExec	+=	"	R_E_C_D_E_L_) " + CRLF
+			cExec	+=	"	VALUES ( " + CRLF
+			cExec	+=	"	'"+aPerg[nX][1]+"', " + CRLF
+			cExec	+=	"	'"+aPerg[nX][2]+"', " + CRLF
+			cExec	+=	"	'"+aPerg[nX][3]+"', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'"+aPerg[nX][6]+"', " + CRLF
+			cExec	+=	"	'"+aPerg[nX][7]+"', " + CRLF
+			cExec	+=	"	"+cValToChar(aPerg[nX][8])+", " + CRLF
+			cExec	+=	"	"+cValToChar(aPerg[nX][9])+", " + CRLF
+			cExec	+=	"	"+cValToChar(aPerg[nX][10])+", " + CRLF
+			cExec	+=	"	'"+aPerg[nX][11]+"', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'"+aPerg[nX][13]+"', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'"+aPerg[nX][38]+"', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	'', " + CRLF
+			cExec	+=	"	ISNULL((SELECT MAX(R_E_C_N_O_) + 1 FROM "+MPSysSqlName("SX1")+ "),1),
+			cExec	+=	"	'') "
+
+			nErro := TcSqlExec(cExec)
+					
+			If nErro != 0
+				MsgStop("Erro na execução da query: "+TcSqlError(), "Atenção")
+				DisarmTransaction()
+			EndIf
+
+		End Transaction
+
+		If nErro != 0
+			Exit
+		Endif
+	Next nX
+ENDIF
+aSize(aPergunte,0)
+oFWSX1:Destroy()
+
+FreeObj(oFWSX1)
+
+/*
 SX1-> ( dbSetOrder(1) )		//X1_GRUPO+X1_ORDEM
 
 For nX := 1 To Len(aPerg)
@@ -583,4 +711,5 @@ For nX := 1 To Len(aPerg)
 	EndIf
 	MsUnlock()
 Next nX
+*/
 Return

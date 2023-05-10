@@ -332,11 +332,13 @@ Endif
 	//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 	dbSelectArea('SDD')
 	dbSetOrder(1)
+	/*
 	cIndexDD  := 'DD_FILIAL + DD_LOCAL + DD_PRODUTO + DD_LOTECTL + DD_NUMLOTE + DD_LOCALIZ + DD_NUMSERI'
 	cArqTmpDD := CriaTrab(NIL,.F.)
 	IndRegua('SDD', cArqTmpDD, cIndexDD,,,STR0010) //"Selecionando Registros ..."
 	nIndexDD  := RetIndex('SDD')
 	dbSetOrder(nIndexDD+1)
+	*/
 	
 	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 	//³Posicionamento das tabelas³
@@ -373,12 +375,14 @@ Endif
 	//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 	dbSelectArea('SDD')
 	dbSetOrder(1)
+	/*
 	cIndexDD  :="DD_FILIAL + DD_LOCAL + DD_PRODUTO + DD_LOTECTL + DD_NUMLOTE"
 	cArqTmpDD := CriaTrab(NIL,.F.)
 	IndRegua( "SDD", cArqTmpDD, cIndexDD, , ,STR0010)	//"Selecionando Registros ..."
 	nIndexDD  := RetIndex( "SDD" )
 	dbSetIndex(cArqTmpDD+OrdBagExt())
 	dbSetOrder(nIndexDD+1) 
+	*/
 
 	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 	//³Posicionamento das tabelas³
@@ -707,6 +711,8 @@ LOCAL nTBloq     := 0
 LOCAL cQuery     := ''
 LOCAL lQueryTOP  := .F.
 
+LOCAL oTempTable
+
 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 //³ Variaveis Private utilizadas na montagem das Querys          ³
 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
@@ -762,16 +768,29 @@ cIndex += "+ TR_LOTECTL + TR_NUMLOTE + TR_SITUA"
 //³ Se a chave for por produto, realiza quebra por grupo ³
 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 lQueGrup := (aReturn[8]==1)
+
+/*
 cFileTRB := CriaTrab(aCampos,.T.)
 dbUseArea(.T.,,cFileTRB,"TRB",.T.,.F.)
 IndRegua( "TRB", cFileTRB, cIndex,,,STR0009)	//"Criando Indice ..."
+*/
+
+If(oTempTable <> NIL)
+	oTempTable:Delete()
+	oTempTable := NIL
+EndIf
+oTempTable := FWTemporaryTable():New("TRB")
+oTempTable:SetFields( aCampos )
+//oTempTable:AddIndex("1", {"TR_LOCAL", "TR_GRUPO"} )
+oTempTable:Create()
+
 
 #IFDEF TOP
 	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 	//³ Cria Query para o SBF e SB1                                  ³
 	//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 	lQueryTOP := .T.
-	cAliasTOP := CriaTrab(Nil, .F.)
+	cAliasTOP := "1"//CriaTrab(Nil, .F.)
 	cQuery := "SELECT SBF.BF_FILIAL TP_FILIAL, SBF.BF_LOCAL TP_LOCAL, SBF.BF_PRODUTO TP_COD, SB1.B1_DESC TP_DESC, SB1.B1_GRUPO TP_GRUPO, SBF.BF_LOCALIZ TP_LOCALIZ, SBF.BF_NUMSERI TP_NUMSERI, SBF.BF_LOTECTL TP_LOTECTL, SBF.BF_NUMLOTE TP_NUMLOTE, SB1.B1_UM TP_UM, SUM(SBF.BF_QUANT) TP_BFQUANT, SUM(SBF.BF_EMPENHO) TP_BFEMPENHO "
 	cQuery += "FROM "+RetSqlName('SBF')+" SBF, "+RetSqlName('SB1')+" SB1 "
 	cQuery += "WHERE SBF.BF_FILIAL='"+xFilial('SBF')+"' AND "
@@ -1468,6 +1487,7 @@ Endif
 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 dbSelectArea('TRB')
 dbCloseArea()
+oTempTable:Delete()
 Ferase( cFileTRB+GetDBExtension() )
 Ferase( cFileTRB+OrdBagExt() )
 

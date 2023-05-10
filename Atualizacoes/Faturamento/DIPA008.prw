@@ -1,3 +1,11 @@
+#INCLUDE "Fivewin.ch"
+#INCLUDE "Font.ch"
+#include "vKey.ch"     
+#INCLUDE "Colors.ch"
+#include "Protheus.ch"
+#include "RwMake.ch"
+#include "vKey.ch"     
+
 /*====================================================================================\
 |Programa  | DIPA008       | Autor | Alexandro Dias             | Data | 29/01/2002   |
 |=====================================================================================|
@@ -13,14 +21,6 @@
 |Rafael    | DD/MM/AA - Descrição                                                     |
 |Eriberto  | DD/MM/AA - Descrição                                                     |
 \====================================================================================*/
-
-#INCLUDE "Fivewin.ch"
-#INCLUDE "Font.ch"
-#include "vKey.ch"     
-#INCLUDE "Colors.ch"
-#include "Protheus.ch"
-#include "RwMake.ch"
-#include "vKey.ch"     
 
 User Function DIPA008() 
 
@@ -106,13 +106,15 @@ Consideraçoes.: Função chamada pelo DIPA008>PRW
 -------------------------------------------------------------------------------------
 */
 Static Function Dpprom() //Função para visualização/alteração de Periodos Vencidos.
-Local   _xAlias  := GetArea()
-PRIVATE dDtAtual := date()
-PRIVATE aRotina  := { { "Pesquisa"		,'U_DipPesqB8()'		, 0 , 1},;                          
-                      { "Exclui"		,"U_DIPA034('EXCLUI')"  , 0 , 3},; 
-                      { "Altera Período","U_DIPA034('ALTERA')" 	, 0 , 2},;
-                      { "Filtra Forn"	,"U_DipFilSB1()" 		, 0 , 3},;
-                      { "Inclui"		,"U_DpProm2()" 			, 0 , 3}}
+
+Local _xAlias		:= GetArea()
+Local oTempTable
+PRIVATE dDtAtual	:= date()
+PRIVATE aRotina		:= {{ "Pesquisa"		,'U_DipPesqB8()'		, 0 , 1},;                          
+                      	{ "Exclui"		,"U_DIPA034('EXCLUI')"  , 0 , 3},; 
+                      	{ "Altera Período","U_DIPA034('ALTERA')" 	, 0 , 2},;
+                      	{ "Filtra Forn"	,"U_DipFilSB1()" 		, 0 , 3},;
+                      	{ "Inclui"		,"U_DpProm2()" 			, 0 , 3}}
 PRIVATE   ALTERA := .T. // MCVN - 22/07/10
 PRIVATE   INCLUI := .F. // MCVN - 22/07/10
 
@@ -136,8 +138,18 @@ AADD(aStrut,{"B1_NPROMOC","C",AvSx3("B1_NPROMOC",3) })
 AADD(aStrut,{"B1_MOSTPRO","C",AvSx3("B1_MOSTPRO",3) })
 
 // cria a tabela temporária              
+/*
 cTRB := CriaTrab(aStrut, .T.)
 dbUseArea(.T.,,cTRB,"TRBSB1")
+*/
+	If(oTempTable <> NIL)
+		oTempTable:Delete()
+		oTempTable := NIL
+	EndIf
+	oTempTable := FWTemporaryTable():New("TRBSB1")
+	oTempTable:SetFields( aStrut )
+	oTempTable:AddIndex("1", {"B1_COD"} )
+	oTempTable:Create()
 
 U_DipMonTmp()             
 
@@ -158,11 +170,13 @@ AADD(aCampos,{"B1_MOSTPRO", "" ,"Mostra Promoção?"  	, AvSx3("B1_MOSTPRO",6) })
 dbSelectArea("TRBSB1")
 TRBSB1->(dbGoTop())
 
+/*
 cIndTRB := CriaTrab(Nil,.F.)
 
 TRBSB1->(DbCreateIndex(cIndTRB,"B1_DESC" ,{|| B1_DESC },.F.))
 TRBSB1->(DbClearInd())
 TRBSB1->(DbSetIndex(cIndTRB))
+*/
 TRBSB1->(DbSetOrder(1))
 
  
@@ -170,6 +184,7 @@ cMarca := GetMark()
 MarkBrow("TRBSB1","B1_OK2",,aCampos,,cMarca,"U_DipMarkAll()")
 
 TRBSB1->(dbCloseArea()) 
+oTempTable:Delete()
 RestArea(_xAlias)
 
 Return   

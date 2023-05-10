@@ -77,6 +77,7 @@ ENDIF
 RETURN(_lRet) 
                    
 
+/*
 //Função para o A1_EMAILD
 //X_A1EMAID ALTERADO
 USER FUNCTION XA1EMAID2()
@@ -136,5 +137,4 @@ ELSE
 ENDIF
 
 RETURN(__lRet)
-
-
+*/

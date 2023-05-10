@@ -85,6 +85,8 @@ Local cDiretorio := "\EDI\RETORNO\"
 Local aFiles:=Directory(cDiretorio+"OCO*.txt" )
 Local cArquivo:=''
 Local id := 1
+Local oTempTable
+
 Private cArqEDI := ""  //MCVN - 21/01/2009
 private nNotasInt:=0
 
@@ -92,8 +94,19 @@ private aHeader:={}
 private aCampos:={} 
 private cProblema:=''
 
+/*
 cFile:=CriaTrab(aEstr,.T.)
 DbUseArea(.T.,,cFile,"INTEG",.F.,.F.)
+*/
+	If(oTempTable <> NIL)
+		oTempTable:Delete()
+		oTempTable := NIL
+	EndIf
+	oTempTable := FWTemporaryTable():New("INTEG")
+	oTempTable:SetFields( aEstr )
+	oTempTable:Create()
+
+	DbSelectArea("INTEG")
 
 for id := 1 to len(aFiles)
 
@@ -131,11 +144,23 @@ cArquivo:=''
 aHeader:={}
 aCampos:={} 
 
-cFile:=CriaTrab(aEstr,.T.)
 If Select("INTEG") > 0
 	INTEG->(DbCloseArea())
 EndIf
+/*
+cFile:=CriaTrab(aEstr,.T.)
 DbUseArea(.T.,,cFile,"INTEG",.F.,.F.)
+*/
+
+	If(oTempTable <> NIL)
+		oTempTable:Delete()
+		oTempTable := NIL
+	EndIf
+	oTempTable := FWTemporaryTable():New("INTEG")
+	oTempTable:SetFields( aEstr )
+	oTempTable:Create()
+
+	DbSelectArea("INTEG")
 
 for id := 1 to len(aFiles)
     

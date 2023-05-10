@@ -620,6 +620,19 @@ Local aArea		:= GetArea()
 Local nTamCod	:= TamSx3("CBA_CODINV" )[1]
 Local aRegs		:= {}
 
+Begin Transaction
+	cQuery := "UPDATE "+MPSysSqlName("SX1")+ " SET X1_TAMANHO = " + cValToChar(nTamCod) +" "
+	cQuery += "WHERE D_E_L_E_T_ = '' AND "
+	cQuery += "X1_GRUPO  = 'AIA037' AND (X1_ORDEM = '01' OR X1_ORDEM = '02') AND X1_TAMANHO <> " + cValToChar(nTamCod)
+	nErro := TcSqlExec(cQuery)
+							
+	If nErro != 0
+		MsgStop("Erro na execução da query: "+TcSqlError(), "Atenção")
+		DisarmTransaction()
+	EndIf
+End Transaction
+
+/*
 dbSelectArea("SX1")
 dbSetOrder(1)
 
@@ -634,6 +647,7 @@ If SX1->(DbSeek(PadR("AIA037",10)+"02")) .And. SX1->X1_TAMANHO != nTamCod
 	Replace SX1->X1_TAMANHO With nTamCod
 	SX1->(MsUnlock())
 EndIf
+*/
 
 aAdd(aRegs,{"AIA037","14","Lista Saldo? ","","","mv_chg","C",1,0,0,"C","","MV_PAR14","Não","","","","","Sim","","","","","","","","","","","","","","","","","","",""})
 aAdd(aRegs,{"AIA037","15","Mostra Lote? ","","","mv_chh","C",1,0,0,"C","","MV_PAR15","Não","","","","","Sim","","","","","","","","","","","","","","","","","","",""})

@@ -4373,6 +4373,30 @@ Return
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Static Function fSaldoAtual()
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Begin Transaction
+	cQuery1 := "UPDATE "+MPSysSqlName("SX1")+ " SET X1_CNT01 = " + cLocal +" "
+	cQuery1 += "WHERE D_E_L_E_T_ = '' AND "
+	cQuery1 += "X1_GRUPO  = 'MTA300' AND (X1_ORDEM = '01' OR X1_ORDEM = '02')"
+
+	cQuery2 := "UPDATE "+MPSysSqlName("SX1")+ " SET X1_CNT01 = " + cProduto +" "
+	cQuery2 += "WHERE D_E_L_E_T_ = '' AND "
+	cQuery2 += "X1_GRUPO  = 'MTA300' AND (X1_ORDEM = '03' OR X1_ORDEM = '04')"
+
+	nErro := TcSqlExec(cQuery1)						
+	If nErro != 0
+		MsgStop("Erro na execução da query: "+TcSqlError(), "Atenção")
+		DisarmTransaction()
+	EndIf
+
+	nErro := TcSqlExec(cQuery2)
+	If nErro != 0
+		MsgStop("Erro na execução da query: "+TcSqlError(), "Atenção")
+		DisarmTransaction()
+	EndIf
+
+End Transaction
+
+/*
 DBSelectArea("SX1")
 DBSetOrder(1)
 If DbSeek("MTA30001")
@@ -4395,7 +4419,8 @@ If DbSeek("MTA30004")
    SX1->X1_CNT01 := cProduto
    MsUnlock()
 Endif
-                             
+*/
+                          
 MATA300() 
 
 Processa({||fProcessa()})

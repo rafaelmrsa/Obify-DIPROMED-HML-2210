@@ -9,7 +9,7 @@
 
 #include "rwmake.ch"
 
-User Function ()
+User Function DIPG004()
 
 Local _cResultado := ""
 Local _lGrupoDesc := .T.

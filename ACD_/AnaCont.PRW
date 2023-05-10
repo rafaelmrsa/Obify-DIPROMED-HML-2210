@@ -112,6 +112,7 @@ Return oReport
 Static Function PrintReport(oReport)
 
 Local oSection2 := oReport:Section(1)
+Local oTempTable
 
 
 oSection2:SetTotalInLine(.F.)
@@ -156,6 +157,7 @@ oSection2:Finish()
 
 If Sele("TRB") <> 0
 	TRB->(DbCloseArea())
+	oTempTable:Delete()
 Endif
 
 Return
@@ -181,17 +183,31 @@ AADD(_aStru,{"QTD3"    ,"N",12,2})
 AADD(_aStru,{"STATU"  ,"C",10,0})
 AADD(_aStru,{"ANALIS"  ,"C",15,0})
 
-
-_cArq     := CriaTrab(_aStru,.T.)
-_cIndice  := CriaTrab(Nil,.F.)
-
 If Sele("TRB") <> 0
 	TRB->(DbCloseArea())
 Endif
+
+/*
 _cChaveInd	:= "Filial+CODINV"
+_cArq     := CriaTrab(_aStru,.T.)
+_cIndice  := CriaTrab(Nil,.F.)
 
 dbUseArea(.T.,,_cArq,"TRB",.F.,.F.)
 IndRegua("TRB",_cIndice,_cChaveInd,,,"Selecionando Registros...")
+
+*/
+
+If(oTempTable <> NIL)
+	oTempTable:Delete()
+	oTempTable := NIL
+EndIf
+
+oTempTable := FWTemporaryTable():New("TRB")
+oTempTable:SetFields( _aStru )
+oTempTable:AddIndex("1", {"Filial", "CODINV"} )
+oTempTable:Create()
+
+DbSelectArea("TRB")
 
 _cCgcEmp := Left(SM0->M0_CGC,8)
 

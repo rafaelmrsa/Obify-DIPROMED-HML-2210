@@ -204,15 +204,18 @@ Local nVlrAcu  := 0
 Local dDataAcu := Ctod("")
 Local dVencto  := Ctod("")
 Local dEmissao := Ctod("")
-Local dInicio  := dDataIni    
+Local dInicio  := dDataIni
+Local oTempTable1
+Local oTempTable2
+Local oTempTable3
 
 #IFDEF TOP
 	Local aStruSE1 := SE1->(dbStruct())
 	Local aStruSE5 := SE5->(dbStruct())
 	Local cQuery   := ""	
 #ELSE 	                                    
-	Local cIndSE1  := CriaTrab(,.F.)
-	Local cIndSE5  := SubStr(cIndSE1,1,7)+"A"	
+	//Local cIndSE1  := CriaTrab(,.F.)
+	//Local cIndSE5  := SubStr(cIndSE1,1,7)+"A"	
 	Local cCondSE1 := ""
 	Local cCondSE5 := ""
 #ENDIF 	                     
@@ -235,11 +238,25 @@ If nTipo == 1
 		aadd(aCampos,{"MFATDT","D",08,0})
 		aadd(aCampos,{"MACUVL","N",14,2})
 		aadd(aCampos,{"MACUDT","D",08,0})
-	
+
+		/*
 		aArquivo[1] := CriaTrab(aCampos,.T.)
 	
 		dbUseArea(.T.,__LocalDriver,aArquivo[1],"RPC")
 		IndRegua("RPC",aArquivo[1],"CGC")
+		*/
+
+		If(oTempTable1 <> NIL)
+			oTempTable1:Delete()
+			oTempTable1 := NIL
+		EndIf
+		oTempTable1 := FWTemporaryTable():New("RPC")
+		oTempTable1:SetFields( aCampos )
+		//oTempTable1:AddIndex("1", {"CGC"} )
+		oTempTable1:Create()
+
+		DbSelectArea("RPC")
+		//RPC->(DbSetOrder(1))
 	
 		//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 		//³Montagem do Arquivo Temporario - Pagamento a vista            ³
@@ -253,10 +270,24 @@ If nTipo == 1
 		aadd(aCampos,{"DTPGT " ,"D",08,0})
 		aadd(aCampos,{"DTVCT " ,"D",08,0})
 		aadd(aCampos,{"DTEM  " ,"D",08,0})
+		
+		/*
 		aArquivo[2] := CriaTrab(aCampos,.T.)
 	
 		dbUseArea(.T.,__LocalDriver,aArquivo[2],"RPV")   
 		IndRegua("RPV",aArquivo[2],"CGC")
+		*/
+		If(oTempTable2 <> NIL)
+			oTempTable2:Delete()
+			oTempTable2 := NIL
+		EndIf
+		oTempTable2 := FWTemporaryTable():New("RPV")
+		oTempTable2:SetFields( aCampos )
+		//oTempTable2:AddIndex("1", {"CGC"} )
+		oTempTable2:Create()
+
+		DbSelectArea("RPV")
+		//RPV->(DbSetOrder(1))
 	
 		//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 		//³Montagem do Arquivo Temporario - Pagamento a prazo            ³
@@ -268,6 +299,8 @@ If nTipo == 1
 		aadd(aCampos,{"DTPG  ","D",08,0})	
 		aadd(aCampos,{"DTEM  ","D",08,0})	
 		aadd(aCampos,{"VLPG  ","N",14,2})	 
+		
+		/*
 		aArquivo[3] := CriaTrab(aCampos,.T.)
 	
 		dbUseArea(.T.,__LocalDriver,aArquivo[3],"RPP")        
@@ -277,7 +310,20 @@ If nTipo == 1
 		//³Ao gerar o Simplificado exclui a data do indice               ³
 		//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 		IndRegua("RPP",aArquivo[3],"CGC+NUMDUP")
-	
+		*/
+
+		If(oTempTable3 <> NIL)
+			oTempTable3:Delete()
+			oTempTable3 := NIL
+		EndIf
+		oTempTable3 := FWTemporaryTable():New("RPP")
+		oTempTable3:SetFields( aCampos )
+		//oTempTable3:AddIndex("1", {"CGC"} )
+		oTempTable3:Create()
+
+		DbSelectArea("RPP")
+		//RPP->(DbSetOrder(1))
+
 		//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 		//³Montagem do Arquivo Temporario - Titulos em aberto            ³
 		//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
@@ -286,11 +332,26 @@ If nTipo == 1
 		aadd(aCampos,{"AAMMCOMP","C",06,0})
 		aadd(aCampos,{"VLVENC"  ,"N",14,2})
 		aadd(aCampos,{"VLAVENC" ,"N",14,2})	
+		
+		/*
 		aArquivo[4] := CriaTrab(aCampos,.T.)
 	
 		dbUseArea(.T.,__LocalDriver,aArquivo[4],"RVV")
 		IndRegua("RVV",aArquivo[4],"CGC+AAMMCOMP")
-	
+		*/
+
+		If(oTempTable4 <> NIL)
+			oTempTable4:Delete()
+			oTempTable4 := NIL
+		EndIf
+		oTempTable4 := FWTemporaryTable():New("RVV")
+		oTempTable4:SetFields( aCampos )
+		//oTempTable4:AddIndex("1", {"CGC"} )
+		oTempTable4:Create()
+
+		DbSelectArea("RVV")
+		//RVV->(DbSetOrder(1))
+
 		//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 		//³Calculo da data de inicio de processamento                    ³
 		//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
@@ -308,13 +369,13 @@ If nTipo == 1
 			cCondSE1 += "DTOS(E1_EMISSAO)>='"+Dtos(dDataIni)+"' .AND. "
 			cCondSE1 += "DTOS(E1_EMISSAO)<='"+Dtos(dDataFim)+"' "
 			dbSelectArea("SE1")
-			IndRegua("SE1",cIndSE1,"E1_FILIAL+E1_CLIENTE+E1_LOJA+DTOS(E1_EMISSAO)",,cCondSe1)
+			//IndRegua("SE1",cIndSE1,"E1_FILIAL+E1_CLIENTE+E1_LOJA+DTOS(E1_EMISSAO)",,cCondSe1)
 			dbGotop()
 			cCondSE5 := "E5_FILIAL='"+xFilial("SE5")+"' .AND. "
 			cCondSE5 += "DTOS(E5_DATA)>='"+Dtos(dDataIni)+"' .AND. "
 			cCondSE5+= "DTOS(E5_DATA)<='"+Dtos(dDataFim)+"' "
 			dbSelectArea("SE5")
-			IndRegua("SE5",cIndSE5,"E5_FILIAL+E5_CLIFOR+E5_LOJA+DTOS(E5_DATA)",,cCondSE5)
+			//IndRegua("SE5",cIndSE5,"E5_FILIAL+E5_CLIFOR+E5_LOJA+DTOS(E5_DATA)",,cCondSE5)
 			dbGotop()
 		#ELSE
 			lQuery    := .T.
@@ -632,13 +693,18 @@ Else
 	If !lSimp
 		dbSelectArea("RPC")
 		dbCloseArea()
+		oTempTable1:Delete()
 		dbSelectArea("RPV")
 		dbCloseArea()
+		oTempTable2:Delete
 		dbSelectArea("RVV")    
 		dbCloseArea()
+		oTempTable4:Delete
+		
 	EndIf
 	dbSelectArea("RPP")
 	dbCloseArea()
+	oTempTable3:Delete
 	For nX := 1 To Len(aArquivo)
 		FErase(aArquivo[nX]+GetDbExtension())
 		FErase(aArquivo[nX]+OrdBagExt())
@@ -1916,12 +1982,13 @@ Local cAliasSE1:="SE1"
 Local aCampos  := {}
 Local lQuery   := .F.
 Local lRet01   := .T.
+Local oTempTable
 
 #IFNDEF TOP
 	Local cCondSE1:=""
 	Local cCondSE5:=""
-	Local cIndSE1  := CriaTrab(,.F.)
-	Local cIndSE5  := SubStr(cIndSE1,1,7)+"A"
+	//Local cIndSE1  := CriaTrab(,.F.)
+	//Local cIndSE5  := SubStr(cIndSE1,1,7)+"A"
 	Local lVldSA1  := .T.
 #ELSE
 	Local cQuery:=""
@@ -1942,11 +2009,27 @@ aadd(aCampos,{"DTVC  ","D",08,0})
 aadd(aCampos,{"DTPG  ","D",08,0})
 aadd(aCampos,{"DTEM  ","D",08,0})
 aadd(aCampos,{"VLPG  ","N",14,2})
+
+/*
 aArquivo[1] := CriaTrab(aCampos,.T.)
 
 dbUseArea(.T.,__LocalDriver,aArquivo[1],"RPP")
 
 IndRegua("RPP",aArquivo[1],"CGC+NUMDUP")
+*/
+
+		If(oTempTable <> NIL)
+			oTempTable:Delete()
+			oTempTable := NIL
+		EndIf
+		oTempTable := FWTemporaryTable():New("RPP")
+		oTempTable:SetFields( aCampos )
+		//oTempTable:AddIndex("1", {"CGC"} )
+		oTempTable:Create()
+
+		DbSelectArea("RPP")
+		//RPP->(DbSetOrder(1))
+
 
 If lQuery//TOP
 	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
@@ -2132,7 +2215,7 @@ Else//DBF
 	cCondSE1 += "(DTOS(E1_EMISSAO)<'"+Dtos(dDataIni)+"' .AND. "
 	cCondSE1 += "DTOS(E1_MOVIMEN)>='"+Dtos(dDataIni)+"'))"
 	dbSelectArea("SE1")
-	IndRegua("SE1",cIndSE1,"E1_FILIAL+E1_CLIENTE+E1_LOJA+E1_PREFIXO+E1_NUM+E1_PARCELA",,cCondSe1)
+	//IndRegua("SE1",cIndSE1,"E1_FILIAL+E1_CLIENTE+E1_LOJA+E1_PREFIXO+E1_NUM+E1_PARCELA",,cCondSe1)
 	dbGotop()
 	cCondSE5 := "E5_FILIAL='"+xFilial("SE5")+"' .AND. "
 	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
@@ -2143,7 +2226,7 @@ Else//DBF
 	cCondSE5 += "((E5_TIPODOC $ 'VLBAV2CPLJ' .AND. E5_RECPAG = 'R') .OR. (E5_TIPODOC = 'ES' .AND. E5_RECPAG = 'P')) .AND. "
 	cCondSE5 += "E5_VALOR > 0"
 	dbSelectArea("SE5")
-	IndRegua("SE5",cIndSE5,"E5_FILIAL+E5_CLIFOR+E5_LOJA+E5_PREFIXO+E5_NUMERO+E5_PARCELA",,cCondSE5)
+	//IndRegua("SE5",cIndSE5,"E5_FILIAL+E5_CLIFOR+E5_LOJA+E5_PREFIXO+E5_NUMERO+E5_PARCELA",,cCondSE5)
 	dbGotop()
 	
 	While !SE1->(Eof())
@@ -2232,7 +2315,7 @@ Else//DBF
 	EndDo
 
 	If MV_PAR05 == 2 .And. !EMPTY(SE1->(FieldPos("E1_RELATO")))
-		cIndSE1  := CriaTrab(,.F.)
+		//cIndSE1  := CriaTrab(,.F.)
 	
 		SE1->(dbCloseArea())
 		SA1->(dbCloseArea())
@@ -2254,7 +2337,7 @@ Else//DBF
 		//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 		cCondSE1 += "E1_RELATO = '1'"
 
-		IndRegua("SE1",cIndSE1,"E1_FILIAL+E1_CLIENTE+E1_LOJA+E1_PREFIXO+E1_NUM+E1_PARCELA",,cCondSe1)		
+		//IndRegua("SE1",cIndSE1,"E1_FILIAL+E1_CLIENTE+E1_LOJA+E1_PREFIXO+E1_NUM+E1_PARCELA",,cCondSe1)		
 
 		SA1->(dbSetOrder(1))
 		
@@ -2278,8 +2361,8 @@ Else//DBF
 		SET DELETED ON
 	EndIf
 
-	aArquivo[2]:=cIndSE1
-	aArquivo[3]:=cIndSE5
+	//aArquivo[2]:=cIndSE1
+	//aArquivo[3]:=cIndSE5
 EndIf
 
 Return

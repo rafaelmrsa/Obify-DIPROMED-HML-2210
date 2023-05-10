@@ -138,6 +138,49 @@ If lContinua .Or. l2Continua
 		cVldAliqD1 := 'MaFisRef("IT_ALIQPS2","MT100",M->'+ cCpoAliqD1 + ')' 
 		cVldValD1  := 'MaFisRef("IT_VALPS2","MT100",M->' + cCpoValD1  + ')' 
 		
+		Begin Transaction
+			cQuery1 := "UPDATE "+MPSysSqlName("SX3")+ " SET X3_VALID = " + cVldBaseD1 +" "
+			cQuery1 += "WHERE D_E_L_E_T_ = '' AND "
+			cQuery1 += "X3_CAMPO  = '" + cCpoBaseD1 + "'"
+
+			cQuery2 := "UPDATE "+MPSysSqlName("SX3")+ " SET X3_VALID = " + cVldAliqD1 +" "
+			cQuery2 += "WHERE D_E_L_E_T_ = '' AND "
+			cQuery2 += "X3_CAMPO  = '" + cCpoAliqD1 + "'"
+
+			cQuery3 := "UPDATE "+MPSysSqlName("SX3")+ " SET X3_VALID = " + cVldValD1 +" "
+			cQuery3 += "WHERE D_E_L_E_T_ = '' AND "
+			cQuery3 += "X3_CAMPO  = '" + cCpoValD1 + "'"
+
+			nErro := TcSqlExec(cQuery1)						
+			If nErro != 0
+				MsgStop("Erro na execução da query: "+TcSqlError(), "Atenção")
+				DisarmTransaction()
+			
+			ELSE
+				lOk1 := .T. 
+			EndIf
+
+			nErro := TcSqlExec(cQuery2)
+			If nErro != 0
+				MsgStop("Erro na execução da query: "+TcSqlError(), "Atenção")
+				DisarmTransaction()
+			
+			/*ELSE
+				lOk1 := .T.*/
+			EndIf
+
+			nErro := TcSqlExec(cQuery3)
+			If nErro != 0
+				MsgStop("Erro na execução da query: "+TcSqlError(), "Atenção")
+				DisarmTransaction()
+			
+			ELSE
+				lOk1 := .T.
+			EndIf
+
+		End Transaction
+
+		/*
 		SX3->( dbSetOrder( 2 ) ) 
 		If SX3->( dbSeek( cCpoBaseD1 ) ) 
 			RecLock( "SX3" ) 
@@ -159,7 +202,8 @@ If lContinua .Or. l2Continua
 			SX3->X3_VALID := cVldValD1 
 			SX3->( MsUnLock() ) 		
 			lOk2 := .T. 		
-		EndIf  
+		EndIf 
+		*/
 		
 		cCpoBaseF1 := "F1_BASIMP" + cGrupo
 		cCpoAliqF1 := "F1_ALQIMP" + cGrupo
@@ -168,7 +212,50 @@ If lContinua .Or. l2Continua
 		cVldBaseF1 := 'MaFisRef("NF_BASEPS2","MT100",M->'+ cCpoBaseF1 + ')' 
 		cVldAliqF1 := 'MaFisRef("NF_ALIQPS2","MT100",M->'+ cCpoAliqF1 + ')' 
 		cVldValF1  := 'MaFisRef("NF_VALPS2","MT100",M->' + cCpoValF1  + ')' 
-		
+
+		Begin Transaction
+			cQuery1 := "UPDATE "+MPSysSqlName("SX3")+ " SET X3_VALID = " + cVldBaseF1 +" "
+			cQuery1 += "WHERE D_E_L_E_T_ = '' AND "
+			cQuery1 += "X3_CAMPO  = '" + cCpoBaseF1 + "'"
+
+			cQuery2 := "UPDATE "+MPSysSqlName("SX3")+ " SET X3_VALID = " + cVldAliqF1 +" "
+			cQuery2 += "WHERE D_E_L_E_T_ = '' AND "
+			cQuery2 += "X3_CAMPO  = '" + cCpoAliqF1 + "'"
+
+			cQuery3 := "UPDATE "+MPSysSqlName("SX3")+ " SET X3_VALID = " + cVldValF1 +" "
+			cQuery3 += "WHERE D_E_L_E_T_ = '' AND "
+			cQuery3 += "X3_CAMPO  = '" + cCpoValF1 + "'"
+
+			nErro := TcSqlExec(cQuery1)						
+			If nErro != 0
+				MsgStop("Erro na execução da query: "+TcSqlError(), "Atenção")
+				DisarmTransaction()
+			
+			ELSE
+				lOk1 := .T. 
+			EndIf
+
+			nErro := TcSqlExec(cQuery2)
+			If nErro != 0
+				MsgStop("Erro na execução da query: "+TcSqlError(), "Atenção")
+				DisarmTransaction()
+			
+			/*ELSE
+				lOk1 := .T.*/
+			EndIf
+
+			nErro := TcSqlExec(cQuery3)
+			If nErro != 0
+				MsgStop("Erro na execução da query: "+TcSqlError(), "Atenção")
+				DisarmTransaction()
+			
+			ELSE
+				lOk1 := .T.
+			EndIf
+
+		End Transaction
+
+		/*
 		SX3->( dbSetOrder( 2 ) ) 
 		If SX3->( dbSeek( cCpoBaseF1 ) ) 
 			RecLock( "SX3" ) 
@@ -190,7 +277,8 @@ If lContinua .Or. l2Continua
 			SX3->X3_VALID := cVldValF1 
 			SX3->( MsUnLock() ) 		
 			lOk4 := .T. 		
-		EndIf  
+		EndIf 
+		*/
 
 		cCpoBaseD2 := "D2_BASIMP" + cGrupo
 		cCpoAliqD2 := "D2_ALQIMP" + cGrupo
@@ -199,7 +287,50 @@ If lContinua .Or. l2Continua
 		cVldBaseD2 := 'MaFisRef("IT_BASEPS2","MT100",M->'+ cCpoBaseD2 + ')' 
 		cVldAliqD2 := 'MaFisRef("IT_ALIQPS2","MT100",M->'+ cCpoAliqD2 + ')' 
 		cVldValD2  := 'MaFisRef("IT_VALPS2","MT100",M->' + cCpoValD2  + ')' 
-		
+
+		Begin Transaction
+			cQuery1 := "UPDATE "+MPSysSqlName("SX3")+ " SET X3_VALID = " + cVldBaseD2 +" "
+			cQuery1 += "WHERE D_E_L_E_T_ = '' AND "
+			cQuery1 += "X3_CAMPO  = '" + cCpoBaseD2 + "'"
+
+			cQuery2 := "UPDATE "+MPSysSqlName("SX3")+ " SET X3_VALID = " + cVldAliqD2 +" "
+			cQuery2 += "WHERE D_E_L_E_T_ = '' AND "
+			cQuery2 += "X3_CAMPO  = '" + cCpoAliqD2 + "'"
+
+			cQuery3 := "UPDATE "+MPSysSqlName("SX3")+ " SET X3_VALID = " + cVldValD2 +" "
+			cQuery3 += "WHERE D_E_L_E_T_ = '' AND "
+			cQuery3 += "X3_CAMPO  = '" + cCpoValD2 + "'"
+
+			nErro := TcSqlExec(cQuery1)						
+			If nErro != 0
+				MsgStop("Erro na execução da query: "+TcSqlError(), "Atenção")
+				DisarmTransaction()
+			
+			ELSE
+				lOk1 := .T. 
+			EndIf
+
+			nErro := TcSqlExec(cQuery2)
+			If nErro != 0
+				MsgStop("Erro na execução da query: "+TcSqlError(), "Atenção")
+				DisarmTransaction()
+			
+			/*ELSE
+				lOk1 := .T.*/
+			EndIf
+
+			nErro := TcSqlExec(cQuery3)
+			If nErro != 0
+				MsgStop("Erro na execução da query: "+TcSqlError(), "Atenção")
+				DisarmTransaction()
+			
+			ELSE
+				lOk1 := .T.
+			EndIf
+
+		End Transaction
+
+		/*
 		SX3->( dbSetOrder( 2 ) ) 
 		If SX3->( dbSeek( cCpoBaseD2 ) ) 
 			RecLock( "SX3" ) 
@@ -221,7 +352,8 @@ If lContinua .Or. l2Continua
 			SX3->X3_VALID := cVldValD2 
 			SX3->( MsUnLock() ) 		
 			lOk2 := .T. 		
-		EndIf  
+		EndIf 
+		*/
 		
 		cCpoBaseF2 := "F2_BASIMP" + cGrupo
 		cCpoAliqF2 := "F2_ALQIMP" + cGrupo
@@ -231,6 +363,49 @@ If lContinua .Or. l2Continua
 		cVldAliqF2 := 'MaFisRef("NF_ALIQPS2","MT100",M->'+ cCpoAliqF2 + ')' 
 		cVldValF2  := 'MaFisRef("NF_VALPS2","MT100",M->' + cCpoValF2  + ')' 
 		
+		Begin Transaction
+			cQuery1 := "UPDATE "+MPSysSqlName("SX3")+ " SET X3_VALID = " + cVldBaseF2 +" "
+			cQuery1 += "WHERE D_E_L_E_T_ = '' AND "
+			cQuery1 += "X3_CAMPO  = '" + cCpoBaseF2 + "'"
+
+			cQuery2 := "UPDATE "+MPSysSqlName("SX3")+ " SET X3_VALID = " + cVldAliqF2 +" "
+			cQuery2 += "WHERE D_E_L_E_T_ = '' AND "
+			cQuery2 += "X3_CAMPO  = '" + cCpoAliqF2 + "'"
+
+			cQuery3 := "UPDATE "+MPSysSqlName("SX3")+ " SET X3_VALID = " + cVldValF2 +" "
+			cQuery3 += "WHERE D_E_L_E_T_ = '' AND "
+			cQuery3 += "X3_CAMPO  = '" + cCpoValF2 + "'"
+
+			nErro := TcSqlExec(cQuery1)						
+			If nErro != 0
+				MsgStop("Erro na execução da query: "+TcSqlError(), "Atenção")
+				DisarmTransaction()
+			
+			ELSE
+				lOk1 := .T. 
+			EndIf
+
+			nErro := TcSqlExec(cQuery2)
+			If nErro != 0
+				MsgStop("Erro na execução da query: "+TcSqlError(), "Atenção")
+				DisarmTransaction()
+			
+			/*ELSE
+				lOk1 := .T.*/
+			EndIf
+
+			nErro := TcSqlExec(cQuery3)
+			If nErro != 0
+				MsgStop("Erro na execução da query: "+TcSqlError(), "Atenção")
+				DisarmTransaction()
+			
+			ELSE
+				lOk1 := .T.
+			EndIf
+
+		End Transaction
+
+		/*
 		SX3->( dbSetOrder( 2 ) ) 
 		If SX3->( dbSeek( cCpoBaseF2 ) ) 
 			RecLock( "SX3" ) 
@@ -252,7 +427,9 @@ If lContinua .Or. l2Continua
 			SX3->X3_VALID := cVldValF2 
 			SX3->( MsUnLock() ) 		
 			lOk4 := .T. 		
-		EndIf  
+		EndIf 
+		*/
+		
 		If lOk1 .And. lOk2 .And. lOk3 .And. lOk4
 			Aviso( "Atencao", "Referencias atualizadas com sucesso !", { "Ok" }, 2 ) 
 		Else

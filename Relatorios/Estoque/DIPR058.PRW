@@ -770,7 +770,7 @@ cQuery += "      and DA_FILIAL = '"+xFilial('SDA')+"'"
 cQuery += "      and DA_LOCAL = '"+left(cLocal,2)+"'"
 cQuery += "      and DA_DATA BETWEEN '"+dTos(dUltDia+1)+"' AND '"+dTos(dDia-1)+"' ) ENDERECAR "
 
-cQuery += " FROM +RetSQLName("SB1")+" B1 with (nolock)"
+cQuery += " FROM "+RetSQLName("SB1")+" B1 with (nolock)"
 
 cQuery += " inner join "+RetSQLName("SB2")+" B2 with (nolock)"
 cQuery += "   on  B2.D_E_L_E_T_ <> '*'"

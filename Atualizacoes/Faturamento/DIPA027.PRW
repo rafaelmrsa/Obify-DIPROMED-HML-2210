@@ -239,7 +239,7 @@ While !SF2->(Eof()) .AND. xFILIAL("SF2") == SF2->F2_FILIAL .AND. cMarca == SF2->
 				RestArea(_AreaSF1)
 				RestArea(_AreaSD2)
 				RestArea(_AreaSF2)
-				Return
+				
 			Else
 				lExit=.T.
 			EndIf

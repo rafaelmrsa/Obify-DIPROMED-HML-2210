@@ -11,12 +11,13 @@
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 */
 User Function DIPA015()
-
 //³ Define Variaveis
 Local aArea     := GetArea()
 Local cCondicao 
 Local _aRadio   
-Local aIndSC9  
+Local aIndSC9
+Local oTempTable
+
 U_DIPPROC(ProcName(0),U_DipUsr()) // JBS 05/10/2005 - Gravando o nome do Programa no SZU
 xBotaoSai       := .T.
 _stru           := {}
@@ -280,9 +281,18 @@ AADD(_stru,{"RB_DTVALID","D",08,0})
 AADD(_stru,{"RB_LOCAL","C",02,0})
 AADD(_stru,{"RB_VEND","C",06,0}) 
 AADD(_stru,{"RB_FORNEC","C",06,0}) 
+/*
 cArq:=Criatrab(_stru,.T.)
-
 DBUSEAREA(.T.,,cArq,"TRB")
+*/
+	If(oTempTable <> NIL)
+		oTempTable:Delete()
+		oTempTable := NIL
+	EndIf
+	oTempTable := FWTemporaryTable():New("TRB")
+	oTempTable:SetFields( _stru )
+	//oTempTable:AddIndex("1", {"RB_STATUS", "RB_PEDIDO","RB_ITEM"} )
+	oTempTable:Create()
 
 Return
 ************************

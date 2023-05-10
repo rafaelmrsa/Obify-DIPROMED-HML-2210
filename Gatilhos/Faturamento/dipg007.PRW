@@ -91,7 +91,7 @@ If _lVldQtd
 					
 					If _cOrigem $ "MTA410/TMKVFIM/TMKVPA/TLVENT/M410GET"
 					   _lRetorno   := .T.
-					ElseIf !Empty(ReadVar()) .And. !(Type(ReadVar())=="U") // !("M410LIOK" $ Upper(ProcName(1)))
+					ElseIf !Empty(ReadVar()) .And. !(ReadVar())=="U" // !("M410LIOK" $ Upper(ProcName(1)))
 				       _lRetorno   := &(ReadVar())
 					EndIF
 				

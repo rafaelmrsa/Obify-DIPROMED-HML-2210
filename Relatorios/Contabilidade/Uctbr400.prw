@@ -2438,6 +2438,7 @@ Local nDecimais	:= 0
 Local cMensagem		:= "O plano gerencial nao esta disponivel nesse relatorio."// O plano gerencial nao esta disponivel nesse relatorio. 
 Local lCriaInd := .F.
 Local nTamFilial 	:= IIf( lFWCodFil, FWGETTAMFILIAL, TamSx3( "CT2_FILIAL" )[1] )
+Local oTempTable
 
 DEFAULT c2Moeda := ""
 DEFAULT nTipo	:= 1
@@ -2501,8 +2502,24 @@ If ( Select ( "cArqTmp" ) > 0 )
 	cArqTmp->(dbCloseArea())
 EndIf
 
+/*
 cArqTmp := CriaTrab(aCampos, .T.)
 dbUseArea( .T.,, cArqTmp, "cArqTmp", .F., .F. )
+*/
+
+If(oTempTable <> NIL)
+	oTempTable:Delete()
+	oTempTable := NIL
+EndIf
+oTempTable := FWTemporaryTable():New("cArqTmp")
+oTempTable:SetFields( aCampos )
+//oTempTable:AddIndex("1", {"LANCDEB_1", "LANCCRD_1"} )
+oTempTable:Create()
+
+//DbSelectArea("cArqTmp")
+//cArqTmp->(DbSetOrder(1))
+
+
 lCriaInd := .T.
 
 DbSelectArea("cArqTmp")

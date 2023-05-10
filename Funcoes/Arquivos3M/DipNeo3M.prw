@@ -173,7 +173,9 @@ Return cRetVal
 */
 User Function DipSeqZT(cChave)
 Local cRetSeq := StrZero(1,20)
-
+Local nResult := 0
+Local cSql := ""
+/*
 SX5->(dbSetOrder(1))
 If SX5->(dbSeek(xFilial("SX5")+"ZT"+cChave))
 	cRetSeq := Soma1(AllTrim(SX5->X5_DESCRI))
@@ -181,6 +183,18 @@ If SX5->(dbSeek(xFilial("SX5")+"ZT"+cChave))
 	SX5->(RecLock("SX5",.F.))
 		SX5->X5_DESCRI := cRetSeq
 	SX5->(MsUnLock())
+EndIf
+*/
+
+cSql := "SELECT SUM(X5_SEQUEN) FROM SX5 WHERE SX5_FILIAL = '" + xFilial("SX5") + "' AND SX5_CHAVE = 'ZT" + cChave + "'"
+
+nResult := DbExecSQL(cSql)
+
+If nResult >= 0
+    cRetSeq := AllTrim(DbGetFieldValue("","X",""))
+
+    cSql := "UPDATE SX5 SET X5_DESCRI = '" + cRetSeq + "' WHERE SX5_FILIAL = '" + xFilial("SX5") + "' AND SX5_CHAVE = 'ZT" + cChave + "'"
+    nResult := DbExecSQL(cSql)
 EndIf
 
 Return cRetSeq   

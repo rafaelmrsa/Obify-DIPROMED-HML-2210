@@ -81,6 +81,7 @@ Static Function fIntegra()
 Local nArq     := 0
 Local cFile    := ''
 Local lRet     := .T.
+Local oTempTable
 //-----------------------------------------------
 // Definicao dos Arquivos Textos
 //-----------------------------------------------
@@ -119,8 +120,21 @@ If File(cArquivo)
 	// Cria a tabela Temporaria
     //-------------------------------------------------------
     ConOut('Criando tabela temporaria de integracao de rota de CEP.')
+	/*
 	cFile:=CriaTrab(aEstr,.T.)
 	DbUseArea(.T.,,cFile,"INTEG",.F.,.F.)
+	*/
+
+	If(oTempTable <> NIL)
+		oTempTable:Delete()
+		oTempTable := NIL
+	EndIf
+	oTempTable := FWTemporaryTable():New("INTEG")
+	oTempTable:SetFields( aEstr )
+	oTempTable:Create()
+
+	DbSelectArea("INTEG")
+
 	//-------------------------------------------------------
 	// Le o arquivo texto e grava no arquivo de integracao
     //-------------------------------------------------------  

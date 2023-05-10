@@ -33,7 +33,7 @@ If Type("l410Auto") == "U" .Or. !l410Auto
     DA0->(dbSeek(xFilial("DA0")+_cTabPrc))
     IF DA0->DA0_ATIVO = "1"
         DA1->(dbSetOrder(1))
-        IF DA1->(dbSeek(xFilial("DA1")+_cTabPrc+aCols[n,nPosPro])) //blz.AND. DA1->DA1_XSTENT == 0 //PRODUTOS COM ST NÃO GATILHA
+        IF DA1->(dbSeek(xFilial("DA1")+_cTabPrc+aCols[n,nPosPro])) .AND. DA1->DA1_XSTENT == 0 //PRODUTOS COM ST NÃO GATILHA
             _nvalor := IIF(_cContrib <> "1".AND. _cEstado <> "SP", DA1->DA1_XPRCDI,DA1->DA1_PRCVEN)
         EndIf
     ELSE

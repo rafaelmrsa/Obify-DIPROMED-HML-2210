@@ -49,6 +49,7 @@ Local lOK		:= .F.
 Local cSQL 		:= ""                                                     
 Local lInverte 	:= .F.
 Local cDocAnt   := ""
+Local oTempTable
 Private lReenv	:= (nTipo==2)
 Private lDev	:= (nDev==2)
 Private lDipro	:= (nEmp==1)
@@ -85,6 +86,7 @@ aadd(aStrut,{"DTC_CLIREM"	, AvSx3("DTC_CLIREM",2),AvSx3("DTC_CLIREM",3),AvSx3("D
 aadd(aStrut,{"DTC_LOJREM"   , AvSx3("DTC_LOJREM",2),AvSx3("DTC_LOJREM",3),AvSx3("DTC_LOJREM",4)})
 aadd(aStrut,{"REC"   		,"N",15,0})
 
+/*
 cArqTRB := CriaTrab(aStrut, .T.)
 dbUseArea(.T.,,cArqTRB,"TRB_NF")
 
@@ -94,7 +96,19 @@ TRB_NF->(DbCreateIndex(cIndTRB,"DUD_FILORI+DUD_VIAGEM+DTC_NUMNFC+DTC_SERNFC" ,{|
 TRB_NF->(DbClearInd())
 TRB_NF->(DbSetIndex(cIndTRB))
 TRB_NF->(DbSetOrder(1))
+*/
+	If(oTempTable <> NIL)
+		oTempTable:Delete()
+		oTempTable := NIL
+	EndIf
+	oTempTable := FWTemporaryTable():New("TRB_NF")
+	oTempTable:SetFields( aStrut )
+	oTempTable:AddIndex("1", {"DUD_FILORI", "DUD_VIAGEM","DTC_NUMNFC","DTC_SERNFC"} )
+	oTempTable:Create()
 
+	DbSelectArea("TRB_NF")
+	TRB_NF->(DbSetOrder(1))
+	
 cSQL := " SELECT "
 cSQL += "  	DUD_FILORI, DUD_VIAGEM,DTC_DOC, DTC_SERIE, DTC_CLIDES, DTC_LOJDES, DTC_FILORI, DTC_NUMNFC, DTC_SERNFC, DTC_VALOR, "
 cSQL += "	DTC_EMINFC, DTC_CLIREM, DTC_LOJREM,"+RetSQLName("DTC")+".R_E_C_N_O_ REC " 
@@ -211,6 +225,7 @@ DEFINE MSDIALOG oDlg TITLE "Doctos para Averbação" From aSize[7],005 TO aSize[6]
 ACTIVATE MSDIALOG oDlg ON INIT (EnchoiceBar(oDlg,{|| DipExpArq(lDipro,lReenv,lEmove,lDev),oDlg:End()},{|| oDlg:End()}))
 
 TRB_NF->(dbCloseArea())
+oTempTable:Delete()
 
 Return                                        
 /*
