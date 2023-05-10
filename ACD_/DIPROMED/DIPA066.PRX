@@ -1,0 +1,561 @@
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "APVT100.CH"
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
+±±ºPrograma  ³NOVO20    ºAutor  ³Microsiga           º Data ³  11/30/12   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºDesc.     ³                                                            º±±
+±±º          ³                                                            º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºUso       ³ AP                                                        º±±
+±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/                
+User Function DIPA066()
+Private cArmazem  := Space(02)
+Private cLocaliz  := Space(15)  
+
+If !Upper(AllTrim(U_DipUsr()))$Upper(GetNewPar("ES_USRERIR","DDOMINGOS,RBORGES,MCANUTO,HSOUSA"))
+	VTAlert("Usuário sem acesso à rotina.","Atenção",.T.,4000,3)		
+	Return
+EndIf
+
+                   
+If TelaEnd()
+	ZZC->(dbSetOrder(1))
+	If !ZZC->(dbSeek(xFilial("ZZC")+cArmazem+cLocaliz+DtoS(dDataBase)))
+		CopiaSBF()     
+	EndIf			
+	If !ZZC->ZZC_STATUS$"1/3"
+		VTAlert("Processo de contagem já finalizado.","Atenção",.T.,4000,3)		
+	Else
+		Contagem()	
+	EndIf
+EndIf
+
+Return 
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
+±±ºPrograma  ³DIPA066   ºAutor  ³Microsiga           º Data ³  07/10/14   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºDesc.     ³                                                            º±±
+±±º          ³                                                            º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºUso       ³ AP                                                        º±±
+±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+Static Function TelaEnd()
+Local lRet      := .F.
+Local aTela   	:= {} 
+
+dbSelectArea("SBE")
+
+aTela := VtSave()
+VtClear()
+
+@ 0,0 VTSay "Endereço"
+@ 2,0 VTSay "Informe o endereço"
+@ 3,0 VTSay "que será inventari"
+@ 4,0 VTSay "ado."                            
+@ 5,0 VTGet cArmazem pict "@!" valid !Empty(cArmazem)
+@ 5,2 VTSay "-"
+@ 5,3 VTGet cLocaliz pict "@!" valid VtLastKey()==5 .or. (lRet:=VldCodEnd(cArmazem,cLocaliz))
+
+VTRead
+
+If lRet .And. VtLastKey() == 27
+	If VTYesNo("Confirma a saida?","Atencao",.T.)
+		lRet := .F.
+	Endif
+EndIf
+
+Return lRet    
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
+±±ºPrograma  ³DIPA066   ºAutor  ³Microsiga           º Data ³  07/10/14   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºDesc.     ³                                                            º±±
+±±º          ³                                                            º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºUso       ³ AP                                                        º±±
+±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+Static Function Contagem()
+Local nDipQtd   := 0
+Local cProduto  := Space(25)
+Local cPicQtdExp:= PesqPict("CB8","CB8_QTDORI")
+Local lSai 		:= .F.
+
+ZZC->(RecLock("ZZC",.F.))
+	ZZC->ZZC_STATUS := "1"
+ZZC->(MsUnLock())
+
+aTela := VtSave()
+VtClear()              
+
+While !lSai
+
+	nDipQtd   := 0
+	cProduto  := Space(25)
+	
+	@ 0,0 VTSay "Leia o Produto"
+	@ 2,0 VTSay "Quantidade:" 
+	@ 3,0 VtGet nDipQtd pict cPicQtdExp
+	@ 4,0 VTSay "Produto"
+	@ 5,0 VTGet cProduto pict '@!' VALID VTLastkey() == 5 .or. VldPrd066(cProduto,nDipQtd)
+	
+	VTRead
+	
+	If VtLastKey() == 27
+		If VTYesNo("Deseja finalizar o inventário do endereço "+cArmazem+"-"+cLocaliz+"?","Atencao",.T.)
+			If Dip66Ok()         
+				VTAlert("Inventário SEM divergências. Vá para o próximo endereço.","Atenção",.T.,7000,3)		
+				ZZC->(RecLock("ZZC",.F.))
+					u_DipBlqEnd(ZZC->ZZC_LOCAL,ZZC->ZZC_LOCALI,StoD(""))
+					ZZC->ZZC_STATUS := "4"
+				ZZC->(MsUnLock())							
+			Else
+				VTAlert("Inventário COM divergências.","Atenção",.T.,7000,3)		
+				ZZC->(RecLock("ZZC",.F.))
+					ZZC->ZZC_STATUS := "2"
+				ZZC->(MsUnLock())
+			EndIf
+			
+			lSai := .T.
+		ElseIf VTYesNo("Deseja sair?","Atencao",.T.)
+			ZZC->(RecLock("ZZC",.F.))
+				ZZC->ZZC_STATUS := "3"
+			ZZC->(MsUnLock())
+			lSai := .T.
+		Endif
+	EndIf
+EndDo
+	
+Return
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
+±±ºPrograma  ³DIPA066   ºAutor  ³Microsiga           º Data ³  07/10/14   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºDesc.     ³                                                            º±±
+±±º          ³                                                            º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºUso       ³ AP                                                        º±±
+±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+Static Function VldCodEnd(cArmazem,cLocaliz)
+Local lRet := .F.                  
+DEFAULT cArmazem := ""
+DEFAULT cLocaliz := ""
+
+SBE->(dbSetOrder(1))
+lRet := SBE->(dbSeek("04"+cArmazem+cLocaliz))
+
+If lRet 
+	If VldRegras(cArmazem,cLocaliz)
+		u_DipBlqEnd(cArmazem,cLocaliz,dDataBase)
+	Else
+		lRet := .F.
+	EndIf
+Else
+	VTAlert("Endereço não encontrado","Atenção",.T.,4000,3)
+EndIf
+
+Return lRet
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
+±±ºPrograma  ³DIPA066   ºAutor  ³Microsiga           º Data ³  07/10/14   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºDesc.     ³                                                            º±±
+±±º          ³                                                            º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºUso       ³ AP                                                        º±±
+±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+Static Function CopiaSBF()
+Local cSQL := ""        
+
+cSQl := " SELECT
+cSQl += "  	BF_PRODUTO, BF_LOCAL, BF_LOCALIZ, BF_LOTECTL, SUM(BF_QUANT)-SUM(BF_EMPENHO) BF_QUANT, "
+cSQl += "  	SUM(BF_QTSEGUM)-SUM(BF_EMPEN2) BF_QTSEGUM "
+cSQl += " 	FROM "
+cSQl += 		RetSQLName("SBF")
+cSQl += " 		WHERE "
+cSQl += " 			BF_LOCAL = '"+cArmazem+"' AND "
+cSQl += " 			BF_LOCALIZ = '"+cLocaliz+"' AND "
+cSQl += " 			BF_QUANT > 0 AND "
+cSQl += " 			D_E_L_E_T_ = ' ' "
+cSQl += " GROUP BY BF_PRODUTO, BF_LOCAL, BF_LOCALIZ, BF_LOTECTL "
+
+cSQL := ChangeQuery(cSQL)
+dbUseArea(.T.,"TOPCONN",TcGenQry(,,cSQL),"QRYSBF",.T.,.T.)  
+
+TCSETFIELD("QRYSBF","BF_QUANT"  ,"N",12,4)
+TCSETFIELD("QRYSBF","BF_QTSEGUM","N",12,4)
+
+ZZC->(RecLock("ZZC",.T.))
+	ZZC->ZZC_FILIAL := xFilial("ZZC")
+	ZZC->ZZC_LOCAL  := cArmazem
+	ZZC->ZZC_LOCALI := cLocaliz
+	ZZC->ZZC_STATUS := "1"
+	ZZC->ZZC_USUARI := Upper(U_DipUsr())
+	ZZC->ZZC_DATA   := dDataBase
+	ZZC->ZZC_HORA	:= SubStr(Time(),1,2)+":"+SubStr(Time(),4,2)
+ZZC->(MsUnLock())
+	       
+While !QRYSBF->(Eof())
+	ZZD->(RecLock("ZZD",.T.))
+		ZZD->ZZD_FILIAL	 := xFilial("ZZD")
+		ZZD->ZZD_PRODUT  := QRYSBF->BF_PRODUTO
+		ZZD->ZZD_LOCAL   := QRYSBF->BF_LOCAL
+		ZZD->ZZD_LOCALIZ := QRYSBF->BF_LOCALIZ
+		ZZD->ZZD_LOTECTL := QRYSBF->BF_LOTECTL
+		ZZD->ZZD_QUANT   := QRYSBF->BF_QUANT
+		ZZD->ZZD_QTSEGUM := QRYSBF->BF_QTSEGUM
+		ZZD->ZZD_TIPREG  := "A" //A-Automático ou I-Informado
+		ZZD->ZZD_DATA    := dDataBase
+	ZZD->(MsUnLock())
+	QRYSBF->(dbSkip())
+EndDo
+QRYSBF->(dbCloseArea())                                  
+
+Return
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
+±±ºPrograma  ³DIPA066   ºAutor  ³Microsiga           º Data ³  07/23/14   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºDesc.     ³                                                            º±±
+±±º          ³                                                            º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºUso       ³ AP                                                        º±±
+±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+Static Function VldPrd066(cProduto,nDipQtd)
+Local lRet := .F.
+
+If !Empty(cProduto)
+	ZZD->(DbSetOrder(2))
+	If ZZD->(dbSeek(xFilial("ZZD")+cProduto+cArmazem+cLocaliz+DtoS(dDataBase)))
+		ZZD->(RecLock("ZZD",.F.))
+			ZZD->ZZD_QTCONT := nDipQtd
+			ZZD->ZZD_QTELEI := nDipQtd
+		ZZD->(MsUnLock())           
+	Else  
+		ZZD->(RecLock("ZZD",.T.))
+			ZZD->ZZD_FILIAL	 := xFilial("ZZD")
+			ZZD->ZZD_PRODUT  := SubStr(cProduto,1,15)
+			ZZD->ZZD_LOCAL   := cArmazem
+			ZZD->ZZD_LOCALIZ := cLocaliz
+			ZZD->ZZD_LOTECTL := SubStr(cProduto,16,10)
+			ZZD->ZZD_QUANT   := 0
+			ZZD->ZZD_QTSEGUM := 0
+			ZZD->ZZD_TIPREG  := "I" //A-Automático ou I-Informado
+			ZZD->ZZD_QTCONT  := nDipQtd
+			ZZD->ZZD_QTELEI  := nDipQtd
+			ZZD->ZZD_DATA    := dDataBase
+		ZZD->(MsUnLock())
+	EndIf
+	
+	SB8->(dbSetOrder(3))
+	If SB8->(dbSeek("04"+SubStr(cProduto,1,15)+cArmazem+SubStr(cProduto,16,10)))    
+		If VTYesNo("Validade: "+DtoC(SB8->B8_DTVALID),"Confirma?",.T.)
+			ZZD->(RecLock("ZZD",.F.))
+				ZZD->ZZD_DTVAOK := "1"
+			ZZD->(MsUnLock()) 
+		Else
+			ZZD->(RecLock("ZZD",.F.))
+				ZZD->ZZD_DTVAOK := "2"
+			ZZD->(MsUnLock())
+		Endif                  
+	ElseIf SB8->(dbSeek("01"+SubStr(cProduto,1,15)+cArmazem+SubStr(cProduto,16,10)))    
+		If VTYesNo("Validade: "+DtoC(SB8->B8_DTVALID),"Confirma?",.T.)
+			ZZD->(RecLock("ZZD",.F.))
+				ZZD->ZZD_DTVAOK := "1"
+			ZZD->(MsUnLock()) 
+		Else
+			ZZD->(RecLock("ZZD",.F.))
+				ZZD->ZZD_DTVAOK := "2"
+			ZZD->(MsUnLock())
+		Endif                  
+	EndIf
+	lRet := .T.
+EndIf
+
+Return lRet
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
+±±ºPrograma  ³DIPA066   ºAutor  ³Microsiga           º Data ³  07/28/14   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºDesc.     ³                                                            º±±
+±±º          ³                                                            º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºUso       ³ AP                                                        º±±
+±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+Static Function Dip66Ok()
+Local lRet := .F.
+Local cSQL := ""
+
+cSQL := " SELECT "
+cSQL += " 	ZZD_LOCAL, ZZD_LOCALI, ZZD_PRODUT, ZZD_LOTECT, ZZD_QUANT, ZZD_QTCONT, ZZD_QTELEI "
+cSQL += " 	FROM "
+cSQL += 		RetSQLName("ZZD")
+cSQL += " 		WHERE "             
+cSQL += "			ZZD_FILIAL = '"+xFilial("ZZD")+"' AND "
+cSQL += " 			ZZD_LOCAL  = '"+ZZC->ZZC_LOCAL+"' AND "
+cSQL += " 			ZZD_LOCALI = '"+ZZC->ZZC_LOCALI+"' AND "
+cSQL += " 			ZZD_DATA   = '"+DtoS(ZZC->ZZC_DATA)+"' AND "
+cSQL += " 			(ZZD_TIPREG = 'I' OR "
+cSQL += " 			(ZZD_TIPREG = 'A' AND ZZD_QUANT <> ZZD_QTCONT)) AND "
+cSQL += " 			D_E_L_E_T_ = ' ' "
+
+cSQL := ChangeQuery(cSQL)
+dbUseArea(.T.,"TOPCONN",TcGenQry(,,cSQL),"QRYZZD",.T.,.T.)
+
+lRet := QRYZZD->(Eof())
+QRYZZD->(dbCloseArea())
+		
+Return lRet
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
+±±ºPrograma  ³DIPA066   ºAutor  ³Microsiga           º Data ³  07/28/14   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºDesc.     ³                                                            º±±
+±±º          ³                                                            º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºUso       ³ AP                                                        º±±
+±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+Static Function VldRegras(cArmazem,cLocaliz)
+Local lRet       := .T.
+Local cSQL       := ""
+Local nContMax   := 0
+Local cZeraRua   := .F.
+DEFAULT cArmazem := ""
+DEFAULT cLocaliz := ""
+
+
+//Endereço bloqueado - STATUS = 3
+If SBE->BE_STATUS == '3'
+	VTAlert("Endereço "+AllTrim(SBE->BE_LOCALIZ)+" não precisa de inventário. Vá para o próximo endereço.","Atenção",.T.,4000,3)
+	lRet := .F.
+EndIf
+
+//Se já foi feita pelo menos uma contagem, começo as verificações
+If lRet .And. SBE->BE_XNRCONT > 0
+	//Acho a contagem atual (max)
+	cSQL := " SELECT " 
+	cSQL += " 	MAX(BE_XNRCONT) CONTAGEM "
+	cSQL += " 	FROM " 
+	cSQL +=  		RetSQLName("SBE")
+	cSQL += " 		WHERE "
+	cSQL += " 			BE_FILIAL = '04' AND "
+	cSQL += " 			BE_LOCAL = '"+cArmazem+"' AND "
+	cSQL += " 			BE_STATUS <> '3' AND "				
+	cSQL += " 			BE_PRIOR NOT IN(' ','ZZZ') AND "
+	cSQL += " 			D_E_L_E_T_ = ' '  "
+	
+	cSQL := ChangeQuery(cSQL)
+	dbUseArea(.T.,"TOPCONN",TcGenQry(,,cSQL),"QRYMAX",.T.,.T.)
+	
+	If !QRYMAX->(Eof())
+		nContMax := QRYMAX->CONTAGEM
+	EndIf
+	QRYMAX->(dbCloseArea())
+
+	//Verifico se existem endereços pendentes na contagem anterior ou se posso liberar uma nova contagem
+	If SBE->BE_XNRCONT >= nContMax
+		cSQL := " SELECT " 
+		cSQL += " 	BE_LOCALIZ "
+		cSQL += " 	FROM " 
+		cSQL +=  		RetSQLName("SBE")
+		cSQL += " 		WHERE "
+		cSQL += " 			BE_FILIAL = '04' AND "
+		cSQL += " 			BE_LOCAL = '"+cArmazem+"' AND "
+		cSQL += " 			BE_STATUS <> '3' AND "
+		cSQL += " 			BE_XDATCON = ' ' AND "			
+		cSQL += " 			BE_PRIOR NOT IN(' ','ZZZ') AND "
+		cSQL += " 			BE_XNRCONT < "+StrZero(nContMax,1)+" AND "			
+		cSQL += " 			D_E_L_E_T_ = ' '  "
+		cSQL += " ORDER BY BE_LOCALIZ "
+	
+		cSQL := ChangeQuery(cSQL)
+		dbUseArea(.T.,"TOPCONN",TcGenQry(,,cSQL),"QRYCON",.T.,.T.)
+		
+		If QRYCON->(Eof())
+			//Se não existir, habilito uma nova contagem (apaga dados da contagem anterior)
+			VTAlert("Parabéns! Você finalizou uma contagem completa no estoque DIPROMED. Reiniciando endereços para nova contagem.","Atenção",.T.,4000,3)
+			DipDelRot()						
+		Else
+			//Se existir, não libera o endereço informado.
+			VTAlert("Endereço "+AllTrim(SBE->BE_LOCALIZ)+" já contado anteriormente.","Atenção",.T.,4000,3)
+			VTAlert("Vá para o endereço: "+AllTrim(QRYCON->BE_LOCALIZ),"Atenção",.T.,4000,3)
+			lRet := .F.	
+
+		EndIf
+		QRYCON->(dbCloseArea())		
+	EndIf
+EndIf
+
+//Agora vou verificar se existe rua pendente para o usuário.
+If lRet
+	If !Empty(SBE->BE_XUSUROT) .And. SBE->BE_XUSUROT <> Upper(AllTrim(U_DipUsr()))
+		VTAlert("O usuário "+SBE->BE_XUSUROT+" já iniciou a contagem neste endereço.","Atenção",.T.,4000,3)
+		lRet := .F.
+	Else
+		cSQL := " SELECT " 
+		cSQL += " 	BE_LOCALIZ " 
+		cSQL += " 	FROM " 
+		cSQL +=  		RetSQLName("SBE")
+		cSQL += " 		WHERE "
+		cSQL += " 			BE_FILIAL  = '04' AND "
+		cSQL += " 			BE_LOCAL   = '"+cArmazem+"' AND "
+		cSQL += " 			BE_STATUS <> '3' AND "
+		cSQL += " 			BE_XUSUROT = '"+Upper(AllTrim(U_DipUsr()))+"' AND "
+		cSQL += " 			BE_PRIOR NOT IN(' ','ZZZ') AND "
+		cSQL += " 			BE_XDATCON = ' ' AND "			
+		cSQL += " 			D_E_L_E_T_ = ' ' "
+		cSQL += " ORDER BY BE_LOCALIZ "  
+		
+		cSQL := ChangeQuery(cSQL)
+		dbUseArea(.T.,"TOPCONN",TcGenQry(,,cSQL),"QRYSBE",.T.,.T.)
+		
+		If !QRYSBE->(Eof())
+			if Left(cLocaliz,2)<>Left(QRYSBE->BE_LOCALIZ,2)
+				VTAlert("Falta concluir a contagem no lado "+Left(QRYSBE->BE_LOCALIZ,2)+". Vá para o endereço: "+AllTrim(QRYSBE->BE_LOCALIZ)+".","Atenção",.T.,4000,3)
+				lRet := .F.
+			EndIf
+		/*Else //Desativado em 23/02/2021 Maximo
+			If cZeraRua
+				DipGrvRua(cLocaliz)*/
+		EndIf
+		QRYSBE->(dbCloseArea())
+	EndIf
+EndIf
+
+Return lRet
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
+±±ºPrograma  ³DIPA066   ºAutor  ³Microsiga           º Data ³  07/28/14   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºDesc.     ³                                                            º±±
+±±º          ³                                                            º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºUso       ³ AP                                                        º±±
+±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+Static Function DipDelRot()
+Local aAreaSBE := SBE->(GetArea())
+Local cSQL := ""
+
+//Apaga as informações do inventário para iniciar uma nova contagem
+cSQL := " SELECT " 
+cSQL += " 	R_E_C_N_O_ REC " 
+cSQL += " 	FROM " 
+cSQL +=  		RetSQLName("SBE")
+cSQL += " 		WHERE "
+cSQL += " 			BE_FILIAL  = '04' AND "
+cSQL += " 			BE_LOCAL   = '"+cArmazem+"' AND "
+cSQL += " 			BE_STATUS <> '3' AND "			
+cSQL += " 			BE_PRIOR NOT IN(' ','ZZZ') AND "
+cSQL += " 			D_E_L_E_T_ = ' ' " 
+
+cSQL := ChangeQuery(cSQL)
+dbUseArea(.T.,"TOPCONN",TcGenQry(,,cSQL),"GRVDEL",.T.,.T.)
+
+While !GRVDEL->(Eof())
+	SBE->(dbGoTo(GRVDEL->REC))
+	SBE->(RecLock("SBE",.F.))
+		SBE->BE_XUSUROT := ""
+		SBE->BE_XDATCON := STOD(' ')	
+		If SBE->BE_XNRCONT == 9
+			SBE->BE_XNRCONT := 0
+		EndIf	
+	SBE->(MsUnLock())
+	GRVDEL->(dbSkip())
+EndDo
+GRVDEL->(dbCloseArea())
+
+RestArea(aAreaSBE)
+	
+Return 
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
+±±ºPrograma  ³DIPA066   ºAutor  ³Microsiga           º Data ³  07/28/14   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºDesc.     ³                                                            º±±
+±±º          ³                                                            º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºUso       ³ AP                                                        º±±
+±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+Static Function DipGrvRua(cLocaliz)
+Local aAreaSBE := SBE->(GetArea())
+Local cSQL := ""
+//Grava a Rua com os dados do usuário
+cSQL := " SELECT " 
+cSQL += " 	R_E_C_N_O_ REC " 
+cSQL += " 	FROM " 
+cSQL +=  		RetSQLName("SBE")
+cSQL += " 		WHERE "
+cSQL += " 			BE_FILIAL  = '04' AND "
+cSQL += " 			BE_LOCAL   = '"+cArmazem+"' AND "
+cSQL += " 			BE_STATUS <> '3' AND "	
+cSQL += " 			LEFT(BE_LOCALIZ,2) = '"+Left(cLocaliz,2)+"' AND
+cSQL += " 			BE_PRIOR NOT IN(' ','ZZZ') AND "			
+cSQL += " 			D_E_L_E_T_ = ' ' " 
+
+cSQL := ChangeQuery(cSQL)
+dbUseArea(.T.,"TOPCONN",TcGenQry(,,cSQL),"GRVRUA",.T.,.T.)	
+
+While !GRVRUA->(Eof())
+	SBE->(dbGoTo(GRVRUA->REC))
+	SBE->(RecLock("SBE",.F.))
+		SBE->BE_XUSUROT := Upper(AllTrim(U_DipUsr()))
+		SBE->BE_XDATCON := STOD(' ')		
+	SBE->(MsUnLock())
+	GRVRUA->(dbSkip())
+EndDo
+GRVRUA->(dbCloseArea())
+	
+RestArea(aAreaSBE)
+	
+Return 

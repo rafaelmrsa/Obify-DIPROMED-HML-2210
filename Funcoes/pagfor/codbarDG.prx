@@ -1,0 +1,41 @@
+#include "rwmake.ch"        // incluido pelo assistente de conversao do AP5 IDE em 19/11/99
+
+User Function Codbardg()        // incluido pelo assistente de conversao do AP5 IDE em 19/11/99
+
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³ Declaracao de variaveis utilizadas no programa atraves da funcao    ³
+//³ SetPrvt, que criara somente as variaveis definidas pelo usuario,    ³
+//³ identificando as variaveis publicas do sistema utilizadas no codigo ³
+//³ Incluido pelo assistente de conversao do AP5 IDE                    ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+SetPrvt("LRET,CSTR,I,NMULT,NMODULO,CCHAR")
+SetPrvt("CDIGITO,CDV1,CDV2,CDV3,CCAMPO1,CCAMPO2")
+SetPrvt("CCAMPO3,NVAL,NCALC_DV1,NCALC_DV2,NCALC_DV3,NREST")
+
+/*/
+¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
+¦¦+-----------------------------------------------------------------------+¦¦
+¦¦¦Funçào    ¦ CODBARDG ¦ Autor ¦ Eliana Pinto          ¦ Data ¦ 29/03/05 ¦¦¦
+¦¦+----------+------------------------------------------------------------¦¦¦
+¦¦¦Descriçào ¦ Calculo do codigo de barras a partir da linha digitavel    ¦¦¦
+¦¦+-----------------------------------------------------------------------+¦¦
+¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
+/*/
+
+if ValType(M->E2_LD) == NIL
+// Substituido pelo assistente de conversao do AP5 IDE em 19/11/99 ==>   __Return(.t.)
+  Return(" ")        // incluido pelo assistente de conversao do AP5 IDE em 19/11/99
+Endif
+
+cStr := M->E2_LD
+                               
+If Len(Alltrim(M->E2_LD))==47
+
+   cCodBar := Substr(M->E2_LD,1,4)+Substr(M->E2_LD,33,15)+Substr(M->E2_LD,5,5)+Substr(M->E2_LD,11,10)+Substr(M->E2_LD,22,10)
+  
+   Return(cCodBar)        // incluido pelo assistente de conversao do AP5 IDE em 19/11/99
+
+EndIf
+
+

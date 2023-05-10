@@ -1,0 +1,134 @@
+#include "rwmake.ch"        // incluido pelo assistente de conversao do AP5 IDE em 26/09/00
+#INCLUDE "PROTHEUS.CH"
+User Function Pagacta()        // incluido pelo assistente de conversao do AP5 IDE em 26/09/00
+
+//ฺฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฟ
+//ณ Declaracao de variaveis utilizadas no programa atraves da funcao    ณ
+//ณ SetPrvt, que criara somente as variaveis definidas pelo usuario,    ณ
+//ณ identificando as variaveis publicas do sistema utilizadas no codigo ณ
+//ณ Incluido pelo assistente de conversao do AP5 IDE                    ณ
+//ภฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤู
+
+SetPrvt("_CTACED,_RETDIG,_DIG1,_DIG2,_DIG3,_DIG4,_NPOSDV")
+SetPrvt("_DIG5,_DIG6,_DIG7,_MULT,_RESUL,_RESTO")
+SetPrvt("_DIGITO,")
+
+/////  PROGRAMA PARA SEPARAR A C/C DO CODIGO DE BARRA
+/////  CNAB BRADESCO A PAGAR (PAGFOR) - POSICOES (105-119)
+
+_CtaCed := "000000000000000"
+_cBanco := SUBSTR(SE2->E2_CODBAR,1,3)
+Do Case
+   Case _cBanco == "237"	// BRADESCO
+
+    _CtaCed  :=  STRZERO(VAL(SUBSTR(SE2->E2_CODBAR,37,7)),13,0)
+    
+    _RETDIG := " "
+    _DIG1   := SUBSTR(SE2->E2_CODBAR,37,1)
+    _DIG2   := SUBSTR(SE2->E2_CODBAR,38,1)
+    _DIG3   := SUBSTR(SE2->E2_CODBAR,39,1)
+    _DIG4   := SUBSTR(SE2->E2_CODBAR,40,1)
+    _DIG5   := SUBSTR(SE2->E2_CODBAR,41,1)
+    _DIG6   := SUBSTR(SE2->E2_CODBAR,42,1)
+    _DIG7   := SUBSTR(SE2->E2_CODBAR,43,1)
+    
+    _MULT   := (VAL(_DIG1)*2) +  (VAL(_DIG2)*7) +  (VAL(_DIG3)*6) +   (VAL(_DIG4)*5) +  (VAL(_DIG5)*4) +  (VAL(_DIG6)*3)  + (VAL(_DIG7)*2)
+    _RESUL  := INT(_MULT /11 )
+    _RESTO  := INT(_MULT % 11)
+    _DIGITO := STRZERO((11 - _RESTO),1,0)
+
+    _RETDIG := IF( _resto == 0,"0",IF(_resto == 1,"P",_DIGITO))
+
+    _CtaCed := _CtaCed + _RETDIG
+   
+OTHERWISE
+	_nPosDV := AT("-",SA2->A2_NUMCON)
+	IF _nPosDV == 0              
+		If AllTrim(SA2->A2_BANCO) == '237' 
+			 _CtaCed := REPL("0",10-LEN(LTRIM(RTRIM(SA2->A2_NUMCON))))+LTRIM(RTRIM(SA2->A2_NUMCON))
+			 _CtaCed := Substr(_CtaCed,2,7)   
+			 // Ajusta Digito verificador 20/01/11
+			 CalcDigCC(_Ctaced)	
+		ElseIf AllTrim(SA2->A2_BANCO) == '001'
+			_CtaCed := StrZero(Val(SA2->A2_NUMCON),13)
+			_CtaCed += CalcDVBB(_CtaCed)
+		EndIf
+	ELSE
+		_CtaCed := SUBSTR(SA2->A2_NUMCON,1,_nPosDV-1)
+		_CtaCed := REPL("0",13-LEN(_CtaCed))+_CtaCed
+		_CtaCed := _CtaCed+SUBSTR(SA2->A2_NUMCON,_nPosDV+1,2)
+	ENDIF
+ENDCASE
+        
+
+
+Return(_CtaCed)
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
+ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
+ฑฑบPrograma  ณPAGACTA   บAutor  ณMicrosiga           บ Data ณ  12/26/12   บฑฑ
+ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
+ฑฑบDesc.     ณ                                                            บฑฑ
+ฑฑบ          ณ                                                            บฑฑ
+ฑฑฬออออออออออุออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออนฑฑ
+ฑฑบUso       ณ AP                                                        บฑฑ
+ฑฑศออออออออออฯออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออผฑฑ
+ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
+฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿
+*/
+Static Function CalcDigCC()   
+Local Modulo, StrMult, BaseDac, vardac
+
+modulo := 11
+strmult := "2765432"
+BaseDac := _CtaCed
+varDAC  := 0
+FOR idac := 1 TO Len(_CtaCed)
+	varDAC := VarDac+VAL (SUBSTR (baseDAC, idac, 1)) * VAL (SUBSTR (strmult, idac, 1))
+NEXT
+varDAC  := modulo - varDAC % modulo
+varDAC  := IF (varDAC == 10, "P", IF (varDAC == 11, "0", STR (vardac, 1)))
+varDAC  := If(Len(alltrim(varDAC))=1,varDAC+" ",varDAC)
+_CtaCed:= STRZERO(VAL(_Ctaced),13,0)+vardac
+
+Return(_CtaCed)   
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
+ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
+ฑฑบPrograma  ณPAGACTA   บAutor  ณMicrosiga           บ Data ณ  12/26/12   บฑฑ
+ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
+ฑฑบDesc.     ณ                                                            บฑฑ
+ฑฑบ          ณ                                                            บฑฑ
+ฑฑฬออออออออออุออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออนฑฑ
+ฑฑบUso       ณ AP                                                        บฑฑ
+ฑฑศออออออออออฯออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออผฑฑ
+ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
+฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿
+*/
+Static Function CalcDVBB(_CtaCed)     
+Local nAux 	:= 0     
+Local cDV	:= ""
+DEFAULT _CtaCed := ""
+
+_CtaCed := Right(AllTrim(_CtaCed),8)
+
+nAux := 9*Val(SubStr(_CtaCed,1,1))
+nAux += 8*Val(SubStr(_CtaCed,2,1))
+nAux += 7*Val(SubStr(_CtaCed,3,1))
+nAux += 6*Val(SubStr(_CtaCed,4,1))
+nAux += 5*Val(SubStr(_CtaCed,5,1))
+nAux += 4*Val(SubStr(_CtaCed,6,1))
+nAux += 3*Val(SubStr(_CtaCed,7,1))
+nAux += 2*Val(SubStr(_CtaCed,8,1))
+
+cDV := AllTrim(Str(11-Mod(nAux,11)))
+
+If cDV == "10"
+	cDV := "X"
+ElseIf cDV == "11"
+	cDV := "0"
+EndIf
+
+Return cDV

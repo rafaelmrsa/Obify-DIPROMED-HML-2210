@@ -1,0 +1,1291 @@
+/*                                                    Sao Paulo,  26 Ago 2005
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
+±±ºPrograma  ³DIPR058   ºAutor  ³Jailton B Santos,JBSº Data ³  26/08/06   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºDesc.     ³                                                            º±±
+±±º          ³                                                            º±±
+±±º          ³ Gerar um relatorio que mostre um ranking dos produtos mais º±±
+±±º          ³ movimentados e menos movimentados.                         º±±
+±±º          ³ Versão 1.0                                                 º±±
+±±º          ³ Funão chamada direto do menu DIPREST.MNU                   º±±
+±±º          ³                                                            º±±
+±±º          ³ Reestruturação: 23 Fev 2006 (JBS)                          º±±
+±±º          ³ Buscar os saldo de cada produto, estipulando um periodo    º±±
+±±º          ³                                                            º±±
+±±º          ³                                                            º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºUso       ³ DIPOMED Comércio e Importação Ltda.                        º±±
+±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³aProduto{} Movimentação dos produtos. Movimentação das Tabelas SB9, SD1, SD2,SD3  ³
+//³aProduto[x,1] Codigo do Produto                                                   ³
+//³aProduto[x,2] Quantidade que entrou no estoque                                    ³
+//³aProduto[x,3] Quantidade que saiu do estoque                                      ³
+//³aProduto[x,4] Saldo inicial da data do fechamento                                 ³
+//³aProduto[x,5] Saldo em estoque na data informada                                  ³
+//³aPrdouto[x,6] Saldo a Endereca                                                    ³
+//³                                                                                  ³
+//³aProdutoEnd{} Movimentação dos produtos, guardados por lote e endereço. Tabela SBK³
+//³aProdutoEnd[x,1] Codigo do Produto                                                ³
+//³aProdutoEnd[x,2] Lote do Produto                                                  ³
+//³aProdutoEnd[x,3] Endereço do Produto                                              ³
+//³aProdutoEnd[x,4] Quantidade que entrou no estoque                                 ³
+//³aProdutoEnd[x,5] Quantidade que saiu do estoque                                   ³
+//³aProdutoEnd[x,6] Saldo inicial da data do fechamento                              ³
+//³aProdutoEnd[x,7] Saldo em estoque na data informada                               ³
+//³                                                                                  ³
+//³                                                                                  ³
+//³aObrigat{} Movimentação dos produtos. Movimentação das Tabelas SB9, SD1, SD2,SD3  ³
+//³aObrigat[x,1] Codigo do Produto                                                   ³
+//³aObrigat[x,2] Quantidade que entrou no estoque                                    ³
+//³aObrigat[x,3] Quantidade que saiu do estoque                                      ³
+//³aObrigat[x,4] Saldo inicial da data do fechamento                                 ³
+//³aObrigat[x,5] Saldo em estoque na data informada                                  ³
+//³aObrigat[x,6] Saldo a Enderecar                                                   ³
+//³                                                                                  ³
+//³                                                                                  ³
+//³aObrigatEnd[x,1] Codigo do Produto                                                ³
+//³aObrigatEnd[x,2] Lote do Produto                                                  ³
+//³aObrigatEnd[x,3] Endereço do Produto                                              ³
+//³aObrigatEnd[x,4] Quantidade que entrou no estoque                                 ³
+//³aObrigatEnd[x,5] Quantidade que saiu do estoque                                   ³
+//³aObrigatEnd[x,6] Saldo inicial da data do fechamento                              ³
+//³aObrigatEnd[x,7] Saldo em estoque na data informada                               ³
+//³                                                                                  ³
+//³aProdutoSem[x,1] Codigo do Produto                                                ³
+//³aProdutoSem[x,2] Lote do Produto                                                  ³
+//³aProdutoSem[x,3] Endereço do Produto                                              ³
+//³aProdutoSem[x,4] Quantidade que entrou no estoque                                 ³
+//³aProdutoSem[x,5] Quantidade que saiu do estoque                                   ³
+//³aProdutoSem[x,6] Saldo inicial da data do fechamento                              ³
+//³aProdutoSem[x,7] Saldo em estoque na data informada                               ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "TOPCONN.CH"
+#DEFINE ENTER CHR(13)+CHR(10)
+#DEFINE say_tit 1
+#DEFINE say_det 2
+#DEFINE say_rep 3               
+*----------------------------------------------*
+User Function Dipr058()
+*----------------------------------------------*
+Local bOk:={|| nOpcao:=1,oDlg:End()}
+Local oDlg
+Local oBt1
+Local oBt2
+Local oQuebra
+Local oPelaData
+Local oAtuDtInv
+Local lWork
+Local nOpcao:=0
+Local nProdCtObr:=0 // Quantidade Codigos de contagem obrigatoria digitados pelo usuario
+Local cUserAut  := GetMV("MV_URELFAT") // MCVN - 04/05/09 
+
+
+Private aDados:={}
+Private aProduto:={}
+Private aObrigat:={}
+Private aProdutoEnd:={}
+Private aObrigatEnd:={}
+Private aProdutoSem:={}
+Private dUltDia:=GetMV("MV_ULMES")
+
+//Private cPerg:= "BIPR58"
+// FPADR(cPerg, cArq, cCampo, cTipo)  - Para ajustar o tamanho das perguntas no SX1- uso generico
+PRIVATE cPerg  	:= U_FPADR( "DIPR58","SX1","SX1->X1_GRUPO"," " ) //Função criada por Sandro em 19/11/09.
+
+Private dDia
+Private cLocal
+Private cQtde
+Private cCtobr:=space(309)
+Private cContObr:=space(309)
+Private cFornecedor
+Private aReturn:={"Zebrado", 1,"Administracao", 1, 2, 1,"",1}
+Private nLastKey:=0
+Private aRCampos:={}
+Private aStru:={}
+Private cArqWork
+Private cUltimo:=""
+Private lQuebra:=.f.
+Private lPelaData:=.f.
+Private lAtuDtInv:=.f.
+Private cProd:=""
+Private nQEnd:=0
+Private nQProd:=0
+Private cFilSB2:=xFilial("SB2")
+
+U_DIPPROC(ProcName(0),U_DipUsr()) // MCVN - 22/01/2009  
+
+// MCVN - 04/05/09    
+If !(Upper(U_DipUsr()) $ cUserAut)
+	Alert(Upper(U_DipUsr())+", você não tem autorização para utilizar esta rotina. Qualquer dúvida falar com Eriberto!","Atenção")	
+	Return()
+EndIF 
+
+dDia:=dDataBase
+
+cLocal:='01'
+cQtde:='05'
+cFornecedor:=space(06)
+//-----------------------------
+// Configurações do Relatorio
+//-----------------------------
+aAdd(aDados,"WORK")
+aAdd(aDados,OemTOAnsi("Contagem do dia ",72))    // 02
+aAdd(aDados,OemToAnsi("Produtos Mais movimentados e os Sem movimentação",72))// 03
+aAdd(aDados,OemToAnsi("Dentro de um periodo",72))       // 04
+aAdd(aDados,"G")              // 05
+aAdd(aDados,200)              // 06
+aAdd(aDados,"Classificado pela Descrição e Endereço") // 07
+aAdd(aDados,"")               // 08
+aAdd(aDados,OemTOAnsi("Iventario diario de Produtos",72))
+aAdd(aDados,aReturn)          // 10
+aAdd(aDados,"DIPR058")        // 11
+aAdd(aDados,{{||DIPR058Quebra()},{||Dipr058Final()}})  //aAdd(aDados,{{||.t.},{||.t.}})// 12
+aAdd(aDados,Nil)              // 13
+//------------------------
+// Estrutura para a Work
+//------------------------
+aAdd(aStru,{"WK_TIPMOV" ,"C",1,0})
+aAdd(aStru,{"WK_TIP"    ,"C",1,0})
+aAdd(aStru,{"D2_COD"    ,AvSx3("D2_COD",2)    ,AvSx3("D2_COD",3)    ,AvSx3("D2_COD",4)})
+aAdd(aStru,{"B1_COD"    ,AvSx3("B1_COD",2)    ,AvSx3("B1_COD",3)    ,AvSx3("B1_COD",4)})
+aAdd(aStru,{"B2_COD"    ,AvSx3("B1_COD",2)    ,AvSx3("B1_COD",3)    ,AvSx3("B1_COD",4)})
+aAdd(aStru,{"BF_PRODUTO",AvSx3("BF_PRODUTO",2),AvSx3("BF_PRODUTO",3),AvSx3("BF_PRODUTO",4)})
+aAdd(aStru,{"B1_DESC"   ,AvSx3("B1_DESC",2)   ,AvSx3("B1_DESC",3)   ,AvSx3("B1_DESC",4)})
+aAdd(aStru,{"B2_DESC"   ,AvSx3("B1_DESC",2)   ,AvSx3("B1_DESC",3)   ,AvSx3("B1_DESC",4)})
+aAdd(aStru,{"B1_UM"     ,AvSx3("B1_UM",2)     ,AvSx3("B1_UM",3)     ,AvSx3("B1_UM",4)})
+aAdd(aStru,{"B1_RASTRO" ,AvSx3("B1_RASTRO",2) ,AvSx3("B1_RASTRO",3) ,AvSx3("B1_RASTRO",4)})
+aAdd(aStru,{"B1_LOCALIZ",AvSx3("B1_LOCALIZ",2),AvSx3("B1_LOCALIZ",3),AvSx3("B1_LOCALIZ",4)})
+aAdd(aStru,{"BF_LOCALIZ",AvSx3("BF_LOCALIZ",2),08,0})
+aAdd(aStru,{"BF_LOTECTL",AvSx3("BF_LOTECTL",2),AvSx3("BF_LOTECTL",3),AvSx3("BF_LOTECTL",4)})
+aAdd(aStru,{"D2_QUANT"  ,"C",11,0})
+aAdd(aStru,{"BF_QUANT"  ,"C",11,0})
+aAdd(aStru,{"B2_QATU"   ,"C",11,0})
+aAdd(aStru,{"B2_QACLASS","C",11,0})
+aAdd(aStru,{"WK_CONTAGE","C",15,0})
+
+SX1->(DipPergDiverg(.t.)) // Verifica se existe o no SX1 o "DIP057". Retorna os Valores ou cria
+
+Define msDialog oDlg title OemToAnsi("Inventario Diario") From 09,10 TO 25,45
+
+@ 002,002 to 103,136 pixel
+
+@ 010,010 say "Dia da Contagem " Pixel
+@ 020,010 say "Almoxarifado" Pixel
+@ 030,010 say "Quantos itens"  Pixel
+@ 070,010 say "Fornecedor" Pixel
+@ 084,010 say "Itens de Contagem obrigatoria" Pixel
+
+@ 010,080 get dDia   Valid dDia > dUltDia Size 40,08 pixel
+@ 020,080 get cLocal valid !Empty(cLocal) Size 40,08 pixel
+@ 030,080 get cQtde  Valid !Empty(cQtde) .and.cQtde>="01".and.cQtde<="99" Size 40,08 pixel
+@ 040,010 checkbox oQuebra var lQuebra   PROMPT "Quebra por tipo" size 110,008 of oDlg
+If Upper(U_DipUsr()) $ "ERIBERTO/MAXIMO/DIEGO/VICTOR/VANDER/REGINALDO/MCANUTO/EELIAS/DDOMINGOS/VQUEIROZ/VEGON/RBORGES"
+//	@ 050,010 checkbox oPelaData var lPelaData PROMPT "Pela Data" size 110,008 of oDlg on change DP58SeleRel(oPelaData,oAtuDtInv,oBt1)
+	@ 060,010 checkbox oAtuDtInv var lAtuDtInv PROMPT "Atualiza Data" size 110,008 of oDlg on change DP58SeleRel(oPelaData,oAtuDtInv,oBt1)
+EndIf
+@ 070,080 msget cFornecedor F3 'SA2' valid Dipr058ExistFor() Size 40,08 pixel
+@ 090,010 get cCtobr  Size 110,08 pixel
+
+Define sbutton oBt1 from 108,079 type 1 action Eval(bOK) enable of oDlg
+Define sbutton oBt2 from 108,109 type 2 action (nOpcao := 0, oDlg:End()) enable of oDlg
+
+Activate Dialog oDlg Centered
+
+If nOpcao = 0
+	Return(.t.)
+EndIf
+//--------------------------------
+// Registra no SX1 a alteração
+// dos parametros do pergunte.
+//--------------------------------
+SX1->(DipPergDiverg(.f.))
+//--------------------------------
+// Conta qtos codigos foram infor-
+// mados para contagem obrigatoria
+//--------------------------------
+If !Empty(cCtobr)
+	nProdCtObr:=If(right(AllTrim(cCtobr),1)='/',0,1)
+	For x:=1 to len(cCtobr)
+		If SubStr(cCtobr,x,1)= '/'
+			nProdCtObr++
+		EndIf
+	Next
+	cContObr:="'"+StrTran(AllTrim(cCtobr),"/","','")+"'"
+EndIf
+//--------------------------------
+// Estrutura em que o Relatorio
+// Será gerado.
+//--------------------------------
+aRCampos:= {}
+aAdd(aRCampos,{"WK_TIP"    ,"","M","@!"})                                     // 01
+aAdd(aRCampos,{"B2_COD"    ,"",AvSx3("B1_COD",5)    ,AvSx3("B1_COD",6)    })  // 02
+aAdd(aRCampos,{"B2_DESC"   ,"",AvSx3("B1_DESC",5)   ,AvSx3("B1_DESC",6)   })  // 03
+aAdd(aRCampos,{"B1_UM"     ,"",AvSx3("B1_UM",5)     ,AvSx3("B1_UM",6)     })  // 04
+aAdd(aRCampos,{"B1_RASTRO" ,"",AvSx3("B1_RASTRO",5) ,AvSx3("B1_RASTRO",6) })  // 05
+aAdd(aRCampos,{"B1_LOCALIZ","","Localizacao"        ,AvSx3("B1_LOCALIZ",6)})  // 06
+aAdd(aRCampos,{"BF_LOTECTL","",AvSx3("BF_LOTECTL",5),AvSx3("BF_LOTECTL",6)})  // 07
+aAdd(aRCampos,{"B2_QATU"   ,"","Estoque"            ,"@!"})                   // 08
+aAdd(aRCampos,{"BF_LOCALIZ","","Endereco"           ,AvSx3("BF_LOCALIZ",6)})  // 09
+aAdd(aRCampos,{"BF_QUANT"  ,"","Por Endereco"       ,"@!"})                   // 10
+aAdd(aRCampos,{"WK_CONTAGE","","Contagem"           ,"@!"})                   // 11
+aAdd(aRCampos,{"B2_QACLASS","","A Enderecar"        ,"@!"})                   // 12
+aRCampos:=E_CriaRCampos(aRCampos,"E")
+aRCampos[04,3]:="C" // Ajusta Centralizado
+aRCampos[05,3]:="C" // Ajusta Centralizado
+aRCampos[06,3]:="C" // Ajusta Centralizado
+aRCampos[07,3]:="E" // Ajusta a Esquerda
+aRCampos[08,3]:="D" // Ajusta a Direita
+aRCampos[09,3]:="D" // Ajusta a Direita
+aRCampos[10,3]:="D" // Ajusta a Direita
+aRCampos[11,3]:="C" // Ajusta Centralizado
+aRCampos[12,3]:="D" // Ajusta a Direita
+If Empty(cFornecedor)
+	aDados[02]:=aDados[09]:=OemTOAnsi("Contagem do dia " + dtoc(dDia) + " ( S "+AllTrim(Str(val(cQtde)))+", N "+AllTrim(Str(val(cQtde)))+If(nProdCtObr>0,", * "+AllTrim(Str(nProdCtObr)),"")+" )",72)
+else
+	aDados[02]:=aDados[09]:=OemTOAnsi("Contagem do dia " + dtoc(dDia) + " ( Fornecedor "+cFornecedor+"-"+AllTrim(SA2->A2_NOME)+" )",72)
+	//    aAdd(aDados,"Classificado pela Descrição e Endereço") // 07
+EndIf
+aDados[08]:=OemTOAnsi('Parametros: Quebra['+If(lQuebra,'X',' ')+'] - Pela Data['+If(lPelaData,'X',' ')+'] - Atualiza Data['+If(lAtuDtInv,'X',' ')+']')
+//--------------------------------
+// Monta array aProduto
+//--------------------------------
+Processa({|| Dip58B9Saldo()},"Montando saldos dos produtos (SB9)",,.t.)
+//--------------------------------
+// Monta array aProdutoEnd
+//--------------------------------
+If Len(aProduto)>0
+	Processa({|| Dip58BKSaldo()},"Montando saldos dos produtos (A)",,.t.)
+	
+	If Empty(cFornecedor)
+		Processa({|| Dipr58Obrigat()},"Montando Contagem Obrigataria (C)",,.t.)
+		Processa({|| Dipr58ProdSem()},"Montando saldos dos produtos (B)",,.t.)
+	EndIf
+EndIf
+//--------------------------------
+// Usa as  informações dos  arrays
+// acima para gerar o arquivo tem-
+// porario do qual  sera  impresso
+// o relatorio.
+//--------------------------------
+Processa({|| lWork := DIPR58GrvWork(nProdCtObr)},"Gravando o Arquivo Temporario...",,.t.)
+//--------------------------------
+// Gera o Retlatorio
+//--------------------------------
+aReturn	:= {"Zebrado", 1,"Administracao", 1, 2, 1,"",1}
+aDados[10]:=aReturn
+Work->(dbGotop())
+Work->(E_Report(aDados,aRCampos))
+//--------------------------------
+//Elimina os arquivos temporarios
+//--------------------------------
+Work->(E_EraseArq(cArqWork))
+RETURN(.t.)
+*----------------------------------*
+STATIC FUNCTION Dipr058ExistFor()
+*----------------------------------*
+Local lRetorno := .t.
+If !Empty(cFornecedor)
+	SA2->(dbSetOrder(1))
+	If !(lRetorno:=SA2->(dbSeek(xFilial('SA2')+cFornecedor)))
+		MsgInfo('Codigo de Fornecedor informado não está cadastrado.','Atenção')
+	EndIf
+EndIf
+RETURN(lRetorno)
+*----------------------------------*
+STATIC FUNCTION DIPR58CriaWork()
+*----------------------------------*
+dbSelectArea('SB9')
+cArqWork:=E_CriaTrab(,aStru,"WORK")
+If !lQuebra
+	Indregua("WORK",cArqWork,"B1_DESC+BF_LOCALIZ",,,"Criando indices Temporarios")
+Else
+	Indregua("WORK",cArqWork,"WK_TIPMOV+B1_DESC+BF_LOCALIZ",,,"Criando indices Temporarios")
+EndIf
+RETURN(.t.)
+
+*----------------------------------------*
+STATIC FUNCTION DIPR58GrvWork(nProdCtObr)
+*----------------------------------------*
+Local nCount:=200
+Local nQ
+Local i
+Local nPos
+Local lContou
+Local nProd := 1
+Local cCodPro := ""
+Local nSaldoSBF
+Local nSaldoEmp
+Local cFil_SB1 := xFilial('SB1')
+Private aHeader:={}
+Private aCampos:={}
+
+DIPR58CriaWork()
+
+//aSort(aProduto,,,{ |x,y| x[3] > y[3] } ) // Ordem de Mais vendidos
+aSort(aProdutoEnd,,,{ |x,y| x[1]+x[2]+x[3] < y[1]+y[2]+y[3] } ) // Ordem de Codigo Lote e Endereço
+
+SB1->(dbSetorder(1))
+SB2->(dbSetOrder(1))
+
+ProcRegua(Len(aProduto))
+
+For x:=1 to Len(aProduto)
+	
+	IncProc("(+) Gravando Temporario " + AllTrim(aProduto[x,1]))
+	
+	If AllTrim(aProduto[x,1])$cContObr
+		loop
+	EndIf
+	
+	nPos:=Ascan(aProdutoEnd,{|a| a[1]==aProduto[x,1]})
+	SB1->(dbSeek(cFil_SB1+aProduto[x,1]))
+	lContou := .f.
+	Do While npos>0.and.nPos<=Len(aProdutoEnd) .and. aProdutoEnd[nPos,1] == aProduto[x,1]
+		
+		If !aProdutoEnd[nPos,7]>0 .and. !empty(aProdutoEnd[nPos][3])
+			nPos++
+			loop
+		EndIf
+	
+		lContou := .t.
+
+		Work->(RecLock("Work",.T.))
+		Work->WK_TIPMOV  := "A"
+		Work->B1_COD     := aProdutoEnd[nPos][1]
+		Work->BF_LOTECTL := aProdutoEnd[nPos][2]
+		Work->BF_LOCALIZ := aProdutoEnd[nPos][3]
+		Work->WK_CONTAGE := Replicate("_",len(Work->WK_CONTAGE))
+		Work->B1_DESC    := SB1->B1_DESC
+		
+		SB2->(dbSeek(xFilial("SB2")+aProduto[x,1]+cLocal))
+		
+		If lAtuDtInv
+			// Registra a nova data de Inventario no SB2
+			SB2->(RecLock("SB2",.f.))
+			SB2->B2_DINVENT:=dDia
+			SB2->B2_RANKMOV:='A'
+			SB2->(MsUnlock("SB2"))
+		EndIf
+		//
+		// Grava registro da Query na Work
+		//
+		Work->WK_TIP    := "S"
+		Work->B2_COD    := aProduto[x,1]
+		Work->B1_UM     := SB1->B1_UM
+		Work->B1_RASTRO := SB1->B1_RASTRO
+		Work->B1_LOCALIZ:= SB1->B1_LOCALIZ
+		If aProduto[x,6] > 0
+			Work->B2_QACLASS  := Transform(aProduto[x,6], "@KE 999,999,999")
+		EndIf
+		If aProduto[x,5] > 0
+			Work->B2_QATU   := Transform(aProduto[x,5], "@KE 999,999,999")
+		EndIf
+		Work->B2_DESC   := SB1->B1_DESC
+		
+		If aProduto[x,3] > 0
+			Work->D2_QUANT := Transform(aProduto[x,3],"@KE 999,999,999")
+		EndIf
+		If aProdutoEnd[nPos,7] > 0
+			Work->BF_QUANT := Transform(aProdutoEnd[nPos,7],"@KE 999,999,999")
+		EndIf
+		
+		Work->(MsUnlock("Work"))
+		
+		nPos++
+		
+	EndDo
+	If lContou
+	nProd++
+	EndIf
+	If Empty(cFornecedor) .and. nProd > Val(cQtde).and.!lPelaData
+		Exit
+	EndIf
+	
+Next
+
+If Empty(cFornecedor)
+	
+	nProd:=1
+	cCodPro:=""
+	
+	SB1->(dbSetorder(1))
+	SB2->(dbSetOrder(1))
+	
+	aSort(aProdutoSem,,,{ |x,y| x[1]+x[2]+x[3] < y[1]+y[2]+y[3] } ) // Ordem de Codigo Lote e Endereço
+	
+	ProcRegua(Len(aProdutoSem))
+	
+	For x:=1 to Len(aProdutoSem)
+		
+		IncProc("(-) Gravando Temporario " + AllTrim(aProdutoSem[x,1]))
+		
+		SB1->(dbSeek(cFil_SB1+aProdutoSem[x,1]))
+		
+		Work->(RecLock("Work",.T.))
+		Work->WK_TIPMOV  := "B"
+		Work->B1_COD     := aProdutoSem[x][1]
+		Work->BF_LOTECTL := aProdutoSem[x][2]
+		Work->BF_LOCALIZ := aProdutoSem[x][3]
+		Work->WK_CONTAGE := Replicate("_",len(Work->WK_CONTAGE))
+		Work->B1_DESC    := SB1->B1_DESC
+		
+		SB2->(dbSeek(xFilial("SB2")+aProdutoSem[x,1]+cLocal)) // JBS 21/02/2006
+		
+		If lAtuDtInv
+			//--------------------------------------------
+			// Registra a nova data de Inventario no SB2
+			//--------------------------------------------
+			SB2->(RecLock("SB2",.f.))
+			SB2->B2_DINVENT:= dDia
+			SB2->B2_RANKMOV:='B'
+			SB2->(MsUnlock("SB2"))
+		EndIf
+		//----------------------------------
+		// Grava registro da Query na Work
+		//----------------------------------
+		Work->WK_TIP    := "N"
+		Work->B2_COD    := aProdutoSem[x,1]
+		Work->B1_UM     := SB1->B1_UM
+		Work->B1_RASTRO := SB1->B1_RASTRO
+		Work->B1_LOCALIZ:= SB1->B1_LOCALIZ
+		//Work->B2_QATU   := Transform(aProdutoSem[x,7], "@KE 999,999,999")
+		Work->B2_DESC   := SB1->B1_DESC
+		If aProdutoSem[x,8] > 0
+			Work->B2_QACLASS  := Transform(aProdutoSem[x,8], "@KE 999,999,999")
+		EndIf
+		
+		If aProdutoSem[x,5] > 0
+			Work->D2_QUANT := Transform(aProdutoSem[x,5],"@KE 999,999,999")
+			Work->BF_QUANT := Transform(aProdutoSem[x,5],"@KE 999,999,999")
+		EndIf
+		If aProdutoSem[x,7] > 0
+			Work->B2_QATU  := Transform(aProdutoSem[x,7],"@KE 999,999,999")
+		EndIf
+		
+		Work->(MsUnlock("Work"))
+		
+	Next
+EndIf
+If Empty(cFornecedor) .and. (!Empty(cContObr).or.lPelaData)
+	
+	aSort(aObrigatEnd,,,{ |x,y| x[1]+x[2]+x[3] < y[1]+y[2]+y[3] } ) // Ordem de Codigo Lote e Endereço
+	
+	nProd  := 1
+	cCodPro:= ""
+	
+	SB1->(dbSetorder(1))
+	SB2->(dbSetOrder(1))
+	
+	ProcRegua(Len(aObrigat))
+	
+	
+	For x:=1 to Len(aObrigat)
+		
+		IncProc("(*) Gravando Temporario " + AllTrim(aObrigat[x,1]))
+		
+		nPos:=Ascan(aObrigatEnd,{|a| a[1]==aObrigat[x,1]})
+		SB1->(dbSeek(cFil_SB1+aObrigat[x,1]))
+		
+		Do While nPos<=Len(aObrigatEnd) .and. aObrigatEnd[nPos,1] == aObrigat[x,1]
+			
+			If !aObrigatEnd[nPos,7]>0 .and. !empty(aObrigatEnd[nPos][3])
+				nPos++
+				loop
+			EndIf
+			
+			Work->(RecLock("Work",.T.))
+			Work->WK_TIPMOV  := "C"
+			Work->B1_COD     := aObrigatEnd[nPos][1]
+			Work->BF_LOTECTL := aObrigatEnd[nPos][2]
+			Work->BF_LOCALIZ := aObrigatEnd[nPos][3]
+			Work->WK_CONTAGE := Replicate("_",len(Work->WK_CONTAGE))
+			Work->B1_DESC    := SB1->B1_DESC
+			
+			SB2->(dbSeek(xFilial("SB2")+aObrigatEnd[nPos,1]+cLocal)) // JBS 21/02/2006
+			
+			If lAtuDtInv
+				// Registra a nova data de Inventario no SB2
+				SB2->(RecLock("SB2",.f.))
+				SB2->B2_DINVENT:= dDia
+				SB2->B2_RANKMOV:='C'
+				SB2->(MsUnlock("SB2"))
+			EndIf
+			//
+			// Grava registro da Query na Work
+			//
+			Work->WK_TIP    := "*"
+			Work->B2_COD    := aObrigatEnd[nPos,1]
+			Work->B1_UM     := SB1->B1_UM
+			Work->B1_RASTRO := SB1->B1_RASTRO
+			Work->B1_LOCALIZ:= SB1->B1_LOCALIZ
+			If aObrigat[x,6] > 0
+				Work->B2_QACLASS  := Transform(aObrigat[x,6], "@KE 999,999,999")
+			EndIf
+			If aObrigat[x,5] > 0
+				Work->B2_QATU   := Transform(aObrigat[x,5], "@KE 999,999,999")
+			EndIf
+			Work->B2_DESC   := SB1->B1_DESC
+			
+			If aObrigat[x,5] > 0
+				Work->D2_QUANT := Transform(aObrigat[x,3],"@KE 999,999,999")
+			EndIf
+			If aObrigatEnd[nPos,7] > 0
+				Work->BF_QUANT := Transform(aObrigatEnd[nPos,7],"@KE 999,999,999")
+			EndIf
+			
+			Work->(MsUnlock("Work"))
+			nPos++
+			
+		EndDo
+		
+		nProd++
+		cCodPro := aObrigat[x,1]
+		
+		If nProd > nProdCtObr.and.!lPelaData
+			Exit
+		EndIf
+		
+	Next
+EndIf
+cCodPro:=''
+Work->(dbGotop())
+Procregua(Work->(Reccount()))
+Do While Work->(!EOF())
+	IncProc("Preparando impressão do Prod " + AllTrim(Work->B1_COD)+ "...  ")
+	
+	
+	If cCodPro <> Work->B1_COD
+		cCodPro:=Work->B1_COD
+		Work->(dbSkip())
+		Loop
+	EndIf
+	Work->(RecLock("Work",.f.))
+	Work->WK_TIP:=''
+	Work->B2_COD:=''
+	Work->B1_UM:=''
+	Work->B1_RASTRO:=''
+	Work->B1_LOCALIZ:=''
+	Work->B2_QATU:=''
+	Work->B2_DESC:=''
+	Work->B2_QACLASS := ''
+	//	If Empty(Work->BF_QUANT)
+	//		Work->(dbDelete())
+	//	EndIf
+	cCodPro:=Work->B1_COD
+	Work->(MsUnlock("Work"))
+	Work->(dbSkip())
+EndDo
+Return(.t.)      
+
+
+*---------------------------------------*
+Static Function DipPergDiverg(lLer)
+// Registra alterações no SX1
+*---------------------------------------*
+Local aRegs:={}
+Local lIncluir
+Local i,j
+SX1->(dbSetOrder(1))
+
+aAdd(aRegs,{cPerg,"01","Local            ?","","","MV_CH1","C",002,0,0,"G","","MV_PAR01","","","", cLocal,"","","","","","","","","","",""})
+aAdd(aRegs,{cPerg,"02","Itens no Ranking ?","","","MV_CH2","C",002,0,0,"G","","MV_PAR02","","","", cQtde ,"","","","","","","","","","",""})
+aAdd(aRegs,{cPerg,"03","Contagem Obrigat.?","","","MV_CH3","C",040,0,0,"G","","MV_PAR03","","","", SubStr(cCtobr,001,40),"","","","","","","","","","",""})
+aAdd(aRegs,{cPerg,"04","Contagem Obrigat.?","","","MV_CH4","C",040,0,0,"G","","MV_PAR04","","","", SubStr(cCtobr,041,40),"","","","","","","","","","",""})
+aAdd(aRegs,{cPerg,"05","Contagem Obrigat.?","","","MV_CH5","C",040,0,0,"G","","MV_PAR05","","","", SubStr(cCtobr,081,40),"","","","","","","","","","",""})
+aAdd(aRegs,{cPerg,"06","Contagem Obrigat.?","","","MV_CH6","C",040,0,0,"G","","MV_PAR06","","","", SubStr(cCtobr,121,40),"","","","","","","","","","",""})
+aAdd(aRegs,{cPerg,"07","Contagem Obrigat.?","","","MV_CH7","C",040,0,0,"G","","MV_PAR07","","","", SubStr(cCtobr,161,40),"","","","","","","","","","",""})
+aAdd(aRegs,{cPerg,"08","Contagem Obrigat.?","","","MV_CH8","C",040,0,0,"G","","MV_PAR08","","","", SubStr(cCtobr,201,40),"","","","","","","","","","",""})
+aAdd(aRegs,{cPerg,"09","Contagem Obrigat.?","","","MV_CH9","C",040,0,0,"G","","MV_PAR09","","","", SubStr(cCtobr,241,40),"","","","","","","","","","",""})
+aAdd(aRegs,{cPerg,"10","Contagem Obrigat.?","","","MV_CHA","C",034,0,0,"G","","MV_PAR10","","","", SubStr(cCtobr,281,34),"","","","","","","","","","",""})
+aAdd(aRegs,{cPerg,"11","Data             ?","","","MV_CHB","D",008,0,0,"G","","MV_PAR11","","","","'"+dToc(dDia)+"'","","","","","","","","","","",""})
+aAdd(aRegs,{cPerg,"12","Fornecedor       ?","","","MV_CHC","C",006,0,0,"G","","MV_PAR12","","","", cFornecedor,"","","","","","","","","","",""})
+For i:=1 to len(aRegs)
+	lIncluir:=!SX1->(dbSeek(cPerg+aRegs[i,2]))
+	If !lIncluir.and.lLer
+		aRegs[i,17]:=SX1->X1_CNT01
+	EndIf
+	SX1->(RecLock("SX1",lIncluir))
+	For j:=1 to SX1->(FCount())
+		If j <= len(aRegs[i])
+			SX1->(FieldPut(j,aRegs[i,j]))
+		Endif
+	Next
+	SX1->(MsUnlock("SX1"))
+Next
+cLocal:=Left(aRegs[01,17],2)
+cQtde :=Left(aRegs[02,17],2)
+cCtobr:=aRegs[03,17]+aRegs[04,17]+aRegs[05,17]+aRegs[06,17]+aRegs[07,17]+aRegs[08,17]+aRegs[09,17]+left(aRegs[10,17],34)
+dDia:=cTod(StrTran(aRegs[11,17],"'",""))
+cFornecedor:=Left(aRegs[12,17],6)
+Return(.t.)
+*-------------------------------*
+Static Function DIPR058Quebra()
+*-------------------------------*
+If !Empty(cProd) .and. cProd != Work->B1_COD
+	linha++
+	If nQProd > 1
+		@ linha, 130 psay '------------'
+		linha++
+		@ linha, 131 psay Transform(nQEnd,"@KE 999,999,999")
+		linha++
+	EndIf
+	nQEnd:=0
+	nQProd:=0
+EndIf
+If Work->WK_TIPMOV == "B" .and. cUltimo == "A" .and.lQuebra
+	Roda(0,Space(10),"M")
+	linha := 56
+	DIPR058Cabec()
+ElseIf Work->WK_TIPMOV == "C" .and. cUltimo == "B" .and.lQuebra
+	Roda(0,Space(10),"M")
+	linha := 56
+	DIPR058Cabec()
+ElseIf linha>=55
+	Roda(0,Space(10),"M")
+	linha := 56
+	DIPR058Cabec()
+EndIf
+cUltimo := Work->WK_TIPMOV
+cProd := Work->B1_COD
+nQEnd += Val(StrTran(Work->BF_QUANT,".",""))
+nQProd++
+RETURN .T.
+*-------------------------------*
+Static Function Dipr058Final()
+*-------------------------------*
+RETURN(.T.)
+*-------------------------------*
+Static Function DIPR058Cabec()
+*-------------------------------*
+local b_lin :={|valor,ind| F_Ler_Tab(R_Campos,ind)}
+Local tamanho := Adados[5]
+Local nAsterisco
+Do Case
+	Case Tamanho=="P";nAsterisco:=80
+	Case Tamanho=="M";nAsterisco:=132
+	Case Tamanho=="G";nAsterisco:=220
+EndCase
+If Linha>55
+	Cabec(titulo,cabec1,cabec2,nomeprog,tamanho,GetMv("MV_COMP"))
+	If Empty(cabec1) .And. Empty(cabec2)
+		@ PROW()+1,T_Len[1,2]-1 PSAY REPLI('*',nAsterisco)
+	Endif
+	Linha:=PROW()+1 ; l_tag:=say_tit
+	AEVAL(R_Campos, b_lin)
+	Linha++ ; l_tag:=say_rep
+	AEVAL(R_Campos, b_lin)
+Endif
+RETURN(.T.)
+*-----------------------------------------------------*
+Static function DP58SeleRel(oPelaData,oAtuDtInv,oBt1)
+*-----------------------------------------------------*
+If lPeladata
+	lAtuDtInv:=.f.
+	oPelaData:Enable()
+	oAtuDtInv:Disable()
+	oPelaData:Refresh()
+	oAtuDtInv:Refresh()
+ElseIf lAtuDtInv
+//	oPelaData:Disable()
+	oAtuDtInv:Enable()
+//	oPelaData:Refresh()
+	oAtuDtInv:Refresh()
+Else
+//	oPelaData:Enable()
+	oAtuDtInv:Enable()
+//	oPelaData:Refresh()
+	oAtuDtInv:Refresh()
+EndIf
+oBt1:SetFocus()
+RETURN(.T.)
+
+//-------------------------------------
+// Apura o Saldo no  periodo informado
+// entre a data de fechamento do mes
+// anterior e a data informada pelo
+// usuario.
+//-------------------------------------
+Static function Dip58B9Saldo()
+//-------------------------------------
+Local cQuery
+Local nCount := 1000
+
+aProduto := {}
+
+cQuery := " SELECT (B1_COD) CODIGO, (B1_DESC) DESCRICAO, (B1_UM) UM, (B1_RASTRO) RASTRO, (B1_LOCALIZ) LOCALIZ, (B2_DINVENT) DT_INVENTARIO, (B9_QINI) INICIO, "
+
+cQuery += " (  SELECT SUM(D1_QUANT) FROM "+RetSQLName("SD1")+" D1 with (nolock) "
+cQuery += "       inner join "+RetSQLName("SF4")+" F4 with (nolock) on F4.D_E_L_E_T_ <> '*'"
+cQuery += "          and F4_ESTOQUE = 'S'"
+cQuery += "          and D1_TES = F4_CODIGO"
+cQuery += "    WHERE D1.D_E_L_E_T_ <> '*'"
+cQuery += "       and B1_COD = D1_COD"
+cQuery += "       and D1_FILIAL = '"+xFilial('SD1')+"'"
+cQuery += "       and D1_LOCAL = '"+left(cLocal,2)+"'"
+cQuery += "       and D1_DTDIGIT BETWEEN '"+dTos(dUltDia+1)+"' AND '"+dTos(dDia-1)+"'"
+cQuery += "  ) ENTRADA,"
+
+cQuery += " (  SELECT SUM(D2_QUANT) FROM "+RetSQLName("SD2")+" D2 with (nolock) "
+cQuery += "       inner join "+RetSQLName("SF4")+" F4 with (nolock) on F4.D_E_L_E_T_ <> '*'"
+cQuery += "          and D2_TES = F4_CODIGO "
+cQuery += "          and F4_ESTOQUE = 'S' "
+cQuery += "    WHERE D2.D_E_L_E_T_ <> '*'"
+cQuery += "       and B1_COD = D2_COD"
+cQuery += "       and D2_FILIAL = '"+xFilial('SD2')+"'"
+cQuery += "       and D2_LOCAL = '"+left(cLocal,2)+"'"
+cQuery += "       and D2_EMISSAO BETWEEN '"+dTos(dUltDia+1)+"' AND '"+dTos(dDia-1)+"'"
+cQuery += "  ) SAIDA,"
+
+cQuery += " ( SELECT SUM(D3_QUANT) FROM "+RetSQLName("SD3")+" D3 with (nolock) "
+ cQuery += "  WHERE D3.D_E_L_E_T_ <> '*'"
+cQuery += "      and B1_COD = D3_COD"
+cQuery += "      and D3_FILIAL = '"+xFilial('SD3')+"'"
+cQuery += "      and D3_LOCAL = '"+left(cLocal,2)+"'"
+cQuery += "      and D3_EMISSAO BETWEEN '"+dTos(dUltDia+1)+"' AND '"+dTos(dDia-1)+"'"
+cQuery += "      and D3_ESTORNO <> 'S'"
+cQuery += "      and D3_TM < '500') D3E,"
+
+cQuery += " ( SELECT SUM(D3_QUANT) FROM "+RetSQLName("SD3")+" D3 with (nolock) "
+cQuery += "   WHERE D3.D_E_L_E_T_ <> '*'"
+cQuery += "      and B1_COD = D3_COD"
+cQuery += "      and D3_FILIAL = '"+xFilial('SD3')+"'"
+cQuery += "      and D3_LOCAL = '"+left(cLocal,2)+"'"
+cQuery += "      and D3_EMISSAO BETWEEN '"+dTos(dUltDia+1)+"' AND '"+dTos(dDia-1)+"'"
+cQuery += "      and D3_ESTORNO <> 'S'"
+cQuery += "      and D3_TM >= '500') D3S, "
+
+cQuery += " ( SELECT SUM(DA_SALDO) FROM SDA010 DA
+cQuery += "   WHERE DA.D_E_L_E_T_ <> '*'
+cQuery += "      and B1_COD = DA_PRODUTO
+cQuery += "      and DA_FILIAL = '"+xFilial('SDA')+"'"
+cQuery += "      and DA_LOCAL = '"+left(cLocal,2)+"'"
+cQuery += "      and DA_DATA BETWEEN '"+dTos(dUltDia+1)+"' AND '"+dTos(dDia-1)+"' ) ENDERECAR "
+
+cQuery += " FROM +RetSQLName("SB1")+" B1 with (nolock)"
+
+cQuery += " inner join "+RetSQLName("SB2")+" B2 with (nolock)"
+cQuery += "   on  B2.D_E_L_E_T_ <> '*'"
+cQuery += "   and B2_LOCAL = '"+left(cLocal,2)+"'"
+cQuery += "   and B1_COD = B2_COD"
+cQuery += "   and B2_FILIAL = '"+xFilial('SB2')+"'"
+
+cQuery += " left join "+RetSQLName("SB9")+" B9 with (nolock)"
+cQuery += "   on  B9.D_E_L_E_T_ <> '*'"
+cQuery += "   and B1_COD = B9_COD"
+cQuery += "   and B9_FILIAL = '"+xFilial('SB9')+"'"
+cQuery += "   and B9_LOCAL = '"+left(cLocal,2)+"'"
+cQuery += "   and B9_DATA = '"+dTos(dUltDia)+"'"
+
+cQuery += " WHERE B1.D_E_L_E_T_ <> '*'"
+
+	If !Empty(cFornecedor)
+		cQuery += "   and B1_PROC = '"+cFornecedor+"'"
+	EndIf
+
+	If lPelaData
+		cQuery += "   and B2_DINVENT = '"+dTos(dDia)+"'"
+		cQuery += "   and B2_RANKMOV IN  ('A')"
+	Else                                                
+		cQuery += "   AND B1_COD IN (  SELECT TOP "+StrZero(val(cQtde)*2,2)+" B3_COD"
+		cQuery += "                    FROM SB3010 B3 with (nolock), SB2010 B2 with (nolock), SB1010 B1 with (nolock)"
+		cQuery += "                    WHERE B3.D_E_L_E_T_ <> '*'"
+		cQuery += "                       and B2.D_E_L_E_T_ <> '*'"
+		cQuery += "                       and B1.D_E_L_E_T_ <> '*' "
+		cQuery += "                       and B1_FILIAL = '"+xFilial('SB1')+"'"
+		cQuery += "                       and B2_FILIAL = '"+xFilial('SB2')+"'"
+		cQuery += "                       and B3_FILIAL = '"+xFilial('SB3')+"'"
+		cQuery += "                       and B2_LOCAL  = '"+left(cLocal,2)+"'"
+		cQuery += "                       and B1_COD = B2_COD"
+		cQuery += "                       and B1_COD = B3_COD"  
+		cQuery += "                       and B2_DINVENT < '"+dTos(dDataBase-60)+"'"
+			If !empty(cContObr)               
+				cQuery += "                   and B1_COD NOT IN ("+cContObr+")"
+			EndIf                          
+
+		cQuery += "                    ORDER BY B3_Q"+StrZero(Month(dUltDia),2)+" DESC)"
+	EndIf
+
+cQuery := ChangeQuery(cQuery)
+dbUseArea(.T., "TOPCONN", TCGenQry(,,cQuery), 'TRB', .F., .T.)
+memowrite('BIPR58B9.SQL',cQuery)
+
+TRB->(dbGotop())
+ProcRegua(nCount)
+Do while TRB->(!EOF())
+	If nCount<1
+		nCount:= 1000
+		ProcRegua(nCount)
+	EndIf
+	nCount--
+	IncProc('Montando Saldos Prod.: '+TRB->CODIGO)
+	
+	If (nPos:=Ascan(aProduto,{|x| x[1] == TRB->CODIGO }))>0
+		aProduto[nPos,2] += TRB->ENTRADA + TRB->D3E
+		aProduto[nPos,3] += TRB->SAIDA   + TRB->D3S
+		aProduto[nPos,4] := TRB->INICIO
+		aProduto[nPos,5] := aProduto[nPos,4] + aProduto[nPos,2] - aProduto[nPos,3]
+	Else
+		aAdd(aProduto,{TRB->CODIGO,TRB->ENTRADA+TRB->D3E,TRB->SAIDA+TRB->D3S,TRB->INICIO,(TRB->INICIO + TRB->ENTRADA + TRB->D3E) - (TRB->SAIDA + TRB->D3S),TRB->ENDERECAR})
+	EndIf
+	TRB->(dbSkip())
+EndDo
+
+TRB->(dbCloseArea())
+
+Return(.t.)
+*---------------------------------*
+Static Function Dip58Seleciona()
+*---------------------------------*
+Local cProdSelec:='('
+Local cVirgula:=''
+Local x:=1
+Local nProd := 1
+Local nQtde := Val(cQtde)
+// Ordena os produtos por Quantidade de saida do maior para o menor
+aSort(aProduto,,,{ |x,y| x[3] > y[3] } )
+Do While len(aProduto) >= x
+	If  AllTrim(aProduto[x,1])$cContObr
+		x++
+		Loop
+	EndIf
+	cProdSelec += cVirgula+"'"+AllTrim(aProduto[x,1])+"'"
+	x++
+	cVirgula := ','
+EndDo
+cProdSelec += ')'
+return(cProdSelec)
+*-------------------------------------------*
+Static Function Dip58BKSaldo()
+*-------------------------------------------*
+Local cQuery
+Local nCount := 1000
+Local cPrSelect := Dip58Seleciona()
+//
+//  Defininindo os saldos Iniciais
+//
+cQuery := " SELECT (B1_COD) CODIGO, (BK_LOCALIZ) ENDERECO, (BK_LOTECTL) LOTE, (BK_QINI) INICIO"
+cQuery += " FROM SB1010 B1 with (nolock), SBK010 BK with (nolock) "
+cQuery += " WHERE B1.D_E_L_E_T_ <> '*'"
+cQuery += "   AND BK.D_E_L_E_T_ <> '*'"
+cQuery += "   AND B1_COD = BK_COD"
+cQuery += "   AND BK_FILIAL = '"+xFilial('SBK')+"'"
+cQuery += "   AND BK_LOCAL = '"+left(cLocal,2)+"'"
+cQuery += "   AND BK_DATA = '"+dTos(dUltDia)+"'"
+
+If Empty(cFornecedor)
+	cQuery += "   AND B1_COD IN " + cPrSelect  //('010684','011072','030331')"
+Else
+	cQuery += "   AND B1_PROC = '"+cFornecedor+"'"
+EndIf
+
+cQuery := ChangeQuery(cQuery)
+dbUseArea(.T., "TOPCONN", TCGenQry(,,cQuery), 'TRB', .F., .T.)
+memowrite('BIPR58BK.SQL',cQuery)
+
+TRB->(dbGotop())
+
+ProcRegua(nCount)
+
+aProdutoEnd:={}
+
+Do While TRB->(!EOF())
+	If nCount<1
+		nCount:= 1000
+		ProcRegua(nCount)
+	EndIf
+	nCount--
+	IncProc('Montando Saldos Entrada(BK).: '+TRB->CODIGO+' '+TRB->ENDERECO)
+	
+	If (nPos:=Ascan(aProdutoEnd,{|x| x[1]+x[2]+x[3]==TRB->CODIGO+TRB->LOTE+TRB->ENDERECO }))>0
+		aProdutoEnd[nPos,6] := TRB->INICIO
+		aProdutoEnd[nPos,7] := aProdutoEnd[nPos,6]
+	Else
+		aAdd(aProdutoEnd,{TRB->CODIGO,TRB->LOTE,TRB->ENDERECO,0,0,TRB->INICIO,TRB->INICIO})
+	EndIf
+	TRB->(dbSkip())
+EndDo
+
+TRB->(dbCloseArea())
+
+//------------------------------------------------------
+// Apura a Movimentação do Periodo
+//------------------------------------------------------
+cQuery := " SELECT DISTINCT (B1_COD) CODIGO, (DB_LOCALIZ) ENDERECO, (DB_LOTECTL) LOTE
+
+cQuery += " ,( SELECT SUM(DB_QUANT) FROM SDB010 DBE with (nolock)
+cQuery += " WHERE DBE.D_E_L_E_T_ <> '*'
+cQuery += "   AND B1_COD = DB_PRODUTO
+cQuery += "   AND DB_FILIAL = '"+xFilial('SDB')+"'"
+cQuery += "   AND DB_LOCAL = '"+left(cLocal,2)+"'"
+cQuery += "   AND DBX.DB_LOCALIZ = DBE.DB_LOCALIZ
+cQuery += "   AND DBX.DB_LOTECTL = DBE.DB_LOTECTL
+cQuery += "   AND DB_DATA BETWEEN '"+dTos(dUltDia+1)+"' AND '"+dTos(dDia-1)+"'"
+cQuery += "   AND DB_ESTORNO <> 'S'
+cQuery += "   AND DB_TM < '500') ENTRADA,
+
+cQuery += " ( SELECT SUM(DB_QUANT) FROM SDB010 DBS with (nolock)
+cQuery += " WHERE DBS.D_E_L_E_T_ <> '*'
+cQuery += "   AND B1_COD = DB_PRODUTO
+cQuery += "   AND DB_FILIAL = '"+xFilial('SDB')+"'"
+cQuery += "   AND DB_LOCAL = '"+left(cLocal,2)+"'"
+cQuery += "   AND DBX.DB_LOCALIZ = DBS.DB_LOCALIZ
+cQuery += "   AND DBX.DB_LOTECTL = DBS.DB_LOTECTL
+cQuery += "   AND DB_DATA BETWEEN '"+dTos(dUltDia+1)+"' AND '"+dTos(dDia-1)+"'"
+cQuery += "   AND DB_ESTORNO <> 'S'
+cQuery += "   AND DB_TM >= '500') SAIDA
+
+cQuery += " FROM SB1010 B1 with (nolock), SDB010 DBX with (nolock)
+
+cQuery += " WHERE B1.D_E_L_E_T_ <> '*'
+cQuery += "   AND DBX.D_E_L_E_T_ <> '*'
+cQuery += "   AND B1_COD = DB_PRODUTO
+cQuery += "   AND DB_FILIAL = '"+xFilial('SDB')+"'"
+cQuery += "   AND DB_LOCAL = '"+left(cLocal,2)+"'"
+cQuery += "   AND DB_DATA BETWEEN '"+dTos(dUltDia+1)+"' AND '"+dTos(dDia-1)+"'"
+
+If Empty(cFornecedor)
+	cQuery += "   AND B1_COD IN " + cPrSelect  //('010684','011072','030331')"
+Else
+	cQuery += "   AND B1_PROC = '"+cFornecedor+"'"
+EndIf
+
+cQuery := ChangeQuery(cQuery)
+dbUseArea(.T., "TOPCONN", TCGenQry(,,cQuery), 'TRB', .F., .T.)
+memowrite('BIPR58DB.SQL',cQuery)
+
+TRB->(dbGotop())
+
+ProcRegua(nCount)
+
+Do While TRB->(!EOF())
+	If nCount<1
+		nCount:= 1000
+		ProcRegua(nCount)
+	EndIf
+	nCount--
+	IncProc('Montando Saldos Entrada(DB).: '+TRB->CODIGO+' '+TRB->ENDERECO)
+	
+	If (nPos:=Ascan(aProdutoEnd,{|x| x[1]+x[2]+x[3]==TRB->CODIGO+TRB->LOTE+TRB->ENDERECO }))>0
+		aProdutoEnd[nPos,4] += TRB->ENTRADA
+		aProdutoEnd[nPos,5] += TRB->SAIDA
+		aProdutoEnd[nPos,7] := aProdutoEnd[nPos,6] + aProdutoEnd[nPos,4] - aProdutoEnd[nPos,5]
+	Else
+		aAdd(aProdutoEnd,{TRB->CODIGO,TRB->LOTE,TRB->ENDERECO,TRB->ENTRADA,TRB->SAIDA,0,TRB->ENTRADA-TRB->SAIDA})
+	EndIf
+	TRB->(dbSkip())
+EndDo
+TRB->(dbCloseArea())
+Return(.t.)
+
+*------------------------------------------*
+Static Function Dipr58Obrigat()
+*------------------------------------------*
+Local cQuery
+Local nCount := 1000
+
+aObrigat := {}
+aObrigatEnd:={}
+
+If !Empty(cContObr).or.lPeladata
+	
+	cQuery := " SELECT (B1_COD) CODIGO, (B1_DESC) DESCRICAO, (B1_UM) UM, (B1_RASTRO) RASTRO, (B1_LOCALIZ) LOCALIZ, (B2_DINVENT) DT_INVENTARIO, (B9_QINI) INICIO, "
+	
+	cQuery += " ( SELECT SUM(D1_QUANT) FROM "+RetSQLName("SD1")+" D1 with (nolock), "+RetSQLName("SF4")+" F4 with (nolock)"
+	cQuery += " WHERE D1.D_E_L_E_T_ <> '*'"
+	cQuery += "   AND F4.D_E_L_E_T_ <> '*'"
+	cQuery += "   AND B1_COD = D1_COD"
+	cQuery += "   AND D1_FILIAL = '"+xFilial('SD1')+"'"
+	cQuery += "   AND D1_LOCAL = '"+left(cLocal,2)+"'"
+	cQuery += "   AND D1_DTDIGIT BETWEEN '"+dTos(dUltDia+1)+"' AND '"+dTos(dDia-1)+"'"
+	cQuery += "   AND D1_TES = F4_CODIGO"
+	cQuery += "   AND F4_ESTOQUE = 'S' ) ENTRADA,"
+	
+	cQuery += " ( SELECT SUM(D2_QUANT) FROM "+RetSQLName("SD2")+" D2 with (nolock), "+RetSQLName("SF4")+" F4 with (nolock)"
+	cQuery += " WHERE D2.D_E_L_E_T_ <> '*'"
+	cQuery += "   AND F4.D_E_L_E_T_ <> '*'"
+	cQuery += "   AND B1_COD = D2_COD"
+	cQuery += "   AND D2_FILIAL = '"+xFilial('SD2')+"'"
+	cQuery += "   AND D2_LOCAL = '"+left(cLocal,2)+"'"
+	cQuery += "   AND D2_EMISSAO BETWEEN '"+dTos(dUltDia+1)+"' AND '"+dTos(dDia-1)+"'"
+	cQuery += "   AND D2_TES = F4_CODIGO"
+	cQuery += "   AND F4_ESTOQUE = 'S' ) SAIDA,"
+	
+	cQuery += " ( SELECT SUM(D3_QUANT) FROM "+RetSQLName("SD3")+" D3 with (nolock)"
+	cQuery += " WHERE D3.D_E_L_E_T_ <> '*'"
+	cQuery += "   AND B1_COD = D3_COD"
+	cQuery += "   AND D3_FILIAL = '"+xFilial('SD3')+"'"
+	cQuery += "   AND D3_LOCAL = '"+left(cLocal,2)+"'"
+	cQuery += "   AND D3_EMISSAO BETWEEN '"+dTos(dUltDia+1)+"' AND '"+dTos(dDia-1)+"'"
+	cQuery += "   AND D3_ESTORNO <> 'S'"
+	cQuery += "   AND D3_TM < '500') D3E,"
+	
+	cQuery += " ( SELECT SUM(D3_QUANT) FROM "+RetSQLName("SD3")+" D3 with (nolock)"
+	cQuery += " WHERE D3.D_E_L_E_T_ <> '*'"
+	cQuery += "   AND B1_COD = D3_COD"
+	cQuery += "   AND D3_FILIAL = '"+xFilial('SD3')+"'"
+	cQuery += "   AND D3_LOCAL = '"+left(cLocal,2)+"'"
+	cQuery += "   AND D3_EMISSAO BETWEEN '"+dTos(dUltDia+1)+"' AND '"+dTos(dDia-1)+"'"
+	cQuery += "   AND D3_ESTORNO <> 'S'"
+	cQuery += "   AND D3_TM >= '500') D3S, "
+	
+	cQuery += " ( SELECT SUM(DA_SALDO) FROM SDA010 DA with (nolock)
+	cQuery += " WHERE DA.D_E_L_E_T_ <> '*'
+	cQuery += "   AND B1_COD = DA_PRODUTO
+	cQuery += "   AND DA_FILIAL = '"+xFilial('SDA')+"'"
+	cQuery += "   AND DA_LOCAL = '"+left(cLocal,2)+"'"
+	cQuery += "   AND DA_DATA BETWEEN '"+dTos(dUltDia+1)+"' AND '"+dTos(dDia-1)+"' ) ENDERECAR "
+	
+	cQuery += " FROM "+RetSQLName("SB1")+" B1 with (nolock)"
+	
+	cQuery += " inner join "+RetSQLName("SB2")+" B2 with (nolock)"
+	cQuery += "   on  B2.D_E_L_E_T_ <> '*'"
+	cQuery += "   and B1_COD = B2_COD"
+	cQuery += "   and B2_FILIAL = '"+xFilial('SB2')+"'"
+	cQuery += "   and B2_LOCAL = '"+left(cLocal,2)+"'"
+
+	cQuery += " left join "+RetSQLName("SB9")+" B9 with (nolock)"
+	cQuery += "   on  B9.D_E_L_E_T_ <> '*'"
+	cQuery += "   and B1_COD = B9_COD"
+	cQuery += "   and B9_FILIAL = '"+xFilial('SB9')+"'"
+	cQuery += "   and B9_LOCAL = '"+left(cLocal,2)+"'"
+	cQuery += "   and B9_DATA = '"+dTos(dUltDia)+"'"
+	
+	cQuery += " WHERE B1.D_E_L_E_T_ <> '*'"
+
+		If !lPelaData
+			cQuery += "   AND B1_COD IN ("+cContObr+")
+		Else
+			cQuery += "   AND B2_DINVENT = '"+dTos(dDia)+"'"
+			cQuery += "   AND B2_RANKMOV = 'C'"
+		EndIf
+
+	
+	cQuery := ChangeQuery(cQuery)
+	dbUseArea(.T., "TOPCONN", TCGenQry(,,cQuery), 'TRB', .F., .T.)
+	memowrite('BIPR58B9COB.SQL',cQuery)
+	
+	TRB->(dbGotop())
+	ProcRegua(nCount)
+	Do while TRB->(!EOF())
+		If nCount<1
+			nCount:= 1000
+			ProcRegua(nCount)
+		EndIf
+		nCount--
+		IncProc('Montando Saldos Prod.: '+TRB->CODIGO)
+		
+		If (nPos:=Ascan(aObrigat,{|x| x[1] == TRB->CODIGO }))>0
+			aObrigat[nPos,2] += TRB->ENTRADA + TRB->D3E
+			aObrigat[nPos,3] += TRB->SAIDA   + TRB->D3S
+			aObrigat[nPos,4] := TRB->INICIO
+			aObrigat[nPos,5] := aObrigat[nPos,4] + aObrigat[nPos,2] - aObrigat[nPos,3]
+		Else
+			aAdd(aObrigat,{TRB->CODIGO,TRB->ENTRADA+TRB->D3E,TRB->SAIDA+TRB->D3S,TRB->INICIO,(TRB->INICIO + TRB->ENTRADA + TRB->D3E) - (TRB->SAIDA + TRB->D3S),TRB->ENDERECAR})
+		EndIf
+		TRB->(dbSkip())
+	EndDo
+	
+	TRB->(dbCloseArea())
+	
+	//
+	//  Defininindo os saldos Iniciais
+	//
+	cQuery := " SELECT (B1_COD) CODIGO, (BK_LOCALIZ) ENDERECO, (BK_LOTECTL) LOTE, (BK_QINI) INICIO"
+	cQuery += " FROM SB1010 B1, SBK010 BK "
+	cQuery += " WHERE B1.D_E_L_E_T_ <> '*'"
+	cQuery += "   AND BK.D_E_L_E_T_ <> '*'"
+	cQuery += "   AND B1_COD = BK_COD"
+	cQuery += "   AND BK_FILIAL = '"+xFilial('SBK')+"'"
+	cQuery += "   AND BK_LOCAL = '"+left(cLocal,2)+"'"
+	cQuery += "   AND BK_DATA = '"+dTos(dUltDia)+"'"
+	
+	If Empty(cFornecedor)
+		cQuery += "   AND B1_COD IN ("+cContObr+")
+	Else
+		cQuery += "   AND B1_PROC = '"+cFornecedor+"'"
+	EndIf
+	
+	cQuery := ChangeQuery(cQuery)
+	dbUseArea(.T., "TOPCONN", TCGenQry(,,cQuery), 'TRB', .F., .T.)
+	memowrite('BIPR58BKCOB.SQL',cQuery)
+	
+	TRB->(dbGotop())
+	
+	ProcRegua(nCount)
+		
+	Do While TRB->(!EOF())
+		If nCount<1
+			nCount:= 1000
+			ProcRegua(nCount)
+		EndIf
+		nCount--
+		IncProc('Montando Saldos Entrada(BK).: '+TRB->CODIGO+' '+TRB->ENDERECO)
+		
+		If (nPos:=Ascan(aObrigatEnd,{|x| x[1]+x[2]+x[3]==TRB->CODIGO+TRB->LOTE+TRB->ENDERECO }))>0
+			aObrigatEnd[nPos,6] := TRB->INICIO
+			aObrigatEnd[nPos,7] := aObrigatEnd[nPos,6]
+		Else
+			aAdd(aObrigatEnd,{TRB->CODIGO,TRB->LOTE,TRB->ENDERECO,0,0,TRB->INICIO,TRB->INICIO})
+		EndIf
+		TRB->(dbSkip())
+	EndDo
+	
+	TRB->(dbCloseArea())
+	
+	//------------------------------------------------------
+	// Apura a Movimentação do Periodo
+	//------------------------------------------------------
+	cQuery := " SELECT DISTINCT (B1_COD) CODIGO, (DB_LOCALIZ) ENDERECO, (DB_LOTECTL) LOTE
+	
+	cQuery += " ,( SELECT SUM(DB_QUANT) FROM SDB010 DBE
+	cQuery += " WHERE DBE.D_E_L_E_T_ <> '*'
+	cQuery += "   AND B1_COD = DB_PRODUTO
+	cQuery += "   AND DB_FILIAL = '"+xFilial('SDB')+"'"
+	cQuery += "   AND DB_LOCAL = '"+left(cLocal,2)+"'"
+	cQuery += "   AND DBX.DB_LOCALIZ = DBE.DB_LOCALIZ
+	cQuery += "   AND DBX.DB_LOTECTL = DBE.DB_LOTECTL
+	cQuery += "   AND DB_DATA BETWEEN '"+dTos(dUltDia+1)+"' AND '"+dTos(dDia-1)+"'"
+	cQuery += "   AND DB_ESTORNO <> 'S'
+	cQuery += "   AND DB_TM < '500') ENTRADA,
+	
+	cQuery += " ( SELECT SUM(DB_QUANT) FROM SDB010 DBS
+	cQuery += " WHERE DBS.D_E_L_E_T_ <> '*'
+	cQuery += "   AND B1_COD = DB_PRODUTO
+	cQuery += "   AND DB_FILIAL = '"+xFilial('SDB')+"'"
+	cQuery += "   AND DB_LOCAL = '"+left(cLocal,2)+"'"
+	cQuery += "   AND DBX.DB_LOCALIZ = DBS.DB_LOCALIZ
+	cQuery += "   AND DBX.DB_LOTECTL = DBS.DB_LOTECTL
+	cQuery += "   AND DB_DATA BETWEEN '"+dTos(dUltDia+1)+"' AND '"+dTos(dDia-1)+"'"
+	cQuery += "   AND DB_ESTORNO <> 'S'
+	cQuery += "   AND DB_TM >= '500') SAIDA
+	
+	cQuery += " FROM SB1010 B1, SDB010 DBX
+	
+	cQuery += " WHERE B1.D_E_L_E_T_ <> '*'
+	cQuery += "   AND DBX.D_E_L_E_T_ <> '*'
+	cQuery += "   AND B1_COD = DB_PRODUTO
+	cQuery += "   AND DB_FILIAL = '"+xFilial('SDB')+"'"
+	cQuery += "   AND DB_LOCAL = '"+left(cLocal,2)+"'"
+	cQuery += "   AND DB_DATA BETWEEN '"+dTos(dUltDia+1)+"' AND '"+dTos(dDia-1)+"'"
+	
+	If Empty(cFornecedor)
+		cQuery += "   AND B1_COD IN ("+cContObr+")
+	Else
+		cQuery += "   AND B1_PROC = '"+cFornecedor+"'"
+	EndIf
+	
+	cQuery := ChangeQuery(cQuery)
+	dbUseArea(.T., "TOPCONN", TCGenQry(,,cQuery), 'TRB', .F., .T.)
+	memowrite('BIPR58DBCOB.SQL',cQuery)
+	
+	TRB->(dbGotop())
+	
+	ProcRegua(nCount)
+	
+	Do While TRB->(!EOF())
+		If nCount<1
+			nCount:= 1000
+			ProcRegua(nCount)
+		EndIf
+		nCount--
+		IncProc('Montando Saldos Entrada(DB).: '+TRB->CODIGO+' '+TRB->ENDERECO)
+		
+		If (nPos:=Ascan(aObrigatEnd,{|x| x[1]+x[2]+x[3]==TRB->CODIGO+TRB->LOTE+TRB->ENDERECO }))>0
+			aObrigatEnd[nPos,4] += TRB->ENTRADA
+			aObrigatEnd[nPos,5] += TRB->SAIDA
+			aObrigatEnd[nPos,7] := aObrigatEnd[nPos,6] + aObrigatEnd[nPos,4] - aObrigatEnd[nPos,5]
+		Else
+			aAdd(aObrigatEnd,{TRB->CODIGO,TRB->LOTE,TRB->ENDERECO,TRB->ENTRADA,TRB->SAIDA,0,TRB->ENTRADA-TRB->SAIDA})
+		EndIf
+		TRB->(dbSkip())
+	EndDo
+	TRB->(dbCloseArea())
+EndIf
+
+Return(.t.)
+
+*------------------------------------------*
+Static Function Dipr58ProdSem()
+*------------------------------------------*
+Local cQuery
+Local nCount := 1000
+Local nProd := 1
+Local nQtde := Val(cQtde)
+
+cQuery := "SELECT B2_COD, B1_DESC, B1_UM, B1_RASTRO, B1_LOCALIZ, BF_LOCALIZ, BF_LOTECTL, BF_NUMLOTE, B2_QATU, BF_QUANT, B2_QACLASS"
+
+cQuery += " FROM"
+cQuery += " "+RetSQLName("SB1")+" B1,"
+cQuery += " "+RetSQLName("SB2")+" B2,"
+cQuery += " "+RetSQLName("SBF")+" BF"
+
+cQuery += " WHERE B1.D_E_L_E_T_ <> '*'"
+cQuery += "   AND B2.D_E_L_E_T_ <> '*'"
+cQuery += "   AND BF.D_E_L_E_T_ <> '*'"
+cQuery += "   AND B1_COD = B2_COD"
+cQuery += "   AND B2_LOCAL = '"+left(cLocal,2)+"'"
+cQuery += "   AND B2_FILIAL = '"+xFilial("SB2")+"'"
+cQuery += "   AND B2_COD *= BF_PRODUTO"
+cQuery += "   AND BF_FILIAL = '"+xFilial("SBF")+"'"
+cQuery += "   AND BF_LOCAL = '"+left(cLocal,2)+"'"
+
+If lPelaData
+	cQuery += "   AND B2_DINVENT = '"+dTos(dDia)+"'"
+	cQuery += "   AND B2_RANKMOV = 'B'"
+Else
+	cQuery += "   AND B2_QATU <> 0"
+	cQuery += "   AND (B2_USAI    < '"+dTos(dDia-(30+1))+"' OR B2_USAI = '"+dTos(dDataBase)+"')"
+	cQuery += "   AND B2_DINVENT < '"+dTos(dDia-(60+1))+"'"
+EndIf
+
+If !empty(cContObr)
+	cQuery += "   AND B2_COD NOT IN ("+cContObr+")"
+EndIf
+
+cQuery += " ORDER BY B2_COD"
+
+cQuery := ChangeQuery(cQuery)
+dbUseArea(.T., "TOPCONN", TCGenQry(,,cQuery), 'TRB', .F., .T.)
+memowrite('BIPR58BFSEM.SQL',cQuery)
+
+TRB->(dbGotop())
+
+ProcRegua(nCount)
+
+aProdutoSem:={}
+cProduto:=''
+Do while TRB->(!EOF())
+	If nCount<1
+		nCount:= 1000
+		ProcRegua(nCount)
+	EndIf
+	nCount--
+	IncProc('Montando Saldos Prod.: '+TRB->B2_COD+' '+TRB->BF_LOCALIZ)
+	If (nPos:=Ascan(aProdutoSem,{|x| x[1]+x[2]+x[3]==TRB->B2_COD+TRB->BF_NUMLOTE+TRB->BF_LOCALIZ }))>0
+		aProdutoSem[nPos,4] += 0
+		aProdutoSem[nPos,5] += TRB->BF_QUANT
+		aProdutoSem[nPos,6] := 0
+		aProdutoSem[nPos,7] := TRB->B2_QATU
+	Else
+		aAdd(aProdutoSem,{TRB->B2_COD,TRB->BF_NUMLOTE,TRB->BF_LOCALIZ,0,TRB->BF_QUANT,0,TRB->B2_QATU,TRB->B2_QACLASS})
+		If cProduto <> TRB->B2_COD
+			nProd++
+		EndIf
+	EndIf
+	cProduto := TRB->B2_COD
+	TRB->(dbSkip())
+	If nProd > nQtde
+		Exit
+	EndIf
+EndDo
+TRB->(dbCloseArea())
+Return(.t.)

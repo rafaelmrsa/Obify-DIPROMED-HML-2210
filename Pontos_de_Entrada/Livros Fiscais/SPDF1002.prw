@@ -1,0 +1,2 @@
+USER FUNCTION SPDF1002()
+Return "XX"

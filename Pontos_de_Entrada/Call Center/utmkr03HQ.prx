@@ -1,0 +1,1979 @@
+/*====================================================================================\
+|Programa  | UTMKR03        | Autor | Rodrigo Franco             | Data | 25/01/2002   |
+|=====================================================================================|
+|Descrição | Inicia o processo de impressao de pedido de venda                        |
+|          |                                                                          |
+|          |                                                                          |
+|=====================================================================================|
+|Sintaxe   | UTMKR03                                                                   |
+|=====================================================================================|
+|Uso       | Especifico DIPROMED                                                      |
+|=====================================================================================|
+|........................................Histórico....................................|
+|Maximo    | 25/06/07 - Alterando rotina para ser usada pelo Modulo de licitação      |
+|Maximo    | 10/08/07 - Incluindo novas Inf. de clientes, operadores e transportadoras|
+|Eriberto  | DD/MM/AA - Descrição                                                     |
+\====================================================================================*/
+
+
+#include "Protheus.ch"
+#include "rwmake.ch"
+#include "Dialog.ch"
+#INCLUDE "AP5MAIL.CH"
+*----------------------------------------*
+User Function UTMKR03HQ()
+*----------------------------------------*
+Local oDlg
+Local cOper   := Alltrim(Posicione("SU7",4,xFilial("SU7")+Alltrim(RetCodUsr()),"U7_COD")) // OPERADOR
+Local cUserLic:= GetMv("MV_OPERLIC") // Operador de Licitação
+Private _lCartaVale  := .F.
+Private lArquivo     := .F.
+
+If "MATA410"$FunName() .And. SC5->C5_TIPODIP=='1' .And. !Empty(SC5->C5_XBLQAUT)
+	Aviso("Atenção","Pedido com BLOQUEIO automático: "+CHR(13)+CHR(10)+;
+					'"'+Alltrim(SC5->C5_EXPLBLO)+'"'+CHR(13)+CHR(10)+;
+					"Corrija o problema antes de imprimir o pedido ou faça um orçamento.",{"Ok"},2)
+	Return	
+EndIf
+
+_areaSCJ := SCJ->(getarea())
+_areaSCK := SCK->(getarea())
+_areaSC5 := SC5->(getarea())
+_areaSC6 := SC6->(getarea())
+_areaSE4 := SE4->(getarea())
+_areaSA1 := SA1->(getarea())
+_areaSUB := SUB->(getarea())
+_areaSB1 := SB1->(getarea())
+
+U_DIPPROC(ProcName(0),U_DipUsr()) //MCVN - 22/01/2009
+
+//aRadio := {"Pedido de Venda","Pedido de Licitação","Pedido sem ICMS"}
+nRadio := 1
+_lObsProd  := .F.
+_lRascunho := .F.
+_lFax      := .F.
+
+@ 100,150 To 330,530 Dialog oDlg Title OemToAnsi("Impressao do Pedido")
+@ 010,020 say "Escolha o Tipo do Pedido" of oDlg  Size 100,10
+@ 100,120 BmpButton Type 1 Action (IIf(VldPDF(),U_Ok_PDF(nRadio),Ok(nRadio)), Close(oDlg))
+@ 100,150 BmpButton Type 2 Action Close(oDlg)
+If cOper $ cUserLic
+	@ 023,050 RADIO oRadio VAR nRadio Items "Pedido de Venda","Pedido de Licitação","Pedido sem ICMS","Carta de Vale" OF oDlg SIZE 75,10
+Else
+	@ 023,050 RADIO oRadio VAR nRadio Items "Pedido de Venda","Pedido de Licitação","Pedido sem ICMS" OF oDlg SIZE 75,10
+Endif
+@ 060,020 CheckBox "Imprime Observação do Produto" Var _lObsProd //Prompt  Size 100,10 OF oDlg
+@ 070,020 CheckBox "Imprime como Rascunho"   Var _lRascunho //Prompt "Imprime Observação do Produto" Size 100,10 OF oDlg
+@ 080,020 CheckBox "Imprime para FAX" Var _lfax // Não imprime o cinza nas linhas - MCVN 10/09/09
+//@ 100,100 BmpButton Type 1 Action (IIf(U_VldPDF(),U_Ok_PDF(nRadio),Ok(nRadio)), Close(oDlg))
+//@ 100,130 BmpButton Type 2 Action Close(oDlg)
+Activate Dialog oDlg Centered
+
+RestArea(_areaSCJ)
+RestArea(_areaSCK)
+RestArea(_areaSC5)
+RestArea(_areaSC6)
+RestArea(_areaSE4)
+RestArea(_areaSA1)
+RestArea(_areaSUB)
+RestArea(_areaSB1)
+
+Return
+
+/*********************************
+Ok
+*********************************/
+*----------------------------------------*
+Static Function Ok(nRadio)
+*----------------------------------------*
+Local _oDlg
+Local _aMsg         := {}
+Local _cAssunto     := ""
+Local _cEmail       := ""
+Local _cDestCli  	:= ""
+Local _cFrom     	:= ""
+Local _cFuncSent 	:= "UTMKR03.PRX
+Local oDlg2
+Local _lSaidaP      := .F.
+Local _cExplWor     := Space(100)
+Private lErroval    := .f.
+Private nValIpi     := 0
+Private cCliST      := ""
+Private nValST		:= 0
+
+Private _nTtoPed	:= 0
+Private _nValItem	:= 0
+Private _nValPis	:= 0
+Private _nValCof	:= 0
+Private	_nValICM	:= 0
+Private	_nValIPI	:= 0
+Private	_nValISS	:= 0
+Private	_nValIST	:= 0
+
+If nRadio == 4
+	_lCartaVale  := .T.
+ElseIf nRadio == 1
+	oArqMala := "PedVennew.dot"
+Else
+	oArqMala := "PedLic1.dot"
+Endif
+
+_nRadio1 := 4
+@ 050,110 To 250,380 Dialog _oDlg Title OemToAnsi("O que fazer? ")
+@ 010,010 RADIO _oRadio1 VAR _nRadio1 3D Items "Word - Imprimir","Word - Imprimir e Salvar","Word - Salvar","Impressão","Impressão c/ Envio de Email" of _oDLG SIZE 75,10
+@ 070,050 BmpButton Type 1 Action Close(_oDlg)
+
+Activate MsDialog _oDlg Centered Valid _nRadio1 > 0  //.and. If(_nRadio1 >= 4,.T.,U_SENHA("PED",0,0,0) )
+
+_lTmsPrinter:= (_nRadio1 >= 4)
+nTamDet  	:= 20     // 34            // Tamanho da Area de Detalhe
+_cTotG  	:= _cTotI := nVez := 0
+
+If !_lTmsPrinter
+	cPathCli := "C:\wordtmp\"
+	CpyS2T("\DOT\"+oArqMala,cPathCli,.T.) // Copia do Server para o Remote
+	
+	//Gerando novo documento
+	hWord := OLE_CreateLink()
+	OLE_NewFile( hWord, cPathCli + oArqMala)
+EndIf
+_cIA := "0,00"
+_cIL := "0,00"
+If "TMK" $ FunName() .or.(Type("lMenu") <> "U" .and. lMenu .and. (!"DIPAL10" $ FunName()) .and. (!"MATA410" $ FunName()))
+	DbSelectArea("SUA")
+	_nOrc    := SUA->UA_NUM
+	_cCodCli := SUA->UA_CLIENTE
+	_cCodPag := SUA->UA_CONDPG
+	_cPraEnt := SUA->UA_PRAENT
+	_cDtVali := SUA->UA_DTLIM
+	_cFatMin := SUA->UA_FATMIN
+	_cTipFre := SUA->UA_TPFRETE
+	_cDestFre:= SUA->UA_DESTFRE //MCVN - 14/05/09
+	_cAc     := SUA->UA_AC
+	_cObs    := SUA->UA_MENNOTA
+	_cEmi    := DtoC(SUA->UA_EMISSAO)
+	nVal_Fre := SUA->UA_FRETE  /// valor do Frete
+	nVal_Des := SUA->UA_DESPESA  /// valor das Despesas
+	_cOperado:= SUA->UA_OPERADO
+	_cNomeOpe:= Alltrim(Posicione("SU7",1,xFilial("SU7")+SUA->UA_OPERADO,"U7_NREDUZ"))
+	_cMailOpe:= Alltrim(Posicione("SU7",1,xFilial("SU7")+SUA->UA_OPERADO,"U7_EMAIL"))
+	_cPosto  := Posicione("SU7",1,xFilial("SU7")+SUA->UA_OPERADO,"U7_POSTO")
+	_cVend   := SUA->UA_VEND
+	_cNomeVen:= Alltrim(Posicione("SA3",1,xFilial("SA3")+SUA->UA_VEND,"A3_NOME"))
+	_cMailVen:= Alltrim(Posicione("SA3",1,xFilial("SA3")+SUA->UA_VEND,"A3_EMAIL"))
+	_cTipoVen:= Posicione("SA3",1,xFilial("SA3")+SUA->UA_VEND,"A3_TIPO")
+	_cTransp := SUA->UA_TRANSP
+	_cNomeTra:= Posicione("SA4",1,xFilial("SA4")+SUA->UA_TRANSP,"A4_NOME")
+	If "TMK" $ FunName() // MCVN - 13/08/2007
+		_cEndCli := SUBSTR(SUA->UA_ENDENT,1,60)  // End de entrega
+		_cBaiCli := SUBSTR(SUA->UA_BAIRROE,1,30)
+		_cMunCli := SUA->UA_MUNE
+		_cEstCli := SUA->UA_ESTE
+		_cCepCli := SUA->UA_CEPE
+	Endif
+	_cIA	 := SUA->UA_MARGATU
+	_cIL	 := SUA->UA_MARGLIB
+	_cCont   := 'Produtos:'
+	_cGera   := 'TOTAL (produto + frete + despesa)'
+	
+ELSEIF "DIPAL10" $ FunName() // Quando a Rotina chamada de dentro do Módulo de Licitação MCVN - 25/06/07
+	
+	dbSelectArea("SC5")                   // * Itens de Venda da N.F.
+	_nOrc    := SC5->C5_NUM
+	_cCodCli := SC5->C5_CLIENTE
+	_cCodPag := SC5->C5_CONDPAG
+	_cPraEnt := ""//SUA->UA_PRAENT
+	_cDtVali := ""//SUA->UA_DTLIM
+	_cFatMin := 0
+	_cTipFre := SC5->C5_TPFRETE
+	_cDestFre:= SC5->C5_DESTFRE //MCVN - 14/05/09
+	_cAc     := ""//SUA->UA_AC
+	_cObs    := SC5->C5_MENNOTA + "Edital nº.: "+SC5->C5_EDITAL+ "  Empenho nº:." +SC5->C5_EMPENHO
+	_cEmi    := DtoC(SC5->C5_EMISSAO)
+	nVal_Fre := SC5->C5_FRETE  /// valor do Frete
+	nVal_Des := SC5->C5_DESPESA  /// valor das Despesas
+	_cOperado:= "" // Operador
+	_cNomeOpe:= Alltrim(Posicione("SU7",1,xFilial("SU7")+SC5->C5_OPERADO,"U7_NREDUZ"))
+	_cMailOpe:= Alltrim(Posicione("SU7",1,xFilial("SU7")+SC5->C5_OPERADO,"U7_EMAIL"))
+	_cPosto  := "" // Posto do Operador
+	_cTransp := "" // Transportadora
+	_cNomeTra:= "" // Nome da transportadora
+	_cVend   := "" // Vendedor
+	_cNomeVen:= Alltrim(Posicione("SA3",1,xFilial("SA3")+SC5->C5_VEND1,"A3_NOME"))
+	_cMailVen:= Alltrim(Posicione("SA3",1,xFilial("SA3")+SC5->C5_VEND1,"A3_EMAIL"))
+	_cTipoVen:= Posicione("SA3",1,xFilial("SA3")+SC5->C5_VEND1,"A3_TIPO")
+	_cCont   := ""
+	_cGera   := ""
+	_cIA	 := SC5->C5_MARGATU
+	_cIL	 := SC5->C5_MARGLIB
+	
+ELSEIF "MATA410" $ FunName() //Para impressão de pedido emitido pelo MATA410 MCVN - 25/06/07
+	
+	dbSelectArea("SC5")                   // * Itens de Venda da N.F.
+	_nOrc    := SC5->C5_NUM
+	_cCodCli := SC5->C5_CLIENTE
+	_cCodPag := SC5->C5_CONDPAG
+	_cPraEnt := SC5->C5_PRAENT
+	_cDtVali := SC5->C5_DTLIM
+	_cFatMin := SC5->C5_FATMIN
+	_cTipFre := SC5->C5_TPFRETE
+	_cDestFre:= SC5->C5_DESTFRE //MCVN - 14/05/09
+	_cAc     := SC5->C5_AC
+	_cObs    := SC5->C5_MENNOTA
+	_cEmi    := DtoC(SC5->C5_EMISSAO)
+	nVal_Fre := SC5->C5_FRETE  /// valor do Frete
+	nVal_Des := SC5->C5_DESPESA  /// valor das Despesas
+	_cOperado:= SC5->C5_OPERADO
+	_cNomeOpe:= Alltrim(Posicione("SU7",1,xFilial("SU7")+SC5->C5_OPERADO,"U7_NREDUZ"))
+	_cMailOpe:= Alltrim(Posicione("SU7",1,xFilial("SU7")+SC5->C5_OPERADO,"U7_EMAIL"))
+	_cPosto  := Posicione("SU7",1,xFilial("SU7")+SC5->C5_OPERADO,"U7_POSTO")
+	_cTransp := SC5->C5_TRANSP
+	_cNomeTra:= Posicione("SA4",1,xFilial("SA4")+SC5->C5_TRANSP,"A4_NOME")
+	_cVend   := SC5->C5_VEND1
+	_cNomeVen:= Alltrim(Posicione("SA3",1,xFilial("SA3")+SC5->C5_VEND1,"A3_NOME"))
+	_cMailVen:= Alltrim(Posicione("SA3",1,xFilial("SA3")+SC5->C5_VEND1,"A3_EMAIL"))
+	_cTipoVen:= Posicione("SA3",1,xFilial("SA3")+SC5->C5_VEND1,"A3_TIPO")
+	_cCont   := 'Produtos:'
+	_cGera   := 'TOTAL (produto + frete + despesa)'
+	_cIA	 := SC5->C5_MARGATU
+	_cIL	 := SC5->C5_MARGLIB
+	_cEndCli := SUBSTR(SC5->C5_ENDENT,1,60)  // End de entrega
+	_cBaiCli := SUBSTR(SC5->C5_BAIRROE,1,30)
+	_cMunCli := SC5->C5_MUNE
+	_cEstCli := SC5->C5_ESTE
+	_cCepCli := SC5->C5_CEPE
+	
+ELSE
+	DbSelectArea("SCJ")
+	_nOrc    := SCJ->CJ_NUM   //////  UA_NUM
+	_cCodCli := SCJ->CJ_CLIENTE      ///// UA_CLIENTE
+	_cCodPag := SCJ->CJ_CONDPAG      ////// UA_CONDPG
+	_cPraEnt := SCJ->CJ_PRAENTR      ////
+	_cDtVali := SCJ->CJ_VALIDA       /////   UA_DTLIM
+	_cFatMin := SCJ->CJ_FATMIN      //////
+	_cTipFre := SCJ->CJ_TPFRETE     //////   UA_TPFRETE
+	_cDestFre:= ""
+	_cAc     := SCJ->CJ_AC          //////
+	_cObs    := SCJ->CJ_OBS         //////  UA_OBS
+	_cEmi    := DtoC(SCJ->CJ_EMISSAO)
+	nVal_Fre := SCJ->CJ_FRETE  /// valor do Frete
+	nVal_Des := SCJ->CJ_DESPESA  /// valor das Despesas
+	_cOperado:= "" // Operador
+	_cNomeOpe:= "" // Nome do operador
+	_cMailOpe:= "" // E-mail do operador
+	_cPosto  := "" // Posto do Operador
+	_cTransp := "" // Transportadora
+	_cNomeTra:= "" // Nome da transportadora
+	_cVend   := "" // Vendedor
+	_cNomeVen:= "" // Nome do Vendedor
+	_cMailVen:= "" // E-mail do Vendedor
+	_cCont := 'Produtos:'
+	_cGera := 'TOTAL (produto + frete + despesa)'
+	
+ENDIF
+
+If _cTipFre == "F"
+	_cTipFre := "FOB"
+ELSEIF _cTipFre == "I"
+	_cTipFre := "INCLUSO NA NOTA"
+ELSEIF _cTipFre == "C"
+	_cTipFre := "CIF"
+ELSEIF _cTipFre == "N"
+	_cTipFre := "NOSSO CARRO"
+ELSEIF _cTipFre == "R"
+	_cTipFre := "RETIRA"
+ENDIF
+
+DbSelectArea("SE4")
+DbSetOrder(1)
+_cNomPag := ""
+IF DbSeek(xFilial("SE4")+_cCodPag)
+	_cNomPag := SE4->E4_DESCRI
+ENDIF
+
+If SC5->C5_TIPO $ "BD"
+	DbSelectArea("SA2")
+	DbSetOrder(1)
+	IF DbSeek(xFilial("SA2")+_cCodCli)
+		
+		_cNomCli :=  SA2->A2_NOME
+		If !("TMK" $ FunName()) .And. !("MATA410" $ FunName())// MCVN - 13/08/2007
+			_cEndCli :=  SUBSTR(SA2->A2_END,1,60)
+			_cBaiCli :=  SUBSTR(SA2->A2_BAIRRO,1,30)
+			_cMunCli :=  SA2->A2_MUN
+			_cEstCli :=  SA2->A2_EST
+			_cCepCli :=  SA2->A2_CEP
+		Endif
+		_cCgcCli :=  SA2->A2_CGC
+		_cInsCli :=  SA2->A2_INSCR
+		_cTelCli :=  SA2->A2_TEL
+		_cFaxCli :=  SA2->A2_FAX
+		_cSuframa := ""//SA2->A2_SUFRAMA
+		_cCalcSuf := ""//SA2->A2_CALCSUF
+	ENDIF
+Else
+	DbSelectArea("SA1")
+	DbSetOrder(1)
+	IF DbSeek(xFilial("SA1")+_cCodCli)
+		
+		_cNomCli :=  SA1->A1_NOME
+		If !("TMK" $ FunName()) .And. !("MATA410" $ FunName())// MCVN - 13/08/2007
+			_cEndCli :=  SUBSTR(SA1->A1_END,1,60)
+			_cBaiCli :=  SUBSTR(SA1->A1_BAIRRO,1,30)
+			_cMunCli :=  SA1->A1_MUN
+			_cEstCli :=  SA1->A1_EST
+			_cCepCli :=  SA1->A1_CEP 
+		
+		Endif
+		_cCgcCli :=  SA1->A1_CGC
+		_cInsCli :=  SA1->A1_INSCR
+		_cTelCli :=  If(Empty(SA1->A1_DDD),ALLTRIM(SA1->A1_TEL),"("+SA1->A1_DDD+")"+ALLTRIM(SA1->A1_TEL))
+		_cFaxCli :=  SA1->A1_FAX
+		_cSuframa:=  SA1->A1_SUFRAMA                          
+		_cCalcSuf :=  SA1->A1_CALCSUF
+		cCliST:= SA1->A1_TIPO
+	ENDIF
+EndIf
+xITEM_ORC :={}                         // Numero do Item do Pedido de Venda
+xCOD_PRO  :={}                         // Codigo  do Produto
+xQTD_PRO  :={}                         // Peso/Quantidade do Produto
+xUM_PRO   :={}                         // Peso/Quantidade do Produto
+xDESC_PRO :={}                         // Peso/Quantidade do Produto
+xREG_ANVI :={}                         // Registro Anvisa do Produto
+xPRE_UNI  :={}                         // Preco Unitario de Venda
+xVAL_MERC :={}                         // Valor da Mercadoria
+xAliq_Pro :={}                         // aliquota icms
+xVal_cICM :={}                         // preco com ICMS incluso
+xIA		  :={}
+xIL		  :={}
+If "TMK" $ FunName().or.(Type("lMenu") <> "U" .and. lMenu .and. (!"DIPAL10" $ FunName()) .and. (!"MATA410" $ FunName()))
+	dbSelectArea("SUB")                   // * Itens de Venda da N.F.
+	dbSetOrder(1)
+	IF DbSeek(xFilial("SUB")+SUA->UA_NUM)
+		While SUB->(!Eof()) .AND. xFilial("SUB") == SUB->UB_FILIAL .AND. SUA->UA_NUM == SUB->UB_NUM
+			AADD(xITEM_ORC ,ALLTRIM(SUB->UB_ITEM))    ///// UB_ITEM
+			AADD(xCOD_PRO  ,ALLTRIM(SUB->UB_PRODUTO))  ///// UB_PRODUTO
+			AADD(xQTD_PRO  ,SUB->UB_QUANT)            ////// UB QUANT
+			
+			AADD(xIA  	   ,SUB->UB_MARGATU)
+			AADD(xIL       ,SUB->UB_MARGITE)
+			
+			AADD(xUM_PRO   ,ALLTRIM(SUB->UB_UM))       ////// UB_UM
+			
+			dbSelectArea("SB1")                   // * Itens de Venda da N.F.
+			dbSetOrder(1)
+			IF DbSeek(xFilial("SB1")+SUB->UB_PRODUTO)
+				AADD(xDESC_PRO ,ALLTRIM(SB1->B1_DESC))
+			ENDIF
+			//			AADD(xPRE_UNI  ,SUB->UB_VRUNIT)  ////  UB_VRUNIT
+			//			AADD(xVAL_MERC ,SUB->UB_VLRITEM)   ////  UB_VLRITEM
+			//			_cTotG := _cTotG + SUB->UB_VLRITEM
+			
+			AADD(xALIQ_PRO ,SB1->B1_PICM) // B1_PICM
+			AADD(xPRE_UNI  ,Iif(nRadio==3,Round(SUB->UB_VRUNIT / ((100-SB1->B1_PICM)/100),3),SUB->UB_VRUNIT))  //  UB_VRUNIT
+			AADD(xVAL_MERC ,SUB->UB_VLRITEM)           //  UB_VLRITEM
+			AADD(xVAL_cICM ,Round(SUB->UB_VRUNIT / ((100-SB1->B1_PICM)/100),3) * SUB->UB_QUANT) //  VALOR COM ICMS INCLUSO
+			_cTotG := _cTotG + SUB->UB_VLRITEM         // TOTAL GERAL
+			_cTotI += Round(SUB->UB_VRUNIT / ((100-SB1->B1_PICM)/100),3) * SUB->UB_QUANT // TOTAL GERAL COM ICMS
+			
+			If !lErroVal  // MCVN - 20/10/2008
+				If POSICIONE("SE4", 1, XFilial("SE4")+SUA->UA_CONDPG, "E4_USERDES") > 0 //11/11/2008
+					If Round((SUB->UB_USERPRC * SUB->UB_QUANT)-SUB->UB_USERDES,2) <> SUB->UB_VLRITEM .And. (Empty(_cSuframa) .Or. _cCalcSuf = 'N')
+						lErroVal := .T.
+					Endif
+				Else
+					If Round((SUB->UB_VRUNIT * SUB->UB_QUANT),2) <> SUB->UB_VLRITEM .And. (Empty(_cSuframa) .Or. _cCalcSuf = 'N')
+						lErroVal := .T.
+					Endif
+				Endif
+			Endif
+			
+			DbSelectArea("SUB")
+			Dbskip()
+		End
+	ELSE
+		dbSelectArea("SCK")                   // * Itens de Venda da N.F.
+		dbSetOrder(1)
+		IF DbSeek(xFilial("SCK")+SCJ->CJ_NUM)
+			While !Eof() .AND. xFilial("SCK") == SCK->CK_FILIAL .AND. SCJ->CJ_NUM == SCK->CK_NUM
+				AADD(xITEM_ORC ,ALLTRIM(SCK->CK_ITEM2))    ///// UB_ITEM
+				AADD(xCOD_PRO  ,ALLTRIM(SCK->CK_PRODUTO))  ///// UB_PRODUTO
+				AADD(xQTD_PRO  ,SCK->CK_QTDVEN)            ////// UB QUANT
+				AADD(xUM_PRO   ,ALLTRIM(SCK->CK_UM))       ////// UB_UM
+				AADD(xIA  	   ,0)
+				AADD(xIL       ,0)
+				dbSelectArea("SB1")                   // * Itens de Venda da N.F.
+				dbSetOrder(1)
+				IF DbSeek(xFilial("SB1")+SCK->CK_PRODUTO)
+					AADD(xDESC_PRO ,ALLTRIM(SB1->B1_DESC))
+				ENDIF
+				AADD(xPRE_UNI  ,SCK->CK_PRCVEN)  ////  UB_VRUNIT
+				AADD(xVAL_MERC ,SCK->CK_VALOR)   ////  UB_VLRITEM
+				_cTotG := _cTotG + SCK->CK_VALOR
+				
+				If !lErroVal   // MCVN - 20/10/2008
+					If Round((SCK->CK_PRCVEN * SCK->CK_QTDVEN),2) <> SCK->CK_VALOR .And. (Empty(_cSuframa) .Or. _cCalcSuf = 'N')
+						lErroVal := .f.
+					Endif
+				Endif
+				
+				DbSelectArea("SCK")
+				Dbskip()
+			End
+		ENDIF
+	Endif
+	
+ElseIf "DIPAL10" $ FunName() .Or. "MATA410" $ FunName() //MCVN - 25/06/07
+	dbSelectArea("SC6")     // * ITENS DO PEDIDO DE VENDA
+	dbSetOrder(1)
+	IF DbSeek(xFilial("SC6")+SC5->C5_NUM)
+		_nTtoPed:=CALCPED(SC5->C5_NUM)
+		IniImp() 				//INICIO DAS INFORMACOES PARA CALCULO DOS IMPOSTOS
+		While SC6->(!Eof()) .AND. xFilial("SC6") == SC6->C6_FILIAL .AND. SC5->C5_NUM == SC6->C6_NUM
+			
+			If SC6->C6_TIPODIP = '1'
+				AADD(xITEM_ORC ,ALLTRIM(SC6->C6_ITEM))
+				AADD(xCOD_PRO  ,ALLTRIM(SC6->C6_PRODUTO))
+				AADD(xQTD_PRO  ,SC6->C6_QTDVEN)
+				
+				AADD(xIA  	   ,SC6->C6_MARGATU)
+				AADD(xIL       ,SC6->C6_MARGITE)
+				
+				AADD(xUM_PRO   ,ALLTRIM(SC6->C6_UM))
+				AADD(xDESC_PRO ,ALLTRIM(SC6->C6_DESCRI))
+				//				AADD(xPRE_UNI  ,SC6->C6_PRCVEN)
+				//			AADD(xVAL_MERC ,SC6->C6_VALOR)                                             
+				AADD(xREG_ANVI ,Posicione("SB1",1,xFilial("SB1")+SC6->C6_PRODUTO,"B1_REG_ANV")) // B1_REG_ANV				
+				AADD(xALIQ_PRO ,Posicione("SB1",1,xFilial("SB1")+SC6->C6_PRODUTO,"B1_PICM")) // B1_PICM
+				AADD(xPRE_UNI  ,Iif(nRadio==3 ,Round(SC6->C6_PRCVEN / ((100-SB1->B1_PICM)/100),3),SC6->C6_PRCVEN))
+				AADD(xVAL_MERC ,SC6->C6_VALOR)
+				AADD(xVAL_cICM ,Round(SC6->C6_PRCVEN / ((100-SB1->B1_PICM)/100),3) * SC6->C6_QTDVEN) //  VALOR COM ICMS INCLUSO
+				
+				_cTotG := _cTotG + SC6->C6_VALOR
+				_cTotI += Round(SC6->C6_PRCVEN / ((100-SB1->B1_PICM)/100),3) * SC6->C6_QTDVEN
+				//Verifica se tem frete para compor o valor da ST
+				If nVal_Fre >0
+					_nValItem := SC6->C6_VALOR + Round((SC6->C6_QTDVEN * SC6->C6_PRCVEN * nVal_Fre)/_nTtoPed,2)
+				Else
+					_nValItem := SC6->C6_VALOR
+				EndIf
+				ADDImp(_nValItem, SC6->C6_QTDVEN, SC6->C6_PRCVEN, SC6->C6_CLI, SC6->C6_LOJA, SC6->C6_PRODUTO, SC6->C6_TES)//Adicao os Itens para Imposto
+
+				If !lErroVal  // MCVN - 20/10/2008
+					If POSICIONE("SE4", 1, XFilial("SE4")+SUA->UA_CONDPG, "E4_USERDES") > 0 //11/11/2008
+						If Round((SC6->C6_USERPRC * SC6->C6_QTDVEN)-SC6->C6_USERDES,2) <> SC6->C6_VALOR .And. (Empty(_cSuframa) .Or. _cCalcSuf = 'N')
+							lErroVal := .T.
+						Endif
+					Else
+						If Round((SC6->C6_PRCVEN  * SC6->C6_QTDVEN),2) <> SC6->C6_VALOR .And. (Empty(_cSuframa) .Or. _cCalcSuf = 'N')
+							lErroVal := .T.
+						Endif
+					Endif
+				Endif
+				
+			Endif
+			DbSelectArea("SC6")
+			Dbskip()
+			
+		End
+	Endif
+EndIf
+
+While Len(xCOD_PRO) < nTamDet
+	AADD(xITEM_ORC ," ")
+	AADD(xCOD_PRO  ," ")
+	AADD(xQTD_PRO  ," ")
+	AADD(xUM_PRO   ," ")
+	AADD(xDESC_PRO ," ")
+	AADD(xREG_ANVI ," ")
+	AADD(xPRE_UNI  ," ")
+	AADD(xVAL_MERC ," ")
+	AADD(xVAL_cICM ," ")
+	AADD(xALIQ_PRO ," ")
+	AADD(xIA ," ")
+	AADD(xIL ," ")
+End
+nIt := 1
+nPagatu := 1
+
+If lErroVal
+	MsgAlert("Existe(m) erro(s) nos valores unitários e totais, FAVOR CONFERIR VALORES ANTES DE ENVIAR O PEDIDO AO CLIENTE!","Atenção")
+	
+	_cFrom   := Lower(Alltrim(_cMailOpe))
+	_cEmail  := "maximo.canuto@dipromed.com.br;"+Lower(Alltrim(_cMailOpe))
+	_cAssunto:= EncodeUTF8("Problema nos valores unitários - Pedido  "+Iif("DIPAL10" $ FunName() .Or. "MATA410" $ FunName() ,SC5->C5_NUM,SUA->UA_NUMSC5)+" não impresso!  CONFERIR OS VALORES DO PEDIDO!", "cp1252")
+	Aadd( _aMsg , { "Operador: "            , _cOperado +" - "+ _cNomeOpe } )
+	Aadd( _aMsg , { "Cliente:  "            , _cCodCli  +" - "+ _cNomCli  } )
+	Aadd( _aMsg , { "Explicação: "          , _cExplWor } )
+	U_UEnvMail(_cEmail,_cAssunto,_aMsg,"",_cFrom,_cFuncSent)
+Endif
+
+If _lTmsPrinter
+	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+	//³Impressao do relatorio                      ³
+	//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+	Private nlin    	 := 50
+	Private ArialN6      := TFont():New("Arial"	,,6	,,.F.,,,,,.F.)
+	Private ArialN6B     := TFont():New("Arial"	,,6	,,.T.,,,,,.F.)
+	Private ArialN8      := TFont():New("Arial"	,,8	,,.F.,,,,,.F.)
+	Private ArialN8B     := TFont():New("Arial"	,,8	,,.T.,,,,,.F.)
+	Private ArialN9      := TFont():New("Arial"	,,9	,,.F.,,,,,.F.)
+	Private ArialN9B     := TFont():New("Arial"	,,9	,,.T.,,,,,.F.)
+	Private ArialN10     := TFont():New("Arial"	,,10,,.F.,,,,,.F.)
+	Private ArialN10B    := TFont():New("Arial"	,,10,,.T.,,,,,.F.)
+	Private ArialN10C    := TFont():New("Arial"	,,10,,.T.,,,,,.F.,.T.)
+	Private ArialN12     := TFont():New("Arial"	,,12,,.F.,,,,,.F.)
+	Private ArialN12B    := TFont():New("Arial"	,,12,,.T.,,,,,.F.)
+	Private ArialN14     := TFont():New("Arial"	,,14,,.F.,,,,,.F.)
+	Private ArialN14B    := TFont():New("Arial"	,,14,,.T.,,,,,.F.)
+	Private ArialN16     := TFont():New("Arial"	,,16,,.F.,,,,,.F.)
+	Private ArialN16B    := TFont():New("Arial"	,,16,,.T.,,,,,.F.)
+	Private ArialN18     := TFont():New("Arial"	,,18,,.F.,,,,,.F.)
+	Private ArialN18B    := TFont():New("Arial"	,,18,,.T.,,,,,.F.)
+	Private ArialN20     := TFont():New("Arial"	,,20,,.F.,,,,,.F.)
+	Private ArialN20B    := TFont():New("Arial"	,,20,,.T.,,,,,.F.)
+	Private Times14	     := TFont():New("Times New Roman",,12,,.T.,,,,,.F. )
+	Private Times20      := TFont():New("Times New Roman",,20,,.T.,,,,,.F. )
+	Private CourN10      := TFont():New("Courier New",,10,,.F.,,,,.T.,.F.)
+	Private CourN10B     := TFont():New("Courier New",,10,,.T.,,,,.T.,.F.)
+	Private _lICM 		 := (nRadio == 3)
+	Private _cNomTel     := ""
+	
+	
+	oPrint:= TMSPrinter():New()
+	
+	//oPrint:SetPortrait()
+	oPrint:SetLandScape() //- retrato ou paisagem
+	//oPrint:Setup()
+	
+	_nORC := Iif("DIPAL10" $ FunName() .Or. "MATA410" $ FunName(),SC5->C5_NUM,SUA->UA_NUMSC5)
+	If nRadio == 1
+		//		_cTelefon 	:= If(_cPosto == '01',"APOIO:  0800-7700217","TELEVENDAS: 0800-0114066")
+		_cTelefon	:= If(cEmpAnt+cFilAnt == '0401',"(11) 2398-1888",If(_cPosto == '01',"APOIO:  0800-7700217","TELEVENDAS: 0800-0114066"))
+		_cFax		:= If(cEmpAnt+cFilAnt == '0401',"FAX: (11) 2398-1888","FAX: 0800-0144997")
+	Else
+		If cEmpAnt+cFilAnt == '0401'
+			_cTelefon 	:= "LICITAÇÕES: (11) 2398-1888"
+			_cFax		:= "FAX: (11) 2398-1888"
+		Else 
+			_cTelefon 	:= "LICITAÇÕES: (11) 3646-0192"
+			_cFax		:= "FAX: (11) 3646-0193"		
+		EndIf
+			
+	EndIf
+	_cTitulo	:= If(!_lCartaVale,"PEDIDO","CARTA")
+	_cTitulo2	:= If(nRadio != 1,"LICITAÇÕES","")
+	_cDipMail	:= If(nRadio != 1,"publico",If(_cPosto == '01',"dipromed","televendas"))+"@dipromed.com.br"
+	_cDipMail   := If(cEmpAnt == '04',If(cFilAnt='01',"www.healthquality.ind.br   -   vendas@healthquality.ind.br","www.healthquality.ind.br   -   "+_cDipMail )  ,"www.dipromed.com.br  -  "+_cDipMail)
+	If Alltrim(_cTelCli) == Alltrim(_cFaxCli) // Tratando telefone  MCVN - 10/08/07
+		_cNomTel := "Fone/Fax:"
+	Else
+		_cNomTel := "Fone:"
+		_CTELCLI := _cTelCli+If(!Empty(Alltrim(_cFaxCli))," - Fax: "+_cFaxCli,"")
+	Endif
+	
+	nPagina 	:= 0
+	CabecPV(@nlin)
+	CorpoPV(@nLin)
+	FinalPV()
+	RodapePV()
+	If !_lRascunho .And. _nRadio1 == 5
+		_cTo		:= Alltrim(SA1->A1_EMAILD)+If(_cPosto $ '01/03',";"+_cMailVen,Space(1))+Space(60)
+		_cBodyPrvt 	:= RetBody(@_cTo)
+		If !Empty(_cTo)
+			JpegMail(_cMailOpe,_cTo,_cTipoVen)
+		EndIf
+	ElseIf _lRascunho .And. _nRadio1 == 5
+		MsgAlert("O e-mail não será enviado, pois foi selecionada a opção de Rascunho!","Atenção")
+	Else
+		PvCpFile() // CRIAR ARQUIVO NA MÁQUINA DO USUÁRIO - MCVN - 05/03/2008
+	EndIf
+	
+	oPrint:Preview()
+Else
+	While nIt <= (Len(xCOD_PRO))
+		For I:=1 to nTamDet
+			If nIt <= Len(xCOD_PRO)
+				OLE_SetDocumentVar(hWord, "_CIT"+alltrim(str(I))  ,xITEM_ORC[nIt])
+				OLE_SetDocumentVar(hWord, "_CCOD"+alltrim(str(I)) ,xCOD_PRO[nIt])
+				OLE_SetDocumentVar(hWord, "_CQTD"+alltrim(str(I)) ,xQTD_PRO[nIt])
+				OLE_SetDocumentVar(hWord, "_CUM"+alltrim(str(I))  ,xUM_PRO[nIt])
+				OLE_SetDocumentVar(hWord, "_CDES"+alltrim(str(I)) ,xDESC_PRO[nIt])
+				IF EMPTY(xPRE_UNI[nIt])
+					OLE_SetDocumentVar(hWord, "_CPRV"+alltrim(str(I)) ,xPRE_UNI[nIt])
+					OLE_SetDocumentVar(hWord, "_CTOT"+alltrim(str(I)) ,xVAL_MERC[nIt])
+				ELSE
+					OLE_SetDocumentVar(hWord, "_CPRV"+alltrim(str(I)) ,Transform(xPRE_UNI[nIt],"@E 99,999.9999"))
+					OLE_SetDocumentVar(hWord, "_CTOT"+alltrim(str(I)) ,Transform(xVAL_MERC[nIt],"@E 999,999.99"))
+				ENDIF
+				nIt := nIt + 1
+			Endif
+		Next
+		nPagatu := nPagatu + 1
+		If nIt > Len(xCOD_PRO)
+			exit
+		Else
+			RODAPE()
+			CABECA(nRadio)
+		Endif
+		dbskip()
+	End
+	
+	//³ Atualizando as variaveis do documento do Word
+	OLE_SetDocumentVar(hWord, "_NORC" ,Iif("DIPAL10" $ FunName() .Or. "MATA410" $ FunName(),SC5->C5_NUM,SUA->UA_NUMSC5)) //_nOrc)
+	OLE_SetDocumentVar(hWord, "_CCODCLI" ,_cCodCli)
+	OLE_SetDocumentVar(hWord, "_CCODPAG" ,_cCodPag)
+	OLE_SetDocumentVar(hWord, "_CPRAENT" ,If(_cPosto == '01','Prazo de entrega:  '+_cPraEnt,""))
+	OLE_SetDocumentVar(hWord, "_CDTVALI" ,_cDtVali)
+	OLE_SetDocumentVar(hWord, "_CFATMIN" ,Transform(_cFatMin,"@E 9,999,999.99"))
+	OLE_SetDocumentVar(hWord, "_CTIPFRE" ,_cTipFre)
+	OLE_SetDocumentVar(hWord, "_CAC" ,_cAc)
+	OLE_SetDocumentVar(hWord, "_COBS" ,_cObs)
+	OLE_SetDocumentVar(hWord, "_CCONT" ,_cCont)
+	OLE_SetDocumentVar(hWord, "_CGERA" ,_cGera)
+	OLE_SetDocumentVar(hWord, "_CEMI" ,_cEmi)
+	OLE_SetDocumentVar(hWord, "_CNOMPag" ,_cNomPag)
+	OLE_SetDocumentVar(hWord, "_CNOMCLI" ,_cNomCli)
+	OLE_SetDocumentVar(hWord, "_CENDCLI" ,_cEndCli)
+	OLE_SetDocumentVar(hWord, "_CBAICLI" ,_cBaiCli)
+	OLE_SetDocumentVar(hWord, "_CMUNCLI" ,_cMunCli)
+	OLE_SetDocumentVar(hWord, "_CESTCLI" ,_cEstCli)
+	OLE_SetDocumentVar(hWord, "_CCEPCLI" ,_cCepCli)
+	OLE_SetDocumentVar(hWord, "_CCGCCLI" ,_cCgcCli)
+	OLE_SetDocumentVar(hWord, "_CINSCLI" ,_cInsCli)
+	If Alltrim(_cTelCli) == Alltrim(_cFaxCli) // Tratando telefone  MCVN - 10/08/07
+		OLE_SetDocumentVar(hWord, "_CTELCLI" ,"Fone/Fax: "+_cTelCli)
+	Else
+		OLE_SetDocumentVar(hWord, "_CTELCLI" ,"Fone: "+_cTelCli+If(!Empty(Alltrim(_cFaxCli))," - Fax: "+_cFaxCli,""))
+	Endif
+	OLE_SetDocumentVar(hWord, "_COPERADO" ,_cOperado)
+	OLE_SetDocumentVar(hWord, "_CNOMEOPE" ,_cNomeOpe)
+	OLE_SetDocumentVar(hWord, "_CMAILOPE" ,_cMailOpe)
+	OLE_SetDocumentVar(hWord, "_CTRANSP" ,_cTransp)
+	OLE_SetDocumentVar(hWord, "_CNOMETRA" ,_cNomeTra)
+	OLE_SetDocumentVar(hWord, "_CVEND" ,_cVend)
+	OLE_SetDocumentVar(hWord, "_CNOMEVEN" ,If(_cPosto $ '01/03',_cNomeVen+' / Operador(a):  '+_cNomeOpe,_cNomeVen))
+	OLE_SetDocumentVar(hWord, "_CMAILOPE" ,If(_cPosto $ '01/03',_cMailOpe,_cMailVen))
+	OLE_SetDocumentVar(hWord, "_CMAILVEN" ,If(_cPosto == '01',"dipromed@dipromed.com.br",_cMailVen))
+	_cTelefon := If(_cPosto == '01',"APOIO:  0800-7700217","TELEVENDAS: 0800-0114066")
+	OLE_SetDocumentVar(hWord, "_CTELEFON" ,_cTelefon)
+	OLE_SetDocumentVar(hWord, "_CTOTG" ,Transform(_cTotG,"@E 9,999,999.99"))
+	OLE_SetDocumentVar(hWord, "_CTOTF" ,Transform(_cTotG + nVal_Fre + nVal_Des,"@E 9,999,999.99"))
+	OLE_SetDocumentVar(hWord, "_CFRET" ,"Frete: " + AllTrim(Transform(nVal_Fre,"@E 9,999,999.99")))
+	OLE_SetDocumentVar(hWord, "_CDESP" ,"Despesa: " + AllTrim(Transform(nVal_Des,"@E 9,999,999.99")))
+	OLE_Updatefields(hWord)
+	
+	If _nRadio1 == 1 .or. _nRadio1 == 2
+		Ole_PrintFile(hWord,"ALL",,,1) // Imprime a Proposta
+		inkey(6)
+	EndIf
+	If _nRadio1 == 1
+		Ole_CloseFile(hWord)
+		Ole_CloseLink(hWord)
+	EndIf
+	
+	
+	While !_lSaidaP
+		@ 100,150 To 200,530 Dialog oDlg2 Title OemToAnsi(_cNomeOpe+", Porque imprimir em Word? O que será alterado?")
+		@ 010,010 Get _cExplWor Valid !Empty(_cExplWor) .And. Len(_cExplWor) > 10 SIZE 170,10
+		@ 030,150 BmpButton Type 1 Action (_lSaidaP := .T., Close(oDlg2) )
+		Activate Dialog oDlg2 Centered
+	EndDo
+	
+	_cFrom   := Lower(Alltrim(_cMailOpe))
+	_cEmail  := "maximo.canuto@dipromed.com.br"
+	_cAssunto:= EncodeUTF8("Pedido  "+Iif("DIPAL10" $ FunName() .Or. "MATA410" $ FunName(),SC5->C5_NUM,SUA->UA_NUMSC5)+" foi impresso no Word!", "cp1252")
+	Aadd( _aMsg , { "Numero Pedido: "       , Iif("DIPAL10" $ FunName() .Or. "MATA410" $ FunName(),SC5->C5_NUM,SUA->UA_NUMSC5) } )
+	Aadd( _aMsg , { "Operador: "            , _cOperado +" - "+ _cNomeOpe } )
+	Aadd( _aMsg , { "Cliente:  "            , _cCodCli  +" - "+ _cNomCli  } )
+	Aadd( _aMsg , { "Explicação: "          , _cExplWor } )
+	U_UEnvMail(_cEmail,_cAssunto,_aMsg,"",_cFrom,_cFuncSent)
+	
+EndIf
+
+
+Return
+
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±³Funcao    ³  RODAPE     ³Autor ³  Rodrigo Franco     ³Data ³  25/01/2002     ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descricao ³  Inicia o processo de impressao do Rodape do Orçamento           ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³ Uso      ³  DIPROMED                                                        ³±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+/*/
+Static Function RODAPE()
+
+OLE_SetDocumentVar(hWord, "_NORC" ,Iif("DIPAL10" $ FunName() .Or. "MATA410" $ FunName(),SC5->C5_NUM,SUA->UA_NUMSC5)) //_nOrc)
+OLE_SetDocumentVar(hWord, "_CCODCLI" ,_cCodCli)
+OLE_SetDocumentVar(hWord, "_CCODPAG" ,_cCodPag)
+OLE_SetDocumentVar(hWord, "_CPRAENT" ,If(_cPosto == '01','Prazo de entrega:  '+_cPraEnt,""))
+OLE_SetDocumentVar(hWord, "_CDTVALI" ,_cDtVali)
+OLE_SetDocumentVar(hWord, "_CFATMIN" ,Transform(_cFatMin,"@E 9,999,999.99"))
+OLE_SetDocumentVar(hWord, "_CTIPFRE" ,_cTipFre)
+OLE_SetDocumentVar(hWord, "_CAC" ,_cAc)
+//OLE_SetDocumentVar(hWord, "_COBS" ,"Continua na Proxima Página...")
+OLE_SetDocumentVar(hWord, "_COBS" ,_cObs)
+OLE_SetDocumentVar(hWord, "_cCont" , "Continua na Proxima Página...")
+OLE_SetDocumentVar(hWord, "_CGERA" , "Continua na Proxima Página...")
+OLE_SetDocumentVar(hWord, "_CEMI" ,_cEmi)
+OLE_SetDocumentVar(hWord, "_CNOMPag" ,_cNomPag)
+OLE_SetDocumentVar(hWord, "_CNOMCLI" ,_cNomCli)
+OLE_SetDocumentVar(hWord, "_CENDCLI" ,_cEndCli)
+OLE_SetDocumentVar(hWord, "_CBAICLI" ,_cBaiCli)
+OLE_SetDocumentVar(hWord, "_CMUNCLI" ,_cMunCli)
+OLE_SetDocumentVar(hWord, "_CESTCLI" ,_cEstCli)
+OLE_SetDocumentVar(hWord, "_CCEPCLI" ,_cCepCli)
+OLE_SetDocumentVar(hWord, "_CCGCCLI" ,_cCgcCli)
+OLE_SetDocumentVar(hWord, "_CINSCLI" ,_cInsCli)
+If Alltrim(_cTelCli) == Alltrim(_cFaxCli) // Tratando telefone  MCVN - 10/08/07
+	OLE_SetDocumentVar(hWord, "_CTELCLI" ,"Fone/Fax: "+_cTelCli)
+Else
+	OLE_SetDocumentVar(hWord, "_CTELCLI" ,"Fone: "+_cTelCli+If(!Empty(Alltrim(_cFaxCli))," - Fax: "+_cFaxCli,""))
+Endif
+OLE_SetDocumentVar(hWord, "_COPERADO" ,_cOperado)
+OLE_SetDocumentVar(hWord, "_CNOMEOPE" ,_cNomeOpe)
+OLE_SetDocumentVar(hWord, "_CMAILOPE" ,_cMailOpe)
+OLE_SetDocumentVar(hWord, "_CTRANSP" ,_cTransp)
+OLE_SetDocumentVar(hWord, "_CNOMETRA" ,_cNomeTra)
+OLE_SetDocumentVar(hWord, "_CVEND" ,_cVend)
+OLE_SetDocumentVar(hWord, "_CNOMEVEN" ,If(_cPosto $ '01/03',_cNomeVen+' / Operador(a):  '+_cNomeOpe,_cNomeVen))
+OLE_SetDocumentVar(hWord, "_CMAILOPE" ,If(_cPosto $ '01/03',_cMailOpe,_cMailVen))
+OLE_SetDocumentVar(hWord, "_CMAILVEN" ,If(_cPosto == '01',"dipromed@dipromed.com.br",_cMailVen))
+_CTELEFON := If(cEmpAnt+cFilAnt == '0401',"(11) 2398-1888",If(_cPosto == '01',"APOIO:  0800-7700217","TELEVENDAS: 0800-0114066"))
+OLE_SetDocumentVar(hWord, "_CTELEFON",_CTELEFON)
+OLE_SetDocumentVar(hWord, "_CTOTG" ," ")
+OLE_SetDocumentVar(hWord, "_CTOTF" ," ")
+OLE_SetDocumentVar(hWord, "_CFRET" ," ")
+OLE_SetDocumentVar(hWord, "_CDESP" ," ")
+OLE_Updatefields(hWord)
+
+If _nRadio1 == 1 .or. _nRadio1 == 2
+	Ole_PrintFile(hWord,"ALL",,,1) // Imprime a Proposta
+	inkey(6)
+EndIf
+
+If _nRadio1 == 1
+	Ole_CloseFile(hWord)
+	Ole_CloseLink(hWord)
+EndIf
+
+Return
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±³Funcao    ³  CABECA     ³Autor ³  Rodrigo Franco     ³Data ³  25/01/2002     ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descricao ³  Inicia o processo de impressao do Cabecalho do Orçamento        ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³ Uso      ³  DIPROMED                                                        ³±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+/*/
+Static Function CABECA(nRadio)
+
+If nRadio == 1
+	//	oArqMala := "PedVen1.dot"
+	oArqMala := "PedVennew.dot"
+Else
+	oArqMala := "PedLic1.dot"
+Endif
+cPathCli := "C:\wordtmp\"
+
+//Gerando novo documento
+hWord    := OLE_CreateLink()
+OLE_NewFile( hWord, cPathCli + oArqMala)
+nVez := nPagatu * nTamDet
+While Len(xCOD_PRO) < nVez
+	AADD(xITEM_ORC ," ")
+	AADD(xCOD_PRO  ," ")
+	AADD(xQTD_PRO  ," ")
+	AADD(xUM_PRO   ," ")
+	AADD(xDESC_PRO ," ")
+	AADD(xREG_ANVI ," ")
+	AADD(xPRE_UNI  ," ")
+	AADD(xVAL_MERC ," ")
+End
+
+ReturN
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±³Funcao    ³  CabecPV    ³Autor ³ CONSULTORIA         ³Data ³  12/02/2008     ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descricao ³  Cabecalho em TmsPrinter - Pedido/Orcamento                      ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³ Uso      ³  DIPROMED                                                        ³±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+/*/
+Static Function CabecPV()
+// Contorno Geral
+oPrint:Line(0050,0050, 0050, 3380) // Linha Superior
+oPrint:Line(0050,0050, 2200, 0050) // Linha Lateral Esquerda
+oPrint:Line(0050,3380, 2200, 3380) // Linha Lateral Direita
+oPrint:Line(2200,0050, 2200, 3380) // Linha Inferior
+
+If !_lRascunho
+	IF cEmpAnt=="01"   // MCVN - 03/03/2010
+		oPrint:SayBitmap(0060,0080,"logo_pc.BMP",388,300)
+		oPrint:Say(070,700, "DIPROMED - Comércio e Importação Ltda." 				,ArialN12B	,100)
+		
+		If Upper(_cTitulo) == "ORCAMENTO" .And. Upper(_cTitulo2) == "LICITACOES" 
+			If cFilAnt == "01"
+				oPrint:Say(115,700,"CNPJ: 47.869.078/0001-00   IE: 109.616.751.119"			,ArialN10	,100)
+			Else 
+				oPrint:Say(115,700,"CNPJ: 47.869.078/0004-53   IE: 492.462.393.118"			,ArialN10	,100)
+			EndIf
+			oPrint:Say(160,850,"Av. Dr. Mauro L.Monteiro , 185"			   				,ArialN10	,100)
+			oPrint:Say(200,800,"Jardim Santa Fé - Osasco - SP - CEP: 06278-010"			,ArialN10	,100)
+			oPrint:Say(250,0690,_cTeleFon								   	  			,ArialN10B	,100)
+			oPrint:Say(250,1290,_cFax									   	  			,ArialN10B	,100)
+		Else
+			oPrint:Say(130,850,"Rua Bartolomeu Paes, 441"			   					,ArialN10	,100)
+			oPrint:Say(170,800,"Vila Anastácio - São Paulo-SP - CEP: 05092-000"			,ArialN10	,100)
+			oPrint:Say(230,0690,_cTeleFon								   	  			,ArialN10B	,100)
+			oPrint:Say(230,1290,_cFax									   	  			,ArialN10B	,100)
+		Endif
+		
+		If("televendas"$_cDipMail)
+			oPrint:Say(290,800,"Horário de Atendimento: 08:00 às 17:48" 		    ,ArialN10B	,100)
+		Else
+			oPrint:Say(290,800,"Horário de Atendimento: 08:00 às 17:48"            	,ArialN10B	,100)
+		Endif
+		oPrint:Say(330,700,_cDipMail				 								,ArialN10B	,100)
+	ElseIf cEmpAnt+cFilAnt=="0404"
+		oPrint:SayBitmap(0060,0080,"hq_logo.BMP",388,300)
+		oPrint:Say(070,700, "HEALTH QUALITY - Indústria e Comércio LTDA."  			,ArialN12B	,100)
+		
+		//		oPrint:Say(115,900,"CNPJ: 05.150.878/0001-27 "                          	,ArialN10	,100)
+		oPrint:Say(160,850,"Av. Dr. Antenor Soares Gandra, 321"		   				,ArialN10	,100)
+		oPrint:Say(200,800,"Jardim Saúde - Jarinu - SP - CEP: 13240-000"			,ArialN10	,100)
+		//		oPrint:Say(130,850,"Av. Dr. Mauro L.Monteiro , 185"			   				,ArialN10	,100)
+		//		oPrint:Say(170,800,"Jardim Santa Fé - Osasco - SP - CEP: 06278-010"			,ArialN10	,100)
+		
+		oPrint:Say(230,0690,_cTeleFon								   	  			,ArialN10B	,100)
+		oPrint:Say(230,1290,_cFax									   	  			,ArialN10B	,100)
+		
+		If("televendas"$_cDipMail)
+			oPrint:Say(290,800,"Horário de Atendimento: 08:00 às 17:48" 		    ,ArialN10B	,100)
+		Else
+			oPrint:Say(290,800,"Horário de Atendimento: 08:00 às 17:48"            	,ArialN10B	,100)
+		Endif
+		oPrint:Say(330,700,_cDipMail				 								,ArialN10B	,100)
+		
+	ElseIf cEmpAnt+cFilAnt=="0401"
+		oPrint:SayBitmap(0060,0080,"hq_logo.BMP",388,300)
+		
+		oPrint:Say(070,700,"HEALTH QUALITY - Indústria e Comércio LTDA." 	        ,ArialN12B	,100)
+		oPrint:Say(115,900,"CNPJ: 05.150.878/0001-27 "                          	,ArialN10	,100)
+		//oPrint:Say(160,850,"Av. Dr. Antenor Soares Gandra, 321"		   				,ArialN10	,100)
+		oPrint:Say(160,850,"Av. Ver. João Pedro Ferraz, 1255"		   				,ArialN10	,100)
+		//oPrint:Say(200,800,"Jardim Saúde - Jarinu - SP - CEP: 13240-000"			,ArialN10	,100)
+		oPrint:Say(200,800,"Bom Retiro - Jarinu - SP - CEP: 13240-000"				,ArialN10	,100)
+		oPrint:Say(250,0800,_cTeleFon								   	  			,ArialN10B	,100)
+		oPrint:Say(250,1290,_cFax									   	  			,ArialN10B	,100)
+		
+		If("televendas"$_cDipMail)
+			//oPrint:Say(290,800,"Horário de Atendimento: 08:00 às 18:00" 		    ,ArialN10B	,100)
+			oPrint:Say(290,800,"Horário de Atendimento: 07:30 às 17:18" 		    ,ArialN10B	,100)
+		Else
+			//oPrint:Say(290,800,"Horário de Atendimento: 08:00 às 18:00"            	,ArialN10B	,100)
+			oPrint:Say(290,800,"Horário de Atendimento: 07:30 às 17:18"            	,ArialN10B	,100)
+		Endif
+		oPrint:Say(330,700,_cDipMail				 								,ArialN10B	,100)
+	Endif
+Else
+	oPrint:Say(170,0470, "* * * * R A S C U N H O * * * *" 		   				,ArialN20B	,100)
+	/*
+	oPrint:Say(330,0470,"IA:"+TransForm(_cIA,"@E 999,999.999")					,ArialN10B	,100)
+	oPrint:Say(330,1470,"IL:"+TransForm(_cIL,"@E 999,999.999")					,ArialN10B	,100)
+	*/
+EndIf
+nPagina++
+oPrint:Say(090,2950,"Pag: "+StrZero(nPagina,4) 					 		,ArialN8B	,100)
+
+oPrint:Say(070,1790,_cTitulo+" : "	+_nORC			 	   					,ArialN14B	,100)
+//oPrint:Say(070,2480,_cTitulo2												,ArialN14B	,100)
+
+oPrint:Say(150,1790,"Cliente:" 							 	  			 	,ArialN8	,100)
+oPrint:Say(150,1980,_cCODCLI+" - "+SA1->A1_LOJA+"-"						,ArialN8	,100)
+oPrint:Say(150,2170,Substr(_cNOMCLI,1,50) 						 			,ArialN8	,100)
+
+oPrint:Say(184,1790,"End.Entrega:" 							 				,ArialN8	,100)
+oPrint:Say(184,1980,Transform(_cENDCLI,PesqPict("SA1","A1_END") )		  	,ArialN8	,100)
+
+oPrint:Say(218,1980,Trim(_cBAICLI)											,ArialN8	,100)// 2710
+oPrint:Say(218,2420,Transform(_cCEPCLI,PesqPict("SA1","A1_CEP") ) 			,ArialN8	,100)// 1980
+oPrint:Say(218,2555,Trim(_cMUNCLI)   					   			 		,ArialN8	,100)// 2380
+oPrint:Say(218,2945,"-"				   					   			 		,ArialN8	,100)
+oPrint:Say(218,2960,Transform(_cESTCLI,PesqPict("SA1","A1_EST") ) 			,ArialN8	,100)// 2710
+
+oPrint:Say(252,1790,_cNomTel						 						,ArialN8	,100)
+oPrint:Say(252,1980,_cTELCLI											  	,ArialN8	,100)
+
+oPrint:Say(252,2710,"A/C:"+_cAC											 	,ArialN8	,100)
+
+//AJUSTE PARA TRAZER CFP OU CNPJ NO LAYOUT DE IMPRESSAO      
+If SA1->A1_PESSOA =='J' 
+
+oPrint:Say(286,1790,"CNPJ:"              	 				 				,ArialN8	,100)
+oPrint:Say(286,1980,Transform(_cCGCCLI,PesqPict("SA1","A1_CGC") )  		,ArialN8	,100)
+oPrint:Say(286,2385,"IE:"									   				,ArialN8	,100)
+oPrint:Say(286,2435,Transform(_cINSCLI,PesqPict("SA1","A1_INSCR") )		,ArialN8	,100)
+
+Else
+
+oPrint:Say(286,1790,"CPF:"              	 				 				,ArialN8	,100)
+oPrint:Say(286,1980,Transform(_cCGCCLI,"@R 999.999.999-99")  				,ArialN8	,100)
+oPrint:Say(286,2385,"IE:"									   				,ArialN8	,100)
+oPrint:Say(286,2435,Transform(_cINSCLI,PesqPict("SA1","A1_INSCR") )			,ArialN8	,100)
+
+EndIf
+
+If !_lCartaVale
+	oPrint:Say(320,1790,"Data Pedido:" 					 						,ArialN8B	,100)
+	oPrint:Say(320,1980,_cEMI												   	,ArialN8B	,100)
+
+	If cCliST=="F"
+		oPrint:Say(320,2385,"Validade:"			  				  					,ArialN8B	,100)
+		oPrint:Say(320,2540,Transform(_cDTVali,"@d")								,ArialN8B 	,100)
+	EndIf
+	
+	If _cPosto == '01'
+		oPrint:Say(320,2710,'Prazo Entrega:'+Transform(_cPraEnt,"@d")			,ArialN8B 	,100)
+	ElseIf _cPosto == '03'
+		oPrint:Say(320,2710,'Prazo Entrega:'+_cPraEnt+"  Dia(s)"				,ArialN8B 	,100)
+	EndIf
+	
+	oPrint:Say(354,1790,"Cond.Pagto:" 											,ArialN8B	,100)
+	oPrint:Say(354,1980,SubStr(AllTrim(_cCODPAG)+'-'+AllTrim(_cNOMPAG),1,40)	,ArialN8B	,100)
+	
+	If _cFatMin > 0
+		oPrint:Say(354,2385,"Faturamento Mínimo: "+;
+		Transform(_cFatMin,"@E 9,999,999.99")					,ArialN8B	,100)
+	Endif
+Endif
+
+oPrint:Line(400,0050, 400, 3380)
+
+oPrint:Say(420,0070,"Item"			  			       	  							,ArialN10B	,100)
+oPrint:Say(420,0200,"Código"	           	   										,ArialN10B	,100)
+oPrint:Say(420,0450,"Descrição"														,ArialN10B	,100)
+
+If cEmpAnt+cFilAnt == '0401' .And. SC5->C5_TIPODIP == '2'
+	If _lICM .Or. _lRascunho
+		oPrint:Say(420,1840,"Quant."					   		 					    ,ArialN10B	,100)
+		oPrint:Say(420,2060,"Un"						    						    ,ArialN10B	,100)
+		If !_lCartaVale
+			oPrint:Say(420,2150,"Preço Unit"											,ArialN10B	,100)
+			If _lRascunho
+				oPrint:Say(420,2420,"Preço Total"										,ArialN10B	,100)
+				/*
+				oPrint:Say(420,2830,"IA"												,ArialN10B	,100)
+				oPrint:Say(420,3040,"IL"												,ArialN10B	,100)
+				*/
+				oPrint:Say(420,2750,"IA:"+TransForm(_cIA,"@E ***.***")						,ArialN8B	,100)
+				oPrint:Say(420,2950,"IL:"+TransForm(_cIL,"@E ***.***")						,ArialN8B	,100)
+			Else
+				oPrint:Say(420,2470,"Total c/ ICMS"										,ArialN10B	,100)
+				oPrint:Say(420,2750,"Aliq"												,ArialN10B	,100)
+				oPrint:Say(420,2870,"Total s/ ICMS"										,ArialN10B	,100)
+			EndIf
+		Endif
+	Else
+		If !_lCartaVale
+			oPrint:Say(420,1775,"Quant."					   		 				     	,ArialN10B	,100)
+			oPrint:Say(420,1950,"UM"						    						    ,ArialN10B	,100)
+			oPrint:Say(420,2050,"Preço Unit"												,ArialN10B	,100)
+			oPrint:Say(420,2300,"Preço Total" 												,ArialN10B	,100)
+			oPrint:Say(420,2550,"Aliq.IPI" 													,ArialN10B	,100)			
+			oPrint:Say(420,2750,"IPI" 														,ArialN10B	,100)
+			oPrint:Say(420,2920,"Aliq.ICMS"													,ArialN10B	,100)
+			oPrint:Say(420,3200,"ICMS ST"													,ArialN10B	,100)
+		Else
+			oPrint:Say(420,2200,"Quant."					   		 				     	,ArialN10B	,100)
+			oPrint:Say(420,2680,"UM"						    						    ,ArialN10B	,100)
+		Endif
+		
+	EndIf
+Else 
+	If _lICM .Or. _lRascunho
+		oPrint:Say(420,1840,"Quant."					   		 					    ,ArialN10B	,100)
+		oPrint:Say(420,2060,"Un"						    						    ,ArialN10B	,100)
+		If !_lCartaVale
+			oPrint:Say(420,2200,"Preço Unit"											,ArialN10B	,100)
+			If _lRascunho
+				oPrint:Say(420,2470,"Preço Total"										,ArialN10B	,100)
+				/*
+				oPrint:Say(420,2830,"IA"												,ArialN10B	,100)
+				oPrint:Say(420,3040,"IL"												,ArialN10B	,100)
+				*/
+				oPrint:Say(420,2750,"IA:"+TransForm(_cIA,"@E ***.***")						,ArialN8B	,100)
+				oPrint:Say(420,2950,"IL:"+TransForm(_cIL,"@E ***.***")						,ArialN8B	,100)
+			Else
+				oPrint:Say(420,2470,"Total c/ ICMS"										,ArialN10B	,100)
+				oPrint:Say(420,2750,"Aliq"												,ArialN10B	,100)
+				oPrint:Say(420,2870,"Total s/ ICMS"										,ArialN10B	,100)
+			EndIf
+		Endif
+	Else
+		If !_lCartaVale             
+			If FunName()=="DIPAL10"
+				oPrint:Say(420,1840,"Quant."					   		 					    ,ArialN10B	,100)
+				oPrint:Say(420,2060,"Un"						    						    ,ArialN10B	,100)	
+				oPrint:Say(420,2200,"Preço Unit"											,ArialN10B	,100)
+				oPrint:Say(420,2470,"Preço Total"										,ArialN10B	,100)
+				oPrint:Say(420,2750,"IA:"+TransForm(_cIA,"@E ***.***")						,ArialN8B	,100)
+				oPrint:Say(420,2950,"IL:"+TransForm(_cIL,"@E ***.***")						,ArialN8B	,100)
+			Else
+				oPrint:Say(420,1940,"Quant."					   		 				     	,ArialN10B	,100)
+				oPrint:Say(420,2160,"UM"						    						    ,ArialN10B	,100)
+				oPrint:Say(420,2360,"Preço Unit"											,ArialN10B	,100)
+				oPrint:Say(420,2800,"Preço Total" 											,ArialN10B	,100)
+			EndIf
+		Else
+			oPrint:Say(420,2400,"Quant."					   		 				     	,ArialN10B	,100)
+			oPrint:Say(420,2880,"UM"						    						    ,ArialN10B	,100)
+		Endif
+		
+	EndIf
+EndIf	
+	
+oPrint:Line(480,0050, 480, 3380)
+nlin := If(nPagina==1,455,495)
+
+Return
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Programa  ³ CorpoPV  ³ Autor ³ Consultoria           ³ Data ³29.06.2007³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³ Impressao dos itens do Pedido/Orcamentoo                   ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+/*/
+Static Function CorpoPv(nLin)
+For nIt:=1 To Len(xCOD_PRO)
+	If Empty(xITEM_ORC[nIt])
+		Exit
+	EndIf
+	U_LinPV(@nLin,40) 
+	If! Empty(xREG_ANVI[nIt]) .And. (nRadio == 2 .Or. FunName()=="DIPAL10")	
+		If (nIt%2) == 0 .And. File("cinza.bmp") .And. !_lFax
+			oPrint:SayBitmap(nLin,0060,"cinza.bmp",3315,80)
+		EndIf
+	Else 
+		If (nIt%2) == 0 .And. File("cinza.bmp") .And. !_lFax
+			oPrint:SayBitmap(nLin,0060,"cinza.bmp",3315,40)
+		EndIf	
+	EndIf		
+	oPrint:Say(nLin,0070,xITEM_ORC[nIt]									,CourN10	,100)
+	oPrint:Say(nLin,0200,xCOD_PRO[nIt]	  								,CourN10	,100)
+	oPrint:Say(nLin,0390,xDESC_PRO[nIt]	  								,CourN10	,100)
+	If cEmpAnt+cFilAnt == '0401' .And. SC5->C5_TIPODIP == '2'
+		If !_lICM .And. !_lRascunho
+			If !_lCartaVale
+				oPrint:Say(nLin,1760,Transform(xQTD_PRO[nIt],"@E 999999")			,CourN10	,100)
+				oPrint:Say(nLin,1960,xUM_PRO[nIt]	 								,CourN10	,100)
+				oPrint:Say(nLin,2020,Transform(xPRE_UNI[nIt],"@E 99,999.9999")		,CourN10	,100)
+				oPrint:Say(nLin,2260,Transform(xVAL_MERC[nIt],"@E 9,999,999.99")	,CourN10	,100)
+				oPrint:Say(nLin,2580,Transform(xAli_IPI[nIt],"@E 99")           	,CourN10	,100)
+				oPrint:Say(nLin,2600,Transform(xVAL_IPI[nIt],"@E 9,999,999.99")	    ,CourN10	,100)
+				oPrint:Say(nLin,2950,Transform(xALIQ_PRO[nIt],"@E 99")	    ,CourN10	,100)
+				oPrint:Say(nLin,3100,Transform(xVAL_ST[nIt],"@E 9,999,999.99")	    ,CourN10	,100)				
+			Else
+				oPrint:Say(nLin,2380,Transform(xQTD_PRO[nIt],"@E 999999")			,CourN10	,100)
+				oPrint:Say(nLin,2880,xUM_PRO[nIt]	 								,CourN10	,100)
+			Endif
+		Else
+			oPrint:Say(nLin,1880,Transform(xQTD_PRO[nIt],"@E 999999")			,CourN10	,100)
+			oPrint:Say(nLin,2060,xUM_PRO[nIt]	 								,CourN10	,100)
+			If !_lCartaVale
+				oPrint:Say(nLin,2180,Transform(xPRE_UNI[nIt],"@E 99,999.9999")		,CourN10	,100)
+			Endif
+			If _lRascunho
+				oPrint:Say(nLin,2450,Transform(xVAL_MERC[nIt],"@E 9,999,999.99")	,CourN10	,100)
+				oPrint:Say(nLin,2750,Transform(xIA[nIt],"@E ***.***")		,CourN10	,100)
+				oPrint:Say(nLin,2970,Transform(xIL[nIt],"@E ***.***")		,CourN10	,100)  
+			Else
+				oPrint:Say(nLin,2450,Transform(xVAL_CICM[nIt],"@E 9,999,999.99")		,CourN10	,100)
+				oPrint:Say(nLin,2750,Transform(xALIQ_PRO[nIt],"@E 99")				,CourN10	,100)
+				oPrint:Say(nLin,2850,Transform(xVAL_MERC[nIt],"@E 9,999,999.99")		,CourN10	,100)
+			EndIf
+		EndIf
+	Else
+		If !_lICM .And. !_lRascunho
+			If !_lCartaVale
+				If FunName()=="DIPAL10"				
+					oPrint:Say(nLin,1880,Transform(xQTD_PRO[nIt],"@E 999999")			,CourN10	,100)
+					oPrint:Say(nLin,2060,xUM_PRO[nIt]	 								,CourN10	,100)
+					oPrint:Say(nLin,2180,Transform(xPRE_UNI[nIt],"@E 99,999.9999")		,CourN10	,100)
+					oPrint:Say(nLin,2450,Transform(xVAL_MERC[nIt],"@E 9,999,999.99")	,CourN10	,100)
+					oPrint:Say(nLin,2750,Transform(xIA[nIt],"@E ***.***")				,CourN10	,100)
+					oPrint:Say(nLin,2970,Transform(xIL[nIt],"@E ***.***")				,CourN10	,100)			                                                                         
+				Else
+			 		oPrint:Say(nLin,1980,Transform(xQTD_PRO[nIt],"@E 999999")			,CourN10	,100)
+					oPrint:Say(nLin,2160,xUM_PRO[nIt]	 								,CourN10	,100)
+					oPrint:Say(nLin,2380,Transform(xPRE_UNI[nIt],"@E 99,999.9999")		,CourN10	,100)
+					oPrint:Say(nLin,2840,Transform(xVAL_MERC[nIt],"@E 9,999,999.99")	,CourN10	,100)
+				EndIf
+			Else
+				oPrint:Say(nLin,2380,Transform(xQTD_PRO[nIt],"@E 999999")			,CourN10	,100)
+				oPrint:Say(nLin,2880,xUM_PRO[nIt]	 								,CourN10	,100)
+			Endif
+		Else
+			oPrint:Say(nLin,1880,Transform(xQTD_PRO[nIt],"@E 999999")			,CourN10	,100)
+			oPrint:Say(nLin,2060,xUM_PRO[nIt]	 								,CourN10	,100)
+			If !_lCartaVale
+				oPrint:Say(nLin,2180,Transform(xPRE_UNI[nIt],"@E 99,999.9999")		,CourN10	,100)
+			Endif
+			If _lRascunho
+				oPrint:Say(nLin,2450,Transform(xVAL_MERC[nIt],"@E 9,999,999.99")	,CourN10	,100)
+				oPrint:Say(nLin,2750,Transform(xIA[nIt],"@E ***.***")		,CourN10	,100)
+				oPrint:Say(nLin,2970,Transform(xIL[nIt],"@E ***.***")		,CourN10	,100)
+			Else
+				oPrint:Say(nLin,2450,Transform(xVAL_CICM[nIt],"@E 9,999,999.99")		,CourN10	,100)
+				oPrint:Say(nLin,2750,Transform(xALIQ_PRO[nIt],"@E 99")				,CourN10	,100)
+				oPrint:Say(nLin,2850,Transform(xVAL_MERC[nIt],"@E 9,999,999.99")		,CourN10	,100)
+			EndIf
+		EndIf
+	EndIf             
+   If! Empty(xREG_ANVI[nIt]) .And. (nRadio ==2 .Or. FunName()=="DIPAL10")
+		If! Empty(xREG_ANVI[nIt])
+			nLin+=40
+			oPrint:Say(nLin,0390,+"Registro ANVISA: "+xREG_ANVI[nIt])				
+		EndIf
+	EndIf
+	
+	If _lObsProd .And. !Empty(Posicione("SB1",1,xFilial("SB1")+xCOD_PRO[nIt],"B1_CODOBS"))
+		_cObsProd	:= MSMM(SB1->B1_CODOBS,60)
+		_cObsProd	:= StrTran(_cObsProd,Chr(13),"")
+		_cObsProd	:= StrTran(_cObsProd,Chr(10)," ")
+		_nTotLinObs := MLCount(_cObsProd,60)
+		
+		For _nBegin := 1 To _nTotLinObs
+			U_LinPV(@nLin,40)
+			If (nIt%2) == 0 .And. File("cinza.bmp")
+				oPrint:SayBitmap(nLin,0060,"cinza.bmp",3315,40)
+			EndIf
+			oPrint:Say(nLin,0390,MemoLine(_cObsProd,60,_nBegin)	,CourN10	,100)
+		Next _nBegin
+		If _nTotLinObs >0
+			U_LinPV(@nLin,15)
+		EndIf
+	EndIf
+Next nIt 
+
+
+Return .T.
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Programa  ³ LinPV    ³ Autor ³ Consultoria           ³ Data ³29.06.2007³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³Controle de Linhas e Quebras do Relatório                   ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+/*/
+Static Function LinPV(nLin,nSoma,nLimite)
+DEFAULT nLimite := 2160 //1580
+nLin+=nSoma
+
+If nLin > nLimite
+	RodapePV(.T.)
+	oPrint:Endpage()
+	oPrint:Startpage()
+	CabecPV(@nlin)
+EndIf
+Return
+
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Fun‡…o    ³ RodapePV ³ Autor ³ CONSULTORIA           ³ Data ³          ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³ Imprime o rodape do formulario e salta para a proxima folha³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³ Uso      ³ DIPROMED                                                   ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+/*/
+
+Static Function RodapePV(lSalto)
+Local nLimite := 0
+Local lLic	  := (FunName()=="DIPAL10")
+Default lSalto := .F.
+
+nLimite := If(lSalto, 2000, 1880)
+
+
+
+//Linha cpo:Codigo
+oPrint:Line(400,0180, nLimite, 0180)
+
+//Linha cpo:Descricao
+oPrint:Line(400,0370, nLimite, 0370)
+    
+If cEmpAnt+cFilAnt == '0401' .And. SC5->C5_TIPODIP = '2'
+	//Linha cpo:Qtde
+	If !_lCartaVale
+		oPrint:Line(400,If(_lICM .Or. _lRascunho,1790,1760), nLimite, If(_lICM .Or. _lRascunho,1790,1760))
+	Else
+		oPrint:Line(400,2240, nLimite, 2240)
+	Endif
+	
+	If !_lCartaVale
+		//Linha cpo:Un
+		oPrint:Line(400,If(_lICM .Or. _lRascunho,2040,1935), nLimite, If(_lICM .Or. _lRascunho,2040,1935))
+	Else
+		oPrint:Line(400,2650, nLimite, 2650)
+	Endif
+	If !_lCartaVale
+		//Linha cpo:Pr.Unit
+		oPrint:Line(400,If(_lICM .Or. _lRascunho,2100,2035), nLimite, If(_lICM .Or. _lRascunho,2100,2035))
+		
+		//Linhas c/Icms
+		If _lICM .Or. _lRascunho
+			//Linha cpo:Total c/Icms
+			oPrint:Line(400,2430, nLimite, 2430)
+			//Linha cpo:Aliq  ou IA
+			oPrint:Line(400,2730, nLimite, 2730)
+			If !_lRascunho
+				//Linha cpo:Pr.Total
+				oPrint:Line(400,2830, nLimite, 2830)
+			Else
+				//Linha cpo:IL
+				oPrint:Line(400,2930, nLimite, 2930)
+			EndIf
+		Else
+			//Linha cpo:Pr.Total
+			oPrint:Line(400,2280, nLimite, 2280)
+
+			//Linha cpo:Aliq.IPI
+			oPrint:Line(400,2540, nLimite, 2540)
+			
+			//Linha cpo:IPI
+			oPrint:Line(400,2680, nLimite, 2680)
+			
+			//Linha cpo:Aliq.ICMS
+			oPrint:Line(400,2890, nLimite, 2890)			
+			
+			//Linha cpo:ST
+			oPrint:Line(400,3100, nLimite, 3100)
+		EndIf
+	Endif
+Else
+	//Linha cpo:Qtde
+	If !_lCartaVale .Or. lLic
+		oPrint:Line(400,If(_lICM .Or. _lRascunho .Or. lLic,1790,1890), nLimite, If(_lICM .Or. _lRascunho .Or. lLic,1790,1890))
+	Else
+		oPrint:Line(400,2240, nLimite, 2240)
+	Endif
+	
+	If !_lCartaVale .Or. lLic
+		//Linha cpo:Un
+		oPrint:Line(400,If(_lICM .Or. _lRascunho .Or. lLic,2040,2140), nLimite, If(_lICM .Or. _lRascunho .Or. lLic,2040,2140))
+	Else
+		oPrint:Line(400,2650, nLimite, 2650)
+	Endif                    
+	
+	If !_lCartaVale .Or. lLic
+		//Linha cpo:Pr.Unit
+		oPrint:Line(400,If(_lICM .Or. _lRascunho .Or. lLic,2140,2240), nLimite, If(_lICM .Or. _lRascunho .Or. lLic,2140,2240))
+		
+		//Linhas c/Icms
+		If _lICM .Or. _lRascunho .Or. lLic
+			//Linha cpo:Total c/Icms
+			oPrint:Line(400,2430, nLimite, 2430)
+			//Linha cpo:Aliq  ou IA
+			oPrint:Line(400,2730, nLimite, 2730)
+			If !_lRascunho .And. !lLic
+				//Linha cpo:Pr.Total
+				oPrint:Line(400,2830, nLimite, 2830)
+			Else
+				//Linha cpo:IL
+				oPrint:Line(400,2930, nLimite, 2930)
+			EndIf
+		Else
+			//Linha cpo:Pr.Total
+			oPrint:Line(400,2650, nLimite, 2650)
+		EndIf
+	Endif
+EndIf
+
+// Linha do Final dos Itens
+oPrint:Line(nLimite,0050, nLimite, 3380)
+
+If lSalto
+	oPrint:Say(2070,1400,"Continua...",ArialN10B	,100)
+EndIf
+
+Return .T.
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Fun‡…o    ³ FinalPv  ³ Autor ³ CONSULTORIA           ³ Data ³          ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³ Imprime os dados complementares do Pedido de Venda         ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³ Uso      ³ DIPROMED                                                   ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+/*/
+Static Function FinalPV()
+
+Local lRetST := U_VerProdST()
+// Finaliza o Pedido, fazendo o "X" no espaço em branco...
+If !_lCartaVale
+	LinPV(@nLin,040)
+	If nLin < 1860 .Or. (nLin > 1800 .And. nLin < 1980 )
+		oPrint:Line(nLin,0050, nLin, 3380)
+		oPrint:Line(If(nLin < 1860,1880,2000),0050, nLin, 3380)
+		oPrint:Line(If(nLin < 1860,1880,2000),3380, nLin, 0050)
+	EndIf
+	If nLin > 1860
+		nLin := 2200
+		LinPV(@nLin,10)
+		oPrint:Line(1880,0050, 0480, 3380)
+		oPrint:Line(1880,3380, 0480, 0050)
+	EndIf
+EndIf
+
+If _lCartaVale // Carta de Vale para licitação - MCVN 05/03/08
+	
+	// Nome do Cliente
+	oPrint:Box(1880,2200,2020,3380)
+	oPrint:Say(1990,2220,"Nome por extenso:"                   ,ArialN6 	,100)
+	
+	// Assinatura do cliente
+	oPrint:Box(2020,2200,2120,3380)
+	oPrint:Say(2090,2220,"Ass:" 		           				,ArialN6 	,100)
+	
+	// Data da assinatura
+	oPrint:Box(2120,2200,2200,3380)
+	oPrint:Say(2170,2220,"Local e Data:"  				       	,ArialN6 	,100)
+	
+Else 
+	//If cCliST   = "R" //A1_TIPO $ "R/S" e A1_CONTRIB <> "2"  e A1_PESSOA = "JURIDICA" e A1_DREGESP <> " "
+	//	U_DIPICMSHEl(SC5->C5_NUM,0,"")	      
+	//EndIf                                
+	
+	If cEmpAnt = "04" 
+	     nValIpi:=	_nValIPI//U_CALCIPI(SC5->C5_NUM)
+		// Box Tot. Mercadoris.
+		oPrint:Box(1880,2200,1950,3380) //Giovani zago 13/01/12
+		oPrint:Say(1900,2220,If(_lIcm,	"Totais",;
+		"Total das Mercadorias:")		,ArialN10B	,100)
+		If _lIcm
+			oPrint:Say(1900,2410,Transform(_cTOTI,"@E 999,999,999.99")	,CourN10B	,100)
+			oPrint:Say(1900,2790,Transform(_cTOTG,"@E 999,999,999.99")	,CourN10B	,100)
+		Else
+			oPrint:Say(1900,2790,Transform(_cTOTG,"@E 999,999,999.99")	,CourN10B	,100)
+		EndIf
+		
+		// Box IPI / ICMS-ST
+		oPrint:Box(1950,2200,2020,3380)
+		oPrint:Say(1980,2220,"IPI:" 		           					,ArialN10B	,100)
+		//oPrint:Say(1980,2400,Transform(nValIpi, "@E 999,999,999.99")	,ArialN10	,100)
+		oPrint:Say(1980,2400,Transform(MaFisRet(,"NF_VALIPI"),"@E 99,999,999.99"),ArialN10	,100)
+		oPrint:Say(1980,2650,"Sub.Trib.:" 	           					,ArialN10B	,100)
+		//oPrint:Say(1980,2830, Transform(nValST, "@E 999,999,999.99") 	,ArialN10	,100)
+		oPrint:Say(1980,2830,Transform(MaFisRet(,"NF_VALSOL"),"@E 99,999,999.99") 	,ArialN10	,100)
+		_nValIST := MaFisRet(,"NF_VALSOL")
+		// Box Frete/Despesas
+		oPrint:Box(2020,2200,2090,3380)
+		oPrint:Say(2050,2220,"Frete:" 		           					,ArialN10B	,100)
+		oPrint:Say(2050,2400,Transform(nVal_Fre, "@E 999,999,999.99")	,ArialN10	,100)
+		oPrint:Say(2050,2650,"Despesas:" 	           					,ArialN10B	,100)
+		oPrint:Say(2050,2830,Transform(nVal_Des, "@E 999,999,999.99")	,ArialN10	,100)
+		
+		// Box Total Geral
+		oPrint:Box(2090,2200,2200,3380)
+		oPrint:Say(2120,2220,"TOTAL GERAL:"  				           	,ArialN12B	,100)
+		oPrint:Say(2120,2830,Transform(_cTotG + nVal_Fre + nVal_Des + nValIpi + _nValIST ,;
+		"@E 999,999,999.99")	,ArialN12B	,100)
+	Else
+		// Box Tot. Mercadoris.
+		oPrint:Box(1880,2200,1970,3380)
+		oPrint:Say(1900,2220,If(_lIcm,	"Totais",;
+		"Total das Mercadorias:")		,ArialN10B	,100)
+		If _lIcm
+			oPrint:Say(1900,2410,Transform(_cTOTI,"@E 999,999,999.99")	,CourN10B	,100)
+			oPrint:Say(1900,2790,Transform(_cTOTG,"@E 999,999,999.99")	,CourN10B	,100)
+		Else
+			oPrint:Say(1900,2790,Transform(_cTOTG,"@E 999,999,999.99")	,CourN10B	,100)
+		EndIf
+		
+		// Box Frete/Despesas
+		oPrint:Box(1970,2200,2050,3380)
+		oPrint:Say(1990,2220,"Frete:" 		           					,ArialN10B	,100)
+		oPrint:Say(1990,2400,Transform(nVal_Fre, "@E 999,999,999.99")	,ArialN10	,100)
+		oPrint:Say(1990,2650,"Despesas:" 	           					,ArialN10B	,100)
+		oPrint:Say(1990,2830,Transform(nVal_Des, "@E 999,999,999.99")	,ArialN10	,100)
+		
+		// Box Total Geral
+		oPrint:Box(2050,2200,2200,3380)
+		oPrint:Say(2100,2220,"TOTAL GERAL:"  				           	,ArialN12B	,100)
+		oPrint:Say(2100,2830,Transform(_cTotG + nVal_Fre + nVal_Des,;
+		"@E 999,999,999.99")	,ArialN12B	,100)
+	EndIf
+Endif
+
+EndImp()//Encerra Impostos
+
+// Observacoes
+Li := 1895
+_lPed :=If("PEDIDO" $ _cTitulo .or. "CARTA" $ _cTitulo,.T.,.F.)
+
+/*
+oPrint:Say(Li,0070,"Faturamento Mínimo:"						,ArialN10B	,100)
+oPrint:Say(Li+007,0470,Transform(_cFatMin,"@E 9,999,999.99")		,ArialN8	,100)
+oPrint:Say(Li,0720,"Tipo de Frete:"								,ArialN10B	,100)
+oPrint:Say(Li+007,0970,_cTipFre + " - "+_cTransp+" - "+_cNomeTra	,ArialN8 	,100)
+*/
+If !_lCartaVale
+	oPrint:Say(Li,0070,"Tipo de Frete:"								,ArialN10B	,100)
+	If _cTransp == '000111'
+		oPrint:Say(Li+007,0320,_cTipFre +" - "+_cDestFre+" - "+_cTransp+" - "+_cNomeTra	,ArialN8, 100)
+		oPrint:Say(Li+027,0320,"LOCAL DE RETIRA: AV. DR. MAURO LINDEMBERG MONTEIRO, 185 - GLP10 - CEP: 06278-010 - JD. SANTA FÉ - OSASCO - SP",ArialN8, 100)
+	Else
+		oPrint:Say(Li+007,0320,_cTipFre +" - "+_cDestFre+" - "+_cTransp+" - "+_cNomeTra	,ArialN8, 100)
+	EndIf	
+Endif
+
+If !_lCartaVale
+	Li += 60
+	oPrint:Say(Li,0070,"Obs:"										,ArialN10B	,100)
+	oPrint:Say(Li,0170,Substr(_cObs,001,100)						,ArialN10	,100)
+	Li += 45
+	oPrint:Say(Li,0070,Substr(_cObs,101,100)						,ArialN10	,100)
+   //	Li += 45
+   //	oPrint:Say(Li,0070,Substr(_cObs,201,100)						,ArialN10	,100)
+    Li += 45 //INCLUI MENSAGEM - FELIPE DURAN 06/03/2020
+	oPrint:Say(Li,0070,"ATENCÃO! ORÇAMENTO SUJEITO A ALTERAÇÃO DE PREÇO E ESTOQUE SEM PRÉVIO AVISO." ,ArialN10	,100)	
+    	//RBORGES - 13/08/2013 - Imprimirá o endereço de retira,sempre que for pedido de venda da Dipromed
+    	// e cliente retira ou coleta.
+    	If cEmpAnt == "01" .And.(! SC5->C5_TRANSP $ GetNewPar("ES_TRP_COLS","000235") .OR. SC5->C5_TRANSP == "000111" )
+			Li += 45	  
+			oPrint:Say(Li,0070,"ENDEREÇO PARA RETIRADA: AV. DR. MAURO LINDEMBERG MONTEIRO, 185 - 06278-010 - OSASCO - SP "		,ArialN10C	,100)
+	    EndIf
+Else
+	//Li += 60
+	oPrint:Say(Li,0070,"Obs:"										,ArialN10B	,100)
+	oPrint:Say(Li,0170,Substr(_cObs,001,100)						,ArialN10	,100)
+	Li += 45
+	oPrint:Say(Li,0070,Substr(_cObs,101,100)						,ArialN10	,100)
+	Li += 45
+	//oPrint:Say(Li,0070,Substr(_cObs,201,100)						,ArialN10	,100)
+	oPrint:Say(Li,0070,"ATENCÃO! ORÇAMENTO SUJEITO A ALTERAÇÃO DE PREÇO E ESTOQUE SEM PRÉVIO AVISO." ,ArialN10	,100) //INCLUI MENSAGEM - FELIPE DURAN 06/03/2020
+
+
+Endif
+
+If _lPed
+	Li += 55
+	If !_lCartaVale
+		oPrint:Say(Li,0070,"São Paulo, "+Transform(_cEmi,"@D")+" - Vendedor(a): "+If(_cPosto $ '01/03',_cNomeVen+' / Operador(a):  '+_cNomeOpe,_cNomeVen)+" - "+If(_cPosto $ '01/03',_cMailOpe,_cMailVen) ,ArialN9	,100)
+	Else
+		Li += 110
+		oPrint:Say(Li,0070,"São Paulo, "+Transform(_cEmi,"@D")+" - Vendedor(a): "+If(_cPosto $ '01/03',_cNomeVen+' / Operador(a):  '+_cNomeOpe,_cNomeVen)+" - "+If(_cPosto $ '01/03',_cMailOpe,_cMailVen) ,ArialN9	,100)
+	Endif
+	
+	If !_lCartaVale
+		If AllTrim(SC5->C5_ESTE) == 'SP' .And. lRetST
+			Li += 30			
+			oPrint:Say(Li,0070,'"Produto comprado com SUBSTITUIÇAO, segundo o RICMS(Lei 6.374/89, art. 67, Não tem destaque de ICMS."',ArialN14B,100,CLR_HRED)
+		EndIf
+		
+		Li += 30
+		oPrint:Say(Li,0070,"ESTA É A CÓPIA DO SEU PEDIDO DE COMPRAS. EM CASO DE DIVERGÊNCIA ENTRAR EM CONTATO COM A VENDEDORA", ArialN10B	,100)
+	Endif
+	
+Else
+	Li += 110
+	oPrint:Say(Li,0070,"São Paulo, "+Transform(_cEmi,"@D")+" -  Vendedor(a): "+If(_cPosto $ '01/03',_cNomeVen+' / Operador(a):  '+_cNomeOpe,_cNomeVen)+" - "+If(_cPosto $ '01/03',_cMailOpe,_cMailVen) ,ArialN9	,100)
+EndIf
+
+Return .T.
+
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
+±±ºPrograma  ³JpegMail  ºAutor  ³Microsiga           º Data ³  01/22/08   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºDesc.     ³                                                            º±±
+±±º          ³                                                            º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºUso       ³ DIPR064                                                    º±±
+±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+Static Function JpegMail(cMailFrom,cMailTo,_cTipoVen)
+Local cDiretorio := "\RELATO\JPEG\"
+Local cPrefixo   := cDiretorio+If(_cTitulo $ 'PEDIDO',"PV_",If(_cTitulo $ 'CARTA',"CAR_","ORC_"))+_nORC+"_"+substr(DTOS(dDatabase),7,2)+substr(dtos(ddatabase),5,2)+"_"+substr(time(),1,2)+substr(time(),4,2)+substr(time(),7,2)
+Local cDestino   := "c:\pedidos\"
+
+//imagem boa qualidade
+Local nLargura := 1300 //920
+Local nAltura  := 920  //1300
+Local nZoom    := 145
+
+Local cAccount  := Lower(Alltrim(GetMv("MV_RELACNT")))
+Local cFrom     := Lower(Alltrim(GetMv("MV_RELACNT")))
+Local cPassword := Alltrim(GetMv("MV_RELPSW"))
+Local cServer   := Alltrim(GetMv("MV_RELSERV"))
+Local cCC		:= cMailFrom
+Local cBCC      := ""
+Local cTo		:= cMailTo
+Local cAnexos	:= ''
+LOCAL lSmtpAuth := GetNewPar("MV_RELAUTH",.F.)
+LOCAL lAutOk	:= .F.
+
+If !Empty(AllTrim(POSICIONE("SU7",1,XFILIAL("SU7")+SC5->C5_OPERADO,"U7_EMAIL"))) .And. !Empty(AllTrim(POSICIONE("SU7",1,XFILIAL("SU7")+SC5->C5_OPERADO,"U7_SENHA")))
+	cAccount  := AllTrim(POSICIONE("SU7",1,XFILIAL("SU7")+SC5->C5_OPERADO,"U7_EMAIL"))
+	cFrom     := AllTrim(POSICIONE("SU7",1,XFILIAL("SU7")+SC5->C5_OPERADO,"U7_EMAIL"))
+	cPassword := AllTrim(POSICIONE("SU7",1,XFILIAL("SU7")+SC5->C5_OPERADO,"U7_SENHA"))
+EndIf	
+
+If !oPrint:SaveAllAsJPEG(cPrefixo,nLargura,nAltura,nZoom) //Ira gravar algo semelhante a: \RELATO\JPEG\PV_20080122_PAG1.JPEG
+	MsgStop("Não foi possível gravar o relatório","AVISO")
+EndIf
+
+//RBORGES - 13/08/2013 - Imprimirá o endereço de retira,sempre que for pedido de venda da Dipromed
+// e cliente retira ou coleta.
+If cEmpAnt == "01" .And.(! SC5->C5_TRANSP $ GetNewPar("ES_TRP_COLS","000235") .OR. SC5->C5_TRANSP == "000111")
+	cBody  := If(!Empty(_cBodyPrvt),_cBodyPrvt, "Segue em anexo "+_cTitulo+" nº. "	+_nORC) +CRLF +CRLF +;
+	"ENDEREÇO PARA RETIRADA: AV. DR. MAURO LINDEMBERG MONTEIRO, 185 - 06278-010 - OSASCO - SP "
+Else
+	cBody  := If(!Empty(_cBodyPrvt),_cBodyPrvt, "Segue em anexo "+_cTitulo+" nº. "	+_nORC)
+	
+EndIf
+
+
+ 	    
+
+cSubject := _cTitulo+" n: "+_nORC
+// Varre o diretório e procura pelas páginas gravadas.
+aFiles := Directory( cPrefixo+"*.jpg" )
+
+// Monta um Vetor com o path e nome do arquivo em cada linha para passar via email
+MakeDir("c:\pedidos\") // CRIA DIRETÓRIO CASO NÃO EXISTA -  MCVN - 05/03/2008
+For nI:= 1 to Len(aFiles)
+	cAnexos += cDiretorio+aFiles[nI,1] + "; "
+	CpyS2T(cDiretorio+aFiles[nI,1],cDestino,.T.) // COPIA ARQUIVO PARA MAQUINA DO USUÁRIO - MCVN - 05/03/2008
+Next nI
+
+CONNECT SMTP SERVER cServer ACCOUNT cAccount PASSWORD cPassword Result lOk
+
+If !lAutOk
+	If ( lSmtpAuth )
+		lAutOk := MailAuth(cAccount,cPassword)
+	Else
+		lAutOk := .T.
+	EndIf
+EndIf
+
+If lOk .and. lAutOk
+	If !Empty(cCC)
+		SEND MAIL FROM cFrom TO cTo CC cCC BCC cBcc SUBJECT Alltrim(cSubject) BODY cBody ATTACHMENT cAnexos Result lOk
+	Else
+		SEND MAIL FROM cFrom TO cTo SUBJECT Alltrim(cSubject) BODY cBody ATTACHMENT cAnexos Result lOk
+	EndIf
+	If lOk
+		MsgInfo("Email enviado com sucesso")
+	Else
+		GET MAIL ERROR cErro
+		MsgStop("Não foi possível enviar o Email." +Chr(13)+Chr(10)+ cErro,"AVISO")
+		Return .f.
+	EndIf
+Else
+	GET MAIL ERROR cErro
+	MsgStop("Erro na conexão com o SMTP Server." +Chr(13)+Chr(10)+ cErro,"AVISO")
+	Return .f.
+EndIf
+DISCONNECT SMTP SERVER
+
+// Deleta os arquivos JPEG depois de enviar o e-mail
+For nI:= 1 to Len(aFiles)
+	fErase(cDiretorio+aFiles[nI,1])
+Next nI
+
+/*
+If MsgYesNo("Deseja visualizar o relatório?")
+oPrint:Preview()
+EndIf
+*/
+Return .T.
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
+±±ºPrograma  ³RetBody   ºAutor  ³Microsiga           º Data ³  01/29/08   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºDesc.     ³ Abre uma Dialog para digitacao do corpo do e-mail          º±±
+±±º          ³                                                            º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºUso       ³ DIPR064 - DIPROMED                                         º±±
+±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+/*/
+Static Function RetBody(cTo)
+Local cBody     := ' '
+Default cTo     := ' '
+
+SU7->(DbSetOrder(1)) //RBorges 22/08/2014 - Texto padrão do corpo do e-mail somente para televendas
+If SU7->(dbSeek(xFILIAL("SU7")+SC5->C5_OPERADO)) //RBorges 22/08/2014
+	_cPosto := SU7->U7_POSTO
+	If  _cPosto =='02'              
+	
+		DEFINE MSDIALOG oDlgEmail TITLE OemToAnsi("Digite a Mensagem do E-Mail") From 1,0 To 20,50 OF oMainWnd
+		
+		@ 10,04 SAY "Para:" PIXEL OF oDlgEmail
+		@ 10,25 Get cTo 	Size 150,010 PIXEL OF oDlgEmail
+		@ 30,04 SAY "Mensagem:" PIXEL OF oDlgEmail
+		@ 38,04 Get cBody 	when.T. Size 176,070 MEMO  PIXEL OF oDlgEmail
+		
+		@ 127, 132 Button "Ok"      			Size 28,10 Action Eval({||nOpca:=1,oDlgEmail:End()})  Pixel
+		@ 127, 162 Button "Cancela"  			Size 28,10 Action Eval({||nOpca:=2,oDlgEmail:End()})  Pixel
+		nOpca:=0
+		
+		ACTIVATE MSDIALOG oDlgEmail CENTERED
+				
+	    cBody += (+Chr(13) +Chr(10) +Chr(13) +Chr(10))
+		cBody += '<font face="Arial" size=3>COMUNICADO IMPORTANTE! ' +Chr(13) +Chr(10)
+		cBody += '<font face="Arial" size=3>Por favor, antes da confirmação do seu pedido verificar as quantidades, os itens, frete, '
+		cBody += '<font face="Arial" size=3>prazo de pagamento e o endereço de entrega. '  +Chr(13) +Chr(10)
+		cBody += '<font face="Arial" size=3">Após a sua conferência e confirmação, não aceitaremos devoluções ou trocas futuras. ' +Chr(13) +Chr(10) +Chr(13) +Chr(10)
+		cBody += '<font face="Arial" color=#FF0000 size=5>A entrega será realizada somente no endereço que consta em seu cadastro.</font>' +Chr(13) +Chr(10)
+		cBody += '<font face="Arial" color=#FF0000 size=5>Caso esteja ausente, impossibilitando o recebimento,  a mercadoria retornará ao centro logístico,</font>' +Chr(13) +Chr(10)
+		cBody += '<font face="Arial" color=#FF0000 size=5>gerando um custo de reentrega.</font>' +Chr(13) +Chr(10) +Chr(13) +Chr(10)
+		cBody += '<font Face="Arial" color=#FF0000 size=5>O pedido será liberado para faturamento, somente após o recebimento do e-mail de confirmação.</font>' +Chr(13) +Chr(10) +Chr(13) +Chr(10)
+		cBody += '<font face="Arial" size=3>Qualquer divergência, favor entrar em contato.' +CHR(10)+CHR(13)
+		cBody += '<font face="Arial" size=3>0800 011 4066.'
+				
+	EndIf
+EndIf
+
+If  _cPosto <> '02'              
+	DEFINE MSDIALOG oDlgEmail TITLE OemToAnsi("Digite a Mensagem do E-Mail") From 1,0 To 20,50 OF oMainWnd
+	
+	@ 10,04 SAY "Para:" PIXEL OF oDlgEmail
+	@ 10,25 Get cTo 	Size 150,010 PIXEL OF oDlgEmail
+	@ 30,04 SAY "Mensagem:" PIXEL OF oDlgEmail
+	@ 38,04 Get cBody 	when.T. Size 176,070 MEMO  PIXEL OF oDlgEmail
+	
+	@ 127, 132 Button "Ok"      			Size 28,10 Action Eval({||nOpca:=1,oDlgEmail:End()})  Pixel
+	@ 127, 162 Button "Cancela"  			Size 28,10 Action Eval({||nOpca:=2,oDlgEmail:End()})  Pixel
+	nOpca:=0
+	
+	ACTIVATE MSDIALOG oDlgEmail CENTERED
+EndIf
+	
+If nOpca == 1
+	Return cBody
+Else
+	cTo := ''
+	Return ""
+Endif
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
+±±ºPrograma  ³PvCpFile  ºAutor  ³Maximo              º Data ³  05/03/08   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºDesc.     ³ Gera e copia arquivo para maquina do usuário               º±±
+±±º          ³                                                            º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºUso       ³ PvCpFile - DIPROMED                                        º±±
+±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+/*/
+Static Function PvCpFile()
+
+Local cDiretorio := "\RELATO\JPEG\"
+Local cPrefixo   := cDiretorio+If(_cTitulo $ 'PEDIDO',"PV_",If(_cTitulo $ 'CARTA',"CAR_","ORC_"))+_nORC+"_"+substr(DTOS(dDatabase),7,2)+substr(dtos(ddatabase),5,2)+"_"+substr(time(),1,2)+substr(time(),4,2)+substr(time(),7,2)
+Local cDestino   := "c:\pedidos\"
+//imagem boa qualidade
+Local nLargura := 1300 //920
+Local nAltura  := 920  //1300
+Local nZoom    := 145
+
+If !oPrint:SaveAllAsJPEG(cPrefixo,nLargura,nAltura,nZoom) //Ira gravar algo semelhante a: \RELATO\JPEG\PV_20080122_PAG1.JPEG
+	MsgStop("Não foi possível gravar o relatório","AVISO")
+EndIf
+
+
+// Gravando arquivo na máquina do Usuário
+aFiles := Directory( cPrefixo+"*.jpg" )
+MontaDir("c:\pedidos\")
+For nI:= 1 to Len(aFiles)
+	CpyS2T(cDiretorio+aFiles[nI,1],cDestino,.T.) //
+	fErase(cDiretorio+aFiles[nI,1])
+Next nI
+
+// Buscando e apagando arquivos temporários
+aTmp := Directory( cDestino+"*.tmp" )
+For nI:= 1 to Len(aTmp)
+	fErase(cDestino+aTmp[nI,1])
+Next nI
+
+Return()
+
+Static Function CALCIPI(cNumPed,cCodProd,cItem) 
+Local _cQry0 	:= "" 
+Local _nIpiVal 	:= 0
+DEFAULT cCodProd:= ""
+DEFAULT cItem	:= ""
+_cQry0 :=" SELECT ISNULL(SUM(C6_VALOR*B1_IPI/100),0) AS 'IPI'   "
+_cQry0 +=" FROM "+RETSQLNAME ("SC6") + " SC6 "
+_cQry0 +=" INNER JOIN( SELECT F4_CODIGO ,F4_IPI,F4_FILIAL  "
+_cQry0 +=" FROM "+RETSQLNAME ("SF4") + " SF4 "
+_cQry0 +=" WHERE SF4.D_E_L_E_T_ = ' ' )TF4    "
+_cQry0 +=" ON    C6_TES = TF4.F4_CODIGO     "
+_cQry0 +=" AND TF4.F4_IPI = 'S'           "
+_cQry0 +=" AND TF4.F4_FILIAL = C6_FILIAL    "
+_cQry0 +=" INNER JOIN( SELECT B1_IPI,B1_COD,B1_FILIAL    "
+_cQry0 +=" FROM "+RETSQLNAME ("SB1") + " SB1 "
+_cQry0 +=" WHERE SB1.D_E_L_E_T_ = ' ' )TB1     "
+_cQry0 +=" ON TB1.B1_COD = C6_PRODUTO         "
+_cQry0 +=" AND TB1.B1_FILIAL = C6_FILIAL     "
+_cQry0 +=" WHERE C6_NUM       =  '"+cNumPed+"' "
+If !Empty(cCodProd) .And. !Empty(cItem)   
+	_cQry0 +=" AND C6_PRODUTO = '"+cCodProd+"' "
+	_cQry0 +=" AND C6_ITEM = '"+cItem+"' "	
+EndIf
+_cQry0 +=" AND SC6.D_E_L_E_T_ = ' '       "
+_cQry0 +=" AND C6_FILIAL      =  '"+XFILIAL("SC6")+"' "
+dbUseArea(.T.,"TOPCONN",TcGenQry(,,_cQry0),'TMP1A',.T.,.F.)
+DbSelectArea("TMP1A")
+TMP1A->(dbgotop())
+_nIpiVal:=TMP1A->IPI
+TMP1A->(DbCloseArea())
+Return(_nIpiVal)
+
+
+Static Function CALCPED(cNumPed)
+Local _cQry 	:= "" 
+Local _nTotPed	:= 0
+_cQry :=" SELECT ISNULL(SUM(C6_VALOR),0) AS 'TOT'   "
+_cQry +=" FROM "+RETSQLNAME ("SC6") + " SC6 "
+_cQry +=" WHERE C6_NUM       =  '"+cNumPed+"' "
+_cQry +=" AND SC6.D_E_L_E_T_ = ' '       "
+_cQry +=" AND C6_FILIAL      =  '"+XFILIAL("SC6")+"' "
+dbUseArea(.T.,"TOPCONN",TcGenQry(,,_cQry),'TMP2A',.T.,.F.)
+DbSelectArea("TMP2A")
+TMP2A->(dbgotop())
+_nTotPed:=TMP2A->TOT
+TMP2A->(DbCloseArea())
+Return(_nTotPed)    
+
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
+±±ºPrograma  ³UTMKR03    ºAutor  ³Microsiga           º Data ³  09/09/13   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºDesc.     ³                                                            º±±
+±±º          ³                                                            º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºUso       ³ AP                                                        º±±
+±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+Static Function VldPDF()  
+Local _lRet := .F.
+ 
+If "MATA410"$FunName() .Or. "DIPAL10"$FunName()  
+	If Upper(u_DipUsr())$GetNewPar("ES_USRNPDF","JLIMA,CTODARO,ISILVA,DFELIZARDO,BRODRIGUES,DNASCIMENTO,ALOPES,CPEREIRA,IANJOS,DDOMINGOS")
+		_lRet := GetNewPar("ES_APDFPV",.F.) .And. (Aviso("Atenção","Deseja imprimir em Word ou PDF?",{"Word","PDF"},1)==2)
+	Else
+		_lRet :=  (!SC5->C5_CLIENTE$GetNewPar("ES_CLINPDF","") .And. GetNewPar("ES_APDFPV",.F.))
+	EndIf
+EndIf
+
+Return _lRet
+
+/*
+|-----------------------------------------------------------------------------------|
+|  Programa : IniImp                                       Data : 18/08/2020       |
+|-----------------------------------------------------------------------------------|
+|  Cliente  : HQ                                            						|
+|-----------------------------------------------------------------------------------|
+|  Uso      : Rotina de calculo dos impostos através da MATXFIS 		            |
+|-----------------------------------------------------------------------------------|
+*/
+Static Function IniImp()
+Local aArea		:= GetArea()
+Local aAreaSA1	:= SA1->(GetArea())
+Local nPrcLista := 0
+Local nValMerc  := 0
+Local nDesconto := 0
+Local nQtdPeso  := 0
+Local nPosEntr  := 0
+Local cProduto  := ""
+Local nTotDesc  := 0
+Local lSaldo    := .F.
+Local nQtdEnt   := 0
+Local aSolid	:= {}
+Local nLancAp	:=	0
+Local aTransp	:= {"",""}
+Local aSaldos	:= {}
+Local nValRetImp:= 0
+Local cImpRet 	:= ""
+Local cCliAux   := ""
+Local cLjAux    := ""
+Local cProsp    := ""
+Local nTotal	:= 0
+Private oLogApICMS
+Private _nTotOper_ := 0		//total de operacoes (vendas) realizadas com um cliente - calculo de IB - Argentina
+Private _aValItem_ := {}
+Private cTpCli	   := SA1->A1_TIPO
+MaFisSave()
+MaFisEnd()
+MaFisIni(SA1->A1_COD,SA1->A1_LOJA,"C","N",cTpCli,Nil,Nil,Nil,Nil,"MATA461",Nil,Nil,cProsp,Nil,Nil,Nil,Nil,aTransp)
+/*
+MaFisIni(SA1->A1_COD,;	// 1-Codigo Cliente/Fornecedor
+		 SA1->A1_LOJA,;	// 2-Loja do Cliente/Fornecedor
+		"C",;			// 3-C:Cliente , F:Fornecedor
+		"N",;			// 4-Tipo da NF
+		cTpCli,;		// 5-Tipo do Cliente/Fornecedor
+		Nil,;
+		Nil,;
+		Nil,;
+		Nil,;
+		"MATA461",;
+		Nil,;
+		Nil,;
+		Nil,;
+		Nil,;
+		Nil,;
+		Nil,;
+		Nil,;
+		aTransp,;
+		Nil,;
+		Nil,;
+		Nil,;
+		Nil,;
+		Nil,;
+		nTotal,;
+		Nil,;
+		_cTipFre)
+*/
+Return
+
+/*
+|-----------------------------------------------------------------------------------|
+|  Programa : ADDImp                                       Data : 18/08/2020       |
+|-----------------------------------------------------------------------------------|
+|  Cliente  : HQ                                            						|
+|-----------------------------------------------------------------------------------|
+|  Uso      : Rotina de calculo dos impostos através da MATXFIS 		            |
+|-----------------------------------------------------------------------------------|
+*/
+Static Function ADDImp(_nVALOR, _nQTDVEN, _nPRCVEN, _cCLIENT, _cLOJA, _cPRODUT, _cTES)
+Local nRecOri   := 0
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³Agrega os itens para a funcao fiscal         ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+nQtdPeso := 0
+
+cProduto := _cPRODUT
+SB1->(dbSetOrder(1))
+If SB1->(MsSeek(xFilial("SB1")+cProduto))
+	nQtdPeso := SB1->B1_PESO
+EndIf
+
+SB2->(dbSetOrder(1))
+SB2->(MsSeek(xFilial("SB2")+SB1->B1_COD+SB1->B1_LOCPAD))
+
+SF4->(dbSetOrder(1))
+SF4->(MsSeek(xFilial("SF4")+_cTES))
+
+cNfOri     := Nil
+cSeriOri   := Nil
+nRecnoSD1  := Nil
+nDesconto  := 0
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³Calcula o preco de lista                     ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+nValMerc  := _nVALOR
+nPrcLista := _nPRCVEN
+nQtd  	  := _nQTDVEN
+
+If (nPrcLista == 0)
+	nPrcLista := NoRound(nValMerc/nQtd,TamSX3("C6_PRCVEN")[2])
+EndIf
+
+nAcresFin := 0 //A410Arred(SCK->CK_PRCVEN*SCJ->CJ_ACRSFIN/100,"D2_PRCVEN")
+nValMerc  += A410Arred(nQtd*nAcresFin,"D2_TOTAL")		
+nDesconto := a410Arred(nPrcLista*nQtd,"D2_DESCON")-nValMerc
+nDesconto := Max(0,nDesconto)
+nPrcLista += nAcresFin
+nValMerc  += nDesconto
+
+//nPrcLista := SC6->C6_PRCVEN
+//nValMerc  := SC6->C6_PRCVEN*SC6->C6_QTDVEN
+
+dDataCnd  := dDatabase
+
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³Agrega os itens para a funcao fiscal         ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+MaFisAdd(cProduto,;	      // 1-Codigo do Produto ( Obrigatorio )
+		 _cTES,; 		 // 2-Codigo do TES ( Opcional )
+		 nQtd,;  		 // 3-Quantidade ( Obrigatorio )
+		 nPrcLista,;     // 4-Preco Unitario ( Obrigatorio )
+		 nDesconto,;     // 5-Valor do Desconto ( Opcional )
+		 cNfOri,;        // 6-Numero da NF Original ( Devolucao/Benef )
+		 cSeriOri,;      // 7-Serie da NF Original ( Devolucao/Benef )
+		 nRecOri,;        // 8-RecNo da NF Original no arq SD1/SD2
+		 0,;              // 9-Valor do Frete do Item ( Opcional )
+		 0,;              // 10-Valor da Despesa do item ( Opcional )
+		 0,;              // 11-Valor do Seguro do item ( Opcional )
+		 0,;              // 12-Valor do Frete Autonomo ( Opcional )
+		 nValMerc,;       // 13-Valor da Mercadoria ( Obrigatorio )
+		 0,;              // 14-Valor da Embalagem ( Opiconal )
+		 ,;               // 15
+		 ,;               // 16
+		 "",;             // 17
+		 0,;              // 18-Despesas nao tributadas - Portugal
+		 0,;              // 19-Tara - Portugal
+		 SF4->F4_CF)      // 20-CFO
+
+MaFisWrite(1)
+Return
+
+/*
+|-----------------------------------------------------------------------------------|
+|  Programa : EndImp                                       Data : 18/08/2020       |
+|-----------------------------------------------------------------------------------|
+|  Cliente  : HQ                                            						|
+|-----------------------------------------------------------------------------------|
+|  Uso      : Rotina de calculo dos impostos através da MATXFIS 		            |
+|-----------------------------------------------------------------------------------|
+*/
+Static Function EndImp()
+MaFisEnd()
+MaFisRestore()
+Return

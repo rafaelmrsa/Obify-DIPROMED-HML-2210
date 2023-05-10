@@ -1,0 +1,22 @@
+#include "rwmake.ch"        
+                           
+// MCVN - 20/07/10
+User Function PagCgc()     
+
+
+SetPrvt("_nCgc")
+
+/////  PROGRAMA PARA INDICAR O CNPJ OU CPF DO FORNECEDOR                        
+/////  CNAB BRADESCO A PAGAR (PAGFOR) - POSICOES (003-017)
+
+
+If SA2->A2_TIPO = "J" // Depósito em conta corrente ou poupança/ normal ou real time
+	_nCgc := STRZERO(VAL(SA2->A2_CGC),15)                                
+ElseIf SA2->A2_TIPO = "F"
+	_nCgc := STRZERO(VAL(LEFT(ALLTRIM(SA2->A2_CGC),9)),9)+"0000"+RIGHT(ALLTRIM(SA2->A2_CGC),2)                                                                 
+Else 
+	_nCgc := REPLICATE("0",15)
+Endif
+
+// Substituido pelo assistente de conversao do AP5 IDE em 26/09/00 ==> __Return(_aModel)
+Return(_nCgc)        // incluido pelo assistente de conversao do AP5 IDE em 26/09/00

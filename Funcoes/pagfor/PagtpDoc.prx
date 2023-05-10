@@ -1,0 +1,25 @@
+#include "rwmake.ch"        // incluido pelo assistente de conversao do AP5 IDE em 26/09/00
+
+User Function PagTpDoc()        // incluido pelo assistente de conversao do AP5 IDE em 26/09/00
+
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³ Declaracao de variaveis utilizadas no programa atraves da funcao    ³
+//³ SetPrvt, que criara somente as variaveis definidas pelo usuario,    ³
+//³ identificando as variaveis publicas do sistema utilizadas no codigo ³
+//³ Incluido pelo assistente de conversao do AP5 IDE                    ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+SetPrvt("_ATPMOV")
+
+/////  PROGRAMA PARA INDICAR O TIPO DE DOCUMENTO                        
+/////  CNAB BRADESCO A PAGAR (PAGFOR) - POSICOES (250-251)
+
+
+If U_PAGMOD() $ "01/05" // Depósito em conta corrente ou poupança/ normal ou real time
+	_ATPMOV := "05"
+Else
+	_ATPMOV := TABELA("17",SE2->E2_TIPO,1,2)                                 
+Endif
+
+// Substituido pelo assistente de conversao do AP5 IDE em 26/09/00 ==> __Return(_aModel)
+Return(_ATPMOV)        // incluido pelo assistente de conversao do AP5 IDE em 26/09/00
