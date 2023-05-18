@@ -855,9 +855,11 @@ cQuery += " "+RetSqlName("SF3")+ " SF3 ON "
 cQuery += "		SF3.F3_NFISCAL	= DT6.DT6_DOC		AND "
 cQuery += "		SF3.F3_SERIE	= DT6.DT6_SERIE		AND "
 //cQuery += "		SF3.F3_CLIEFOR	= DT6.DT6_CLIREM	AND " //Rafael Moraes Rosa - 02/05/2023 - Ajuste para atender ao novo processo JARILOG - Ticket #6469
-cQuery += "		SF3.F3_CLIEFOR	= DT6.DT6_CLICON	AND "
+//cQuery += "		SF3.F3_CLIEFOR	= DT6.DT6_CLICON	AND " //Rafael Moraes Rosa - 18/05/2023 - Novo ajuste para atender ao novo processo JARILOG x DIPROMED
+cQuery += "		SF3.F3_CLIEFOR	= (CASE WHEN DT6.DT6_CLICON = '' THEN DT6.DT6_CLIREM ELSE DT6.DT6_CLICON END)	AND "
 //cQuery += "		SF3.F3_LOJA		= DT6.DT6_LOJREM	AND " //Rafael Moraes Rosa - 02/05/2023 - Ajuste para atender ao novo processo JARILOG - Ticket #6469
-cQuery += "		SF3.F3_LOJA		= DT6.DT6_LOJCON	AND "
+//cQuery += "		SF3.F3_LOJA		= DT6.DT6_LOJCON	AND " //Rafael Moraes Rosa - 18/05/2023 - Novo ajuste para atender ao novo processo JARILOG x DIPROMED
+cQuery += "		SF3.F3_LOJA		= (CASE WHEN DT6.DT6_LOJCON = '' THEN DT6.DT6_LOJREM ELSE DT6.DT6_LOJCON END) 	AND "
 cQuery += "		SF3.F3_EMISSAO	= DT6.DT6_DATEMI	AND "
 cQuery += "		SF3.D_E_L_E_T_	= '' "
 //Rafael Rosa Obify - 09/06/22 - Linhas adicionads - FIM
@@ -865,8 +867,7 @@ cQuery += " WHERE DT6.DT6_FILIAL = '" +xFilial("DT6")+ "'"
 cQuery += "  AND DT6.DT6_PREFIX  = '" +SE1->E1_PREFIXO+ "'"
 cQuery += "  AND DT6.DT6_TIPO    = '" +SE1->E1_TIPO+ "'"
 cQuery += "  AND DT6.DT6_NUM     = '" +SE1->E1_NUM+ "'"
-//cQuery += "  AND DT6.DT6_TIPFRE  = '1'" //Rafael Moraes Rosa - 02/05/2023 - Ajuste para atender ao novo processo JARILOG - Ticket #6469
-cQuery += "  AND DT6.DT6_TIPFRE  = '2'"
+cQuery += "  AND DT6.DT6_TIPFRE  = '1'"
 cQuery += "  AND DT6.D_E_L_E_T_  = ' '"
 cQuery += "  ORDER BY  DT6_DATEMI, DT6_DOC"	//Ordenando por emissão + doc MCVN - 18/06/10
 cQuery := ChangeQuery(cQuery)
@@ -947,8 +948,10 @@ cQuery += " "+RetSqlName("SF3")+ " SF3 ON "
 //cQuery += "		SF3.F3_FILIAL	= DT6.DT6_FILIAL	AND "
 cQuery += "		SF3.F3_NFISCAL	= DT6.DT6_DOC		AND "
 cQuery += "		SF3.F3_SERIE	= DT6.DT6_SERIE		AND "
-cQuery += "		SF3.F3_CLIEFOR	= DT6.DT6_CLIREM	AND "
-cQuery += "		SF3.F3_LOJA		= DT6.DT6_LOJREM	AND "
+//cQuery += "		SF3.F3_CLIEFOR	= DT6.DT6_CLIREM	AND " //Rafael Moraes Rosa - 18/05/2023 - Novo ajuste para atender ao novo processo JARILOG x DIPROMED
+cQuery += "		SF3.F3_CLIEFOR	= (CASE WHEN DT6.DT6_CLICON = '' THEN DT6.DT6_CLIREM ELSE DT6.DT6_CLICON END)	AND "
+//cQuery += "		SF3.F3_LOJA		= DT6.DT6_LOJREM	AND " //Rafael Moraes Rosa - 18/05/2023 - Novo ajuste para atender ao novo processo JARILOG x DIPROMED
+cQuery += "		SF3.F3_LOJA		= (CASE WHEN DT6.DT6_LOJCON = '' THEN DT6.DT6_LOJREM ELSE DT6.DT6_LOJCON END) 	AND "
 cQuery += "		SF3.F3_EMISSAO	= DT6.DT6_DATEMI	AND "
 cQuery += "		SF3.D_E_L_E_T_	= '' "
 //Rafael Rosa Obify - 09/06/22 - Linhas adicionads - FIM
@@ -1021,8 +1024,10 @@ cQuery += " "+RetSqlName("SF3")+ " SF3 ON "
 //cQuery += "		SF3.F3_FILIAL	= DT6.DT6_FILIAL	AND "
 cQuery += "		SF3.F3_NFISCAL	= DT6_1.DT6_DOC		AND "
 cQuery += "		SF3.F3_SERIE	= DT6_1.DT6_SERIE	AND "
-cQuery += "		SF3.F3_CLIEFOR	= DT6_1.DT6_CLIREM	AND "
-cQuery += "		SF3.F3_LOJA		= DT6_1.DT6_LOJREM	AND "
+//cQuery += "		SF3.F3_CLIEFOR	= DT6_1.DT6_CLIREM	AND " //Rafael Moraes Rosa - 18/05/2023 - Novo ajuste para atender ao novo processo JARILOG x DIPROMED
+cQuery += "		SF3.F3_CLIEFOR	= (CASE WHEN DT6_1.DT6_CLICON = '' THEN DT6_1.DT6_CLIREM ELSE DT6_1.DT6_CLICON END)	AND "
+//cQuery += "		SF3.F3_LOJA		= DT6_1.DT6_LOJREM	AND " //Rafael Moraes Rosa - 18/05/2023 - Novo ajuste para atender ao novo processo JARILOG x DIPROMED
+cQuery += "		SF3.F3_LOJA		= (CASE WHEN DT6_1.DT6_LOJCON = '' THEN DT6_1.DT6_LOJREM ELSE DT6_1.DT6_LOJCON END) 	AND "
 cQuery += "		SF3.F3_EMISSAO	= DT6_1.DT6_DATEMI	AND "
 cQuery += "		SF3.D_E_L_E_T_	= '' "
 
