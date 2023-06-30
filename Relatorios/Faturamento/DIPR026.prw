@@ -2317,7 +2317,6 @@ aMsg := {} // LIMPA ARRAY PARA RECEBER NOVAMENTE O NOME DO REPRESENTANTE
 cAttach := {} // LIMPA ARQUIVOS ENVIADOS
 
 Aadd(cAttach,cArquivo) //  ATACHA APENAS OS 5 PRIMEIROS E MENORES RELATÓRIOS
-//cEmail := "maximo.canuto@dipromed.com.br" // EMAIL DO REPRESENTANTES
 		
   //	If File(cArquivo)
 		Aadd(aMsg,{cCodTec, cNomeTec}) // NOME DO REPRESENTANTE

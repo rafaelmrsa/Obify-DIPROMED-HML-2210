@@ -1117,7 +1117,7 @@ Monta o menu
 Static Function EnvCicMail(cReqMat,cOP,lLoc03)
 Local _cMscCic   := ""
 Local _cOpRecC 	 := GetNewPar("ES_REQMCIC","MAXIMO.CANUTO")
-Local _cOpRecM   := GetNewPar("ES_REQMMAI","maximo.canuto@dipromed.com.br")
+Local _cOpRecM   := GetNewPar("ES_REQMMAI",SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br"))
 Local _cAssunto  := ""
 Local _aMsg      := {}
 Local _cFrom     := "protheus@dipromed.com.br"
@@ -1128,7 +1128,7 @@ DEFAULT lLoc03   := .F.
 
 If lLoc03
 	_cOpRecC := GetNewPar("ES_REQCL03","MAXIMO.CANUTO")	
-	_cOpRecM := GetNewPar("ES_REQML03","maximo.canuto@dipromed.com.br")
+	_cOpRecM := GetNewPar("ES_REQML03",SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br"))
 EndIf       
 
 //Enviando Cic para Financeiro

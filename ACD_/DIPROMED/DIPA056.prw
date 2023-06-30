@@ -21,11 +21,13 @@ User Function DIPA056()
 Local aCores		:= {}  
 Private cCadastro 	:= "Monitor Fila"
 Private aRotina 	:= { ;
-{"Pesquisar"  ,"AxPesqui"  , 0 , 1},;    
-{"Visualiza"  ,"AxVisual"  , 0 , 2},;  
-{"Faturar"    ,"U_D56FAT()", 0 , 3},;
-{"Legenda"    ,"U_D56LEG()", 0 , 7}}
+{"Pesquisar"  				,"AxPesqui"  				, 0 , 1},;    
+{"Visualiza"  				,"AxVisual"  				, 0 , 2},;  
+{"Faturar"    				,"U_D56FAT()"				, 0 , 3},;
+{"Liberar PV Bloq."			,"U_D56LIBPV(ZZ5_PEDIDO)"	,0 , 3},;
+{"Legenda"   				,"U_D56LEG()"				, 0 , 7}}
 
+aAdd(aCores , {'ZZ5_STATUS = "5"','BR_PRETO'} ) // Rafael Moraes Rosa - 14/06/2023 - Ajustar status de divergencia
 aAdd(aCores , {'U_DipPedBlq(ZZ5_PEDIDO) = "1" .And. ZZ5_STATUS = "4"','BR_AZUL'} )
 aAdd(aCores , {'ZZ5_STATUS = "4"','BR_VERDE'   } )
 aAdd(aCores , {'ZZ5_STATUS = "3"','BR_CINZA'   } )
@@ -66,6 +68,7 @@ aAdd(aLegenda, {'BR_AMARELO' ,"Confer๊ncia"        	} )  // 2
 aAdd(aLegenda, {'BR_VERMELHO',"Separa็ใo"    		} )  // 1
 aAdd(aLegenda, {'BR_AZUL'	 ,"Pedido เ vista" 		} )  // 1
 aAdd(aLegenda, {'BR_CINZA'   ,"Aguardando Consolidacao"} )  // 1
+aAdd(aLegenda, {'BR_PRETO'   ,"Bloqueado/Conflito de Faturamento"	} )  // 5
 
 BrwLegenda("Status da OS","Status",aLegenda)
 
@@ -116,17 +119,27 @@ If SC5->(dbSeek(xFilial("SC5")+AllTrim(ZZ5->ZZ5_PEDIDO)))
 		If !Empty(SC5->C5_XBLQNF)      
 			Aviso("Aten็ใo","Foi solicitado estorno deste pedido. Entre em contato com a vendedora.",{"Ok"},1)
 		ElseIf ZZ5->ZZ5_STATUS == '4'
-			DipAtuSX1(ZZ5->ZZ5_PEDIDO,.T.)
+			//DipAtuSX1(ZZ5->ZZ5_PEDIDO,.T.)
 			
 			cChave := "Fat_"+cEmpAnt+cFilAnt+"_"+AllTrim(ZZ5->ZZ5_PEDIDO)
 			If LockByName(cChave,.T.,.T.)
-				MATA460() 
+				//MATA460()//Rafael Moraes Rosa - 14/06/2023 - Linha comentada
+				//Rafael Moraes Rosa - 14/06/2023 - INICIO
+				IF IIF(SuperGetMV("MV_#ATVVLD",.F.,.F.)=.T.,ExistD2(ZZ5->ZZ5_PEDIDO,ZZ5->ZZ5_NOTA,ZZ5->ZZ5_SERIE),.F.)
+					Aviso("Aten็ใo","Pedido " + ALLTRIM(ZZ5->ZZ5_PEDIDO) + " com faturamento existente/divergente. Entre em contato com o TI.",{"Ok"},1)
+					ZZ5->(RecLock("ZZ5",.F.))
+						ZZ5->ZZ5_STATUS := "5" //Bloqueado por conflito de faturamento
+					ZZ5->(MsUnlock())
+				ELSE
+					MATA460()
+				ENDIF
+				//Rafael Moraes Rosa - 14/06/2023 - FIM
 				UnLockByName(cChave,.T.,.T.)
 			Else
 				Aviso("Aten็ใo","Pedido em processo de estorno",{"Ok"},1)
 			EndIf         	
 			   
-			DipAtuSX1(ZZ5->ZZ5_PEDIDO)
+			//DipAtuSX1(ZZ5->ZZ5_PEDIDO)
 		Else
 			Aviso("Aten็ใo","O pedido nใo estแ pronto para ser faturado",{"Ok"},1)
 		EndIf        
@@ -234,6 +247,105 @@ If FindFunction('SetMVValue')
 	SetMVValue("MT461A","MV_PAR06",cPedido) 
 Endif        
 
+RestArea(aArea)
+
+Return
+
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
+ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
+ฑฑบPrograma  ณExistD2   บAutor  Rafael Moraes Rosa   บ Data ณ  14/06/23   บฑฑ
+ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
+ฑฑบDesc.     ณ                                                            บฑฑ
+ฑฑบ          ณ                                                            บฑฑ
+ฑฑฬออออออออออุออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออนฑฑ
+ฑฑบUso       ณ AP                                         	              บฑฑ
+ฑฑศออออออออออฯออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออผฑฑ
+ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
+฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿
+*/
+Static Function ExistD2(cPedido,cNota,cSerie)
+Local lRet	:= .F.
+Local aINfe	:= {}
+Local cQuery    := ""
+Local cAliasQry := ""
+
+        cAliasQry := GetNextAlias()
+
+		cQuery := "SELECT SD2.R_E_C_N_O_ AS SD2REC "
+        cQuery += "FROM  "+RetSqlName("SD2")+ " (NOLOCK) SD2 "
+		
+		cQuery += "WHERE SD2.D_E_L_E_T_ = '' "
+
+		cQuery += "AND D2_FILIAL = '" + ALLTRIM(cFilAnt) + "' "
+		cQuery += "AND D2_PEDIDO = '" + ALLTRIM(cPedido) + "' "
+		//cQuery += "AND D2_DOC <> '" + ALLTRIM(cNota) + "' " //Variavel NOTA retirada da regra a pedido do Maximo
+		//cQuery += "AND D2_SERIE <> '" + ALLTRIM(cSerie) + "' " //Variavel SERIE retirada da regra a pedido do Maximo
+		cQuery += "AND D2_EMISSAO = '"+ Date() +"' "
+
+        cQuery := ChangeQuery(cQuery)
+
+        dbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),cAliasQry)
+
+        While (cAliasQry)->(!Eof())
+
+			Aadd(aINfe,{(cAliasQry)->SD2REC})
+            (cAliasQry)->(dbSkip())
+        EndDo
+
+		IF Len(aINfe) > 0
+			lRet := .T.
+		ENDIF
+
+		(cAliasQry)->(DbCloseArea())
+
+Return(lRet)
+
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
+ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
+ฑฑบPrograma  ณD56LIBPV  บAutor  Rafael Moraes Rosa   บ Data ณ  15/06/23   บฑฑ
+ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
+ฑฑบDesc.     ณ                                                            บฑฑ
+ฑฑบ          ณ                                                            บฑฑ
+ฑฑฬออออออออออุออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออนฑฑ
+ฑฑบUso       ณ AP                                         	              บฑฑ
+ฑฑศออออออออออฯออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออผฑฑ
+ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
+฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿
+*/
+User Function D56LIBPV(cPVZZ5) 
+
+Local aArea 	:= GetArea()
+Local aAreaZZ5 	:= ZZ5->(GetArea())
+
+IF !SuperGetMV("MV_#ATVVLD",.F.,.F.)
+	Aviso("Aten็ใo","Controle desabilitado. Habilite o parametro MV_#ATVVLD",{"Ok"},1)
+
+ELSE
+	IF RetCodUsr() $ SuperGetMV("MV_#ULPVFI",.F.,"000000|000001|000469")
+		dbSelectArea("ZZ5")
+		ZZ5->(dbSetOrder(1))
+
+		If ZZ5->(dbSeek(xFilial("ZZ5")+cPVZZ5))
+			IF ZZ5->ZZ5_STATUS = "5"
+				IF MsgYESNO("Confirma a liberacao do PV " + ALLTRIM(cPVZZ5) + " com conflito no faturamento?")
+					ZZ5->(RecLock("ZZ5",.F.))
+						ZZ5->ZZ5_STATUS := "4" //Pronto para Faturar
+					ZZ5->(MsUnlock())
+				ENDIF
+			ELSE
+				Aviso("Aten็ใo","Ajuste do status nao permitido.",{"Ok"},1)
+			ENDIF
+		EndIf
+	ELSE
+		Aviso("Aten็ใo","Operacao permitida para o seu usuario. Entre em contato com o TI",{"Ok"},1)
+	ENDIF
+ENDIF
+
+RestArea(aAreaZZ5)
 RestArea(aArea)
 
 Return

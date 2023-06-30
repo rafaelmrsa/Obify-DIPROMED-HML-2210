@@ -362,7 +362,11 @@ QRYZZC->(dbCloseArea())
 	Else
 
 		If Len(aMsgI) > 0 // SE NÃO POSSUIR NENHUMA LINHA NO ARRAY NÃO ENVIA NADA  -  RBORGES 01/01/15
-			cEmail := GetNewPar("ES_EMINVRO","reginaldo.borges@dipromed.com.br")   //Usuários que receberão e-mails - RBORGES 01/01/15
+			//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo comentada
+			//cEmail := GetNewPar("ES_EMINVRO","reginaldo.borges@dipromed.com.br")   //Usuários que receberão e-mails - RBORGES 01/01/15
+			//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo substituida
+			cEmail := IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),SUPERGETMV("ES_EMINVRO", .F., ""),GETMV("MV_#EMLSCH"))   //Usuários que receberão e-mails - RBORGES 01/01/15
+			
 			cAssunto:= 'INVENTARIO ROTATIVO - Periodo de: ' +DtoC(MV_PAR01)+ ' Ate '+DtoC(MV_PAR02)+' - ' +AllTrim(SM0->M0_NOME)+"/"+AllTrim(SM0->M0_FILIAL)
 			nDifpg += (nDifg + nDifp)//Calculando a diferença das perdas e ganhos
 			U_EMailIR(cEmail,cAssunto,aMsgI,aMsgL,nDifg,nDifp,nDifpg) //RBORGES 01/01/15 - Dispara E-mail do inventário rotativo

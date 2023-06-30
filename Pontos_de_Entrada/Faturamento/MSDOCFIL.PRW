@@ -27,14 +27,14 @@ Local lRet    := .T.
 Local nRecno  := PARAMIXB[1]
 Local _cValBc := ""   
       
-dbSelectArea("SX3")
+/*dbSelectArea("SX3")
 SX3->(dbSetOrder(2))
  
 If SX3->(dbSeek("ACB_CODOBJ")) .And. SX3->X3_VALID != _cValBc
 	SX3->(RecLock("SX3",.F.))
 	SX3->X3_VALID := _cValBc
 	SX3->(MsUnLock())
-EndIf
+EndIf*/
  
 AC9->(dbGoTo(nRecno))
 

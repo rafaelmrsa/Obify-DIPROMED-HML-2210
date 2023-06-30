@@ -581,7 +581,7 @@ nPagatu := 1
 If lErroVal
 	MsgAlert("Existe(m) erro(s) nos valores unitários e totais, FAVOR CONFERIR VALORES ANTES DE ENVIAR O ORÇAMENTO AO CLIENTE!","Atenção")
 	_cFrom   := Lower(Alltrim(_cMailOpe))
-	_cEmail  := "maximo.canuto@dipromed.com.br;"+Lower(Alltrim(_cMailOpe))
+	_cEmail  := SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")+";"+Lower(Alltrim(_cMailOpe))
 	_cAssunto:= EncodeUTF8("Problema nos valores unitários - Orçamento  "+_nOrc+" não impresso!  CONFERIR OS VALORES DO ORÇAMENTO","cp1252")
 	Aadd( _aMsg , { "Operador: "            , _cOperado +" - "+ _cNomeOpe } )
 	Aadd( _aMsg , { "Cliente:  "            , _cCodCli  +" - "+ _cNomCli  } )
@@ -765,7 +765,7 @@ Else
 	EndDo
 	
 	_cFrom   := Lower(Alltrim(_cMailOpe))
-	_cEmail  := "maximo.canuto@dipromed.com.br"
+	_cEmail  := SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")
 	_cAssunto:= EncodeUTF8("Orçamento  "+_nOrc+" foi impresso no Word!","cp1252")
 	Aadd( _aMsg , { "Numero Pedido: "       , _nOrc } )
 	Aadd( _aMsg , { "Operador: "            , _cOperado +" - "+ _cNomeOpe } )

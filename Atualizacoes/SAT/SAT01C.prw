@@ -149,7 +149,7 @@ IF SZM->ZM_AVALIAC =="RE" .OR. SZM->ZM_AVALIAC =="RU"
 	If lOk
 		SEND MAIL FROM cFrom ;
 		TO      	Lower(cTo);
-		CC      	Lower("maximo.canuto@dipromed.com.br");
+		CC      	Lower(SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br"));
 		BCC     	Lower("");
 		SUBJECT "Avaliacao Ruim ou Regular SAT Nr. " + cSat+ "de " +cUser+ " ";
 		BODY    	cMensagem;

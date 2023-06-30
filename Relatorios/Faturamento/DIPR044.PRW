@@ -226,6 +226,12 @@ If MV_PAR06 = 1
 	_aTamSX3 := TamSX3("A3_NREDUZ")//RBORGES - 20/12/2013
 	AAdd(_aCampos ,{"NREDUZ", "C",_aTamSX3[1],_aTamSX3[2]})
 	
+	//Ticket 6646 - Rafael Moraes Rosa - 07/06/2023 - INICIO
+	If Sele("TRB") <> 0
+		TRB->(DbCloseArea())
+	Endif
+	//Ticket 6646 - Rafael Moraes Rosa - 07/06/2023 - FIM
+
 	_cArqTrb := CriaTrab(_aCampos,.T.)
 	DbUseArea(.T.,,_cArqTrb,"TRB",.F.,.F.)
 	//	IndRegua("TRB",_cArqTrb,"CODIGO+TIPO",,,"Criando Indice...(CODIGO+TIP0)")
@@ -252,9 +258,9 @@ cQuery := ""
 
 For nEmp := 1 to len(aEmpresa)
 	
-	If Select('SX2_2') > 0
+	/*If Select('SX2_2') > 0
 		SX2_2->( DbCloseArea() )
-	EndIf
+	EndIf*/
 	
 	cQuery += cUniao + fQuery01(aEmpresa[nEmp][01],aEmpresa[nEmp][02])
 	cUniao := "  UNION  "
@@ -288,9 +294,9 @@ cQuery := ""
 
 For nEmp := 1 to len(aEmpresa)
 	
-	If Select('SX2_2') > 0
+	/*If Select('SX2_2') > 0
 		SX2_2->( DbCloseArea() )
-	EndIf
+	EndIf*/
 	
 	cQuery += cUniao + fQuery02(aEmpresa[nEmp][01],aEmpresa[nEmp][02])
 	cUniao  := "  UNION  "
@@ -327,9 +333,9 @@ If MV_PAR04 == 1
 	
 	For nEmp := 1 to len(aEmpresa)
 		
-		If Select('SX2_2') > 0
+		/*If Select('SX2_2') > 0
 			SX2_2->( DbCloseArea() )
-		EndIf
+		EndIf*/
 		
 		cQuery += cUniao + fQuery03(aEmpresa[nEmp][01],aEmpresa[nEmp][02])
 		cUniao  := "  UNION  "
@@ -362,9 +368,9 @@ If MV_PAR04 == 1
 	
 	For nEmp := 1 to len(aEmpresa)
 		
-		If Select('SX2_2') > 0
+		/*If Select('SX2_2') > 0
 			SX2_2->( DbCloseArea() )
-		EndIf
+		EndIf*/
 		
 		cQuery += cUniao + fQuery04(aEmpresa[nEmp][01],aEmpresa[nEmp][02])
 		cUniao  := "  UNION  "
@@ -2286,10 +2292,10 @@ Return
 Static Function fQuery01( _cEmpresa ,_cFilial)
 
 Local cQuery  := ""
-Local cFilSD2 := fFilial(_cEmpresa,'SD2',_cFilial)
-Local cFilSF2 := fFilial(_cEmpresa,'SF2',_cFilial)
-Local cFilSF4 := fFilial(_cEmpresa,'SF4',_cFilial)
-Local cFilSC5 := fFilial(_cEmpresa,'SC5',_cFilial)
+Local cFilSD2 := cFilAnt//fFilial(_cEmpresa,'SD2',_cFilial)
+Local cFilSF2 := cFilAnt//fFilial(_cEmpresa,'SF2',_cFilial)
+Local cFilSF4 := cFilAnt//fFilial(_cEmpresa,'SF4',_cFilial)
+Local cFilSC5 := cFilAnt//fFilial(_cEmpresa,'SC5',_cFilial)
 Local nId     := 0
 //------------------------------------------------------------------------------------------
 // Define as tabelas que serão lidas
@@ -2571,11 +2577,11 @@ Static Function fQuery02( _cEmpresa ,_cFilial)
 
 Local nId     := 0
 Local cQuery  := ""
-Local cFilSD1 := fFilial(_cEmpresa,'SD1',_cFilial)
-Local cFilSD2 := fFilial(_cEmpresa,'SD2',_cFilial)
-Local cFilSF2 := fFilial(_cEmpresa,'SF2',_cFilial)
-Local cFilSF4 := fFilial(_cEmpresa,'SF4',_cFilial)
-Local cFilSC5 := fFilial(_cEmpresa,'SC5',_cFilial)
+Local cFilSD1 := cFilAnt//fFilial(_cEmpresa,'SD1',_cFilial)
+Local cFilSD2 := cFilAnt//fFilial(_cEmpresa,'SD2',_cFilial)
+Local cFilSF2 := cFilAnt//fFilial(_cEmpresa,'SF2',_cFilial)
+Local cFilSF4 := cFilAnt//fFilial(_cEmpresa,'SF4',_cFilial)
+Local cFilSC5 := cFilAnt//fFilial(_cEmpresa,'SC5',_cFilial)
 Local nId     := 0
 //------------------------------------------------------------------------------------------
 // Define as tabelas que serão lidas
@@ -2818,10 +2824,10 @@ Return(cQuery)
 Static Function fQuery03( _cEmpresa ,_cFilial)
 
 Local cQuery  := ""
-Local cFilSD2 := fFilial(_cEmpresa,'SD2',_cFilial)
-Local cFilSF2 := fFilial(_cEmpresa,'SF2',_cFilial)
-Local cFilSF4 := fFilial(_cEmpresa,'SF4',_cFilial)
-Local cFilSC5 := fFilial(_cEmpresa,'SC5',_cFilial)
+Local cFilSD2 := cFilAnt//fFilial(_cEmpresa,'SD2',_cFilial)
+Local cFilSF2 := cFilAnt//fFilial(_cEmpresa,'SF2',_cFilial)
+Local cFilSF4 := cFilAnt//fFilial(_cEmpresa,'SF4',_cFilial)
+Local cFilSC5 := cFilAnt//fFilial(_cEmpresa,'SC5',_cFilial)
 Local nId     := 0
 //------------------------------------------------------------------------------------------
 // Define as tabelas que serão lidas
@@ -3024,10 +3030,10 @@ Return(cQuery)
 Static Function fQuery04( _cEmpresa ,_cFilial)
 
 Local cQuery  := ""
-Local cFilSD2 := fFilial(_cEmpresa,'SD2',_cFilial)
-Local cFilSF2 := fFilial(_cEmpresa,'SF2',_cFilial)
-Local cFilSF4 := fFilial(_cEmpresa,'SF4',_cFilial)
-Local cFilSC5 := fFilial(_cEmpresa,'SC5',_cFilial)
+Local cFilSD2 := cFilAnt//fFilial(_cEmpresa,'SD2',_cFilial)
+Local cFilSF2 := cFilAnt//fFilial(_cEmpresa,'SF2',_cFilial)
+Local cFilSF4 := cFilAnt//fFilial(_cEmpresa,'SF4',_cFilial)
+Local cFilSC5 := cFilAnt//fFilial(_cEmpresa,'SC5',_cFilial)
 Local nId     := 0
 //------------------------------------------------------------------------------------------
 // Define as tabelas que serão lidas
@@ -3161,7 +3167,7 @@ Return(cQuery)
 Static Function fFilial(_cEmpresa,_cTabela,_cFilial)
 
 Local _cNewFilial := Space(2)
-Local _cFile      := 'SX2'+_cEmpresa
+/*Local _cFile      := 'SX2'+_cEmpresa
 Local _cFileIdx   := _cFile
 
 If Select("SX2_2") = 0
@@ -3175,7 +3181,7 @@ If SX2_2->( DbSeek(_cTabela) )
 	EndIf
 Else
 	_cNewFilial := xFilial(_cTabela)
-EndIf
+EndIf*/
 
 Return(_cNewFilial)
 /*

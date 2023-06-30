@@ -1,5 +1,5 @@
 /*
-PONTO.......: MA261D3           PROGRAMA....: MATA261
+PONTO.......: MA261D3           P Type("ROGRAMA....: MATA261
 DESCRIÇÄO...: EXECUTA APOS A GRAVACAO DO SD3
 UTILIZAÇÄO..: E chamado na gravacao de cada transferencia no SD3.
               Pode ser utilizado para atualizar campos ou arquivos no momento da

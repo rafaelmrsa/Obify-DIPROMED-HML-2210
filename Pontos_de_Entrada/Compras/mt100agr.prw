@@ -1,3 +1,10 @@
+#INCLUDE "TBICONN.CH"   // JBS 23/06/2010 - Comandos da query BeginSQL/EndSql.
+#INCLUDE "PROTHEUS.CH"
+#Include "Ap5Mail.ch"
+#INCLUDE "TOPCONN.CH"
+#INCLUDE "RWMAKE.CH"
+//#INCLUDE "PROTHEUS.CH"
+
 /*
 PONTO.......: MT100AGR          PROGRAMA....: MATA100
 DESCRIÇÄO...: APOS A GRAVACAO DA NF FORA DA TRANSACAO
@@ -12,7 +19,6 @@ PARAMETROS..: UPAR do tipo X : NENHUM
 
 
 RETORNO.....: URET do tipo X : NENHUM
-*/
 
 /*====================================================================================\
 |Programa  | MT100AGR       | Autor | Alexandro Dias            | Data | 30/01/2002   |
@@ -72,13 +78,6 @@ RETORNO.....: URET do tipo X : NENHUM
 +----------+--------------------------------------------------------------------------+
 | MAXIMO   | 15/10/19 - Ajustando regra de formação do CUSDIP            		      |
 \====================================================================================*/
-
-#INCLUDE "TBICONN.CH"   // JBS 23/06/2010 - Comandos da query BeginSQL/EndSql.
-#INCLUDE "PROTHEUS.CH"
-#Include "Ap5Mail.ch"
-#INCLUDE "TOPCONN.CH"
-#INCLUDE "RWMAKE.CH"
-//#INCLUDE "PROTHEUS.CH"
 
 #DEFINE CR    chr(13)+chr(10) // Carreage Return (Fim de Linha)
 
@@ -1486,7 +1485,7 @@ Local nLinArray:=0
 Local aLinCor:={"#B0E2FF","#c0c0c0"}
 Local nLinCor:= 1
 Local cEmailTo := If(SF1->F1_TIPO == "D",If(cTipoVend == 'I',cMailVend,cMailVend+";"+cMailOper),'erich.pontoldio@dipromed.com.br')        // MCVN - 24/09/08
-Local cEmailCc := ""//(RBorges 30/09/2014) - If(SF1->F1_TIPO == "D","sac@dipromed.com.br",GetMv("ES_MT100AG",,"maximo.canuto@dipromed.com.br"))//sac@dipromed.com.br",'rosemeire.ferraris@dipromed.com.br;erica.leal@dipromed.com.br;wilson.silva@dipromed.com.br;silvia.moraes@dipromed.com.br;rt@dipromed.com.br;celia.labao@dipromed.com.br') // MCVN - 24/09/08
+Local cEmailCc := ""
 Local cEmailBcc:= '' // MCVN - 24/09/08
 Local nTotAcrFor := 0
 Local nTotDesFor := 0
@@ -1499,14 +1498,14 @@ Local nLin := 1
 
 //RBorges 30/09/2014 - Condição para enviar e-mails de NF tipo D para o sac da HQ.
 If cEmpAnt == "04"
-	cEmailCc := If(SF1->F1_TIPO == "D",GetMv("ES_EMNFDEV",,"sac@healthquality.ind.br"),GetMv("ES_MT100AG",,"maximo.canuto@dipromed.com.br"))
+	cEmailCc := If(SF1->F1_TIPO == "D",GetMv("ES_EMNFDEV",,"sac@healthquality.ind.br"),GetMv("ES_MT100AG",,SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")))
 	
 	If  SF1->F1_FORNECE $ cIndBen // Se Fornecedor estiver contigo nos fornecedores que Beneficiamento e industrialização
 		cEmailCc := AllTrim(cEmIndben)
 	EndIf
 	
 Else
-	cEmailCc := If(SF1->F1_TIPO == "D",GetMv("ES_EMNFDEV",,"sac@dipromed.com.br"),GetMv("ES_MT100AG",,"maximo.canuto@dipromed.com.br"))//sac@dipromed.com.br",'rosemeire.ferraris@dipromed.com.br;wilson.silva@dipromed.com.br') // MCVN - 24/09/08
+	cEmailCc := If(SF1->F1_TIPO == "D",GetMv("ES_EMNFDEV",,"sac@dipromed.com.br"),GetMv("ES_MT100AG",,SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")))//sac@dipromed.com.br",'rosemeire.ferraris@dipromed.com.br;wilson.silva@dipromed.com.br') // MCVN - 24/09/08
 EndIf
 //--------------------------------------------------------------------------
 // Definicao do cabecalho do email

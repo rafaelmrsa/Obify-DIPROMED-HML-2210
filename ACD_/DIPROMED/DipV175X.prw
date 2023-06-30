@@ -1408,7 +1408,7 @@ Local _aMsg      := {}
 Local _cFrom     := "protheus@dipromed.com.br"
 Local _cFuncSent := "DIPV175X(VldEbqVol)"
 //Local _cEnvCic   := GetNewPar("ES_CICEMB" ,"EXPEDICAOCD,DIEGO.DOMINGOS,MAXIMO.CANUTO,JOSE.MAMEDE,LOURIVAL.NUNES,MARCO.AUGUSTO")	
-Local _cEnvMail  := GetNewPar("ES_MAILEMB","expedicao@dipromed.com.br;maximo.canuto@dipromed.com.br;jose.mamede@dipromed.com.br;lourival.nunes@dipromed.com.br;emovere02@dipromed.com.br")
+Local _cEnvMail  := GetNewPar("ES_MAILEMB","expedicao@dipromed.com.br;"+SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")+";jose.mamede@dipromed.com.br;lourival.nunes@dipromed.com.br;emovere02@dipromed.com.br")
 Local _cMscCic   := ""                           
 DEFAULT cPedido2 := ""
 

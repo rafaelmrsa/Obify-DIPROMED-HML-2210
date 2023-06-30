@@ -101,7 +101,10 @@ DbSelectArea("QRY1")
 DbGoTop()
 While QRY1->(!EOF())   
     cVend     := QRY1->A3_COD
-    cMailVend := QRY1->A3_EMAIL
+	//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo comentada
+    //cMailVend := QRY1->A3_EMAIL
+	//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo substituida
+    cMailVend := IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),QRY1->A3_EMAIL,GETMV("MV_#EMLSCH"))
     
     cTipoRel := "S"	    
    	RunProc()	// Relatório de pedidos em Saldo para os vendedores

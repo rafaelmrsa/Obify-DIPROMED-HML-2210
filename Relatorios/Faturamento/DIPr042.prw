@@ -1430,8 +1430,8 @@ Static Function fQuery01( _cEmpresa ,_cFilial, lAnalitico)
 
 Local lRet    := .T.
 Local cQry1   := ""
-Local cFilSF2 := fFilial(_cEmpresa,'SF2',_cFilial)  // iif(!Empty(xFilial('SF2')),_cFilial,Space(2))
-Local cFilSF4 := fFilial(_cEmpresa,'SF4',_cFilial)  //  iif(!Empty(xFilial('SF4')),_cFilial,Space(2))
+Local cFilSF2 := cFilAnt //fFilial(_cEmpresa,'SF2',_cFilial)  // iif(!Empty(xFilial('SF2')),_cFilial,Space(2))
+Local cFilSF4 := cFilAnt //fFilial(_cEmpresa,'SF4',_cFilial)  //  iif(!Empty(xFilial('SF4')),_cFilial,Space(2))
 Local nId     := 0
 //-----------------------------------------------------------------------------------------
 // Default lAnalitico:= .T. // JBS 07/04/2010 - Novo tratamento Apuração de valores analiticos
@@ -1569,8 +1569,8 @@ Static Function fQuery02(_cEmpresa,_cFilial,lAnalitico)
 
 Local lRet    := .T.
 Local cQry2   := ""
-Local cFilSD1 := fFilial(_cEmpresa,'SD1',_cFilial)  // iif(!Empty(xFilial('SD1')),_cFilial,Space(2)) // Se nao for compaartilhado, traz a filial informada no _cFilial
-Local cFilSF4 := fFilial(_cEmpresa,'SF4',_cFilial)  // iif(!Empty(xFilial('SF4')),_cFilial,Space(2))
+Local cFilSD1 := cFilAnt //fFilial(_cEmpresa,'SD1',_cFilial)  // iif(!Empty(xFilial('SD1')),_cFilial,Space(2)) // Se nao for compaartilhado, traz a filial informada no _cFilial
+Local cFilSF4 := cFilAnt //fFilial(_cEmpresa,'SF4',_cFilial)  // iif(!Empty(xFilial('SF4')),_cFilial,Space(2))
 
 For _x := 1 to 150
 	IncProc( "Processando... DEVOLUÇÃO")
@@ -1660,8 +1660,8 @@ Static Function fQuery03(_cEmpresa,_cFilial)
 
 Local lRet    := .T.
 Local cQry3   := ""
-Local cFilSC5 := fFilial(_cEmpresa,'SC5',_cFilial)  // iif(!Empty(xFilial('SC5')),_cFilial,Space(2))
-Local cFilSF4 := fFilial(_cEmpresa,'SF4',_cFilial)  // iif(!Empty(xFilial('SF4')),_cFilial,Space(2))
+Local cFilSC5 := cFilAnt //fFilial(_cEmpresa,'SC5',_cFilial)  // iif(!Empty(xFilial('SC5')),_cFilial,Space(2))
+Local cFilSF4 := cFilAnt //fFilial(_cEmpresa,'SF4',_cFilial)  // iif(!Empty(xFilial('SF4')),_cFilial,Space(2))
 
 For _x := 1 to 150
 	IncProc( "Processando... PEDIDOS")
@@ -1736,7 +1736,7 @@ Return(lRet)
 Static Function fFilial(_cEmpresa,_cTabela,_cFilial)
 
 Local _cNewFilial := Space(2)
-Local _cFile      := 'SX2'+_cEmpresa
+/*Local _cFile      := 'SX2'+_cEmpresa
 Local _cFileIdx   := _cFile
 
 If Select("SX2_2") = 0
@@ -1750,7 +1750,7 @@ If SX2_2->( DbSeek(_cTabela) )			  //
 	EndIf
 Else
 	_cNewFilial := xFilial(_cTabela)
-EndIf
+EndIf*/
 
 Return(_cNewFilial)
 /*

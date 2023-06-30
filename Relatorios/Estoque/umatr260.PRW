@@ -642,11 +642,11 @@ Else
 	EndIf
 EndIf
 
-dbSelectArea(0)
+/*dbSelectArea(0)
 dbCreate(cAliasTRB,aCampos)
 
 dbUseArea( .F.,,cAliasTRB,cAliasTRB,.F.,.F. )
-IndRegua(cAliasTRB,cAliasTRB,cIndxKEY,,,STR0013)   //"Organizando Arquivo..."
+IndRegua(cAliasTRB,cAliasTRB,cIndxKEY,,,STR0013)*/   //"Organizando Arquivo..."
 
 dbSelectArea("SB2")
 oReport:SetMeter(LastRec())        
@@ -1070,7 +1070,7 @@ If !(FindFunction("SIGACUSB_V") .and. SIGACUSB_V() >= 20050512)
 	Return
 EndIf
 
-Ajustasx1()
+//Ajustasx1()
 
 //旼컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴커
 //� Verifica as perguntas selecionadas                           �
@@ -1110,9 +1110,9 @@ Aadd(aHelpEng, "transaction/movement.                   " )
 Aadd(aHelpSpa, "Fecha de referencia para calculo del    " )
 Aadd(aHelpSpa, "saldo del producto cuando usa saldo por " )
 Aadd(aHelpSpa, "movimiento.                             " )
-PutSx1("MTR260", "20","Data de Referencia  ","Data de Referencia  ","Reference Date           ","mv_chK","D",8,0,0,"G","","","","","mv_par20","","","","","","","","","","","","","","","","",aHelpPor,aHelpEng,aHelpSpa)
-PutSx1("MTR260","22","QTDE. na 2a. U.M. ?","CTD. EN 2a. U.M. ?","QTTY. in 2a. U.M. ?", "mv_chm", "N", 1, 0, 2,"C", "", "", "", "","mv_par22","Sim","Si","Yes", "","Nao","No","No", "", "", "", "", "", "", "", "", "", "", "", "", "")
-PutSX1Help("P.MTR26015.",aHelpP15,aHelpE15,aHelpS15)
+//PutSx1("MTR260", "20","Data de Referencia  ","Data de Referencia  ","Reference Date           ","mv_chK","D",8,0,0,"G","","","","","mv_par20","","","","","","","","","","","","","","","","",aHelpPor,aHelpEng,aHelpSpa)
+//PutSx1("MTR260","22","QTDE. na 2a. U.M. ?","CTD. EN 2a. U.M. ?","QTTY. in 2a. U.M. ?", "mv_chm", "N", 1, 0, 2,"C", "", "", "", "","mv_par22","Sim","Si","Yes", "","Nao","No","No", "", "", "", "", "", "", "", "", "", "", "", "", "")
+//PutSX1Help("P.MTR26015.",aHelpP15,aHelpE15,aHelpS15)
 aHelpPor :={}
 aHelpEng :={}
 aHelpSpa :={} 
@@ -1127,7 +1127,7 @@ aHelpSpa :={}
 aSB1Cod	:= TAMSX3("B1_COD")
 aSB1Ite	:= TAMSX3("B1_CODITE")
 
-If lVEIC
+/*If lVEIC
 	Tamanho := "G"
 	nCol1	:= ABS(aSB1Cod[1] - aSB1Ite[1]) + 1 +  aSB1Cod[1]
 	dbSelectArea("SX1")
@@ -1161,7 +1161,7 @@ Else
 	EndDo
 	dbCommitAll()
 	RestArea(aArea1)
-EndIf
+EndIf*/
 
 Pergunte(cPerg,.F.)
 
@@ -1472,13 +1472,13 @@ Else
 		EndCase
 	EndIf
 EndIf
-cFileTRB := CriaTrab( nil,.F. )
+/*cFileTRB := CriaTrab( nil,.F. )
 
 dbSelectArea(0)
 DbCreate( cFileTRB,aCampos )
 
 dbUseArea( .F.,,cFileTRB,cFileTRB,.F.,.F. )
-IndRegua( cFileTRB,cFileTRB,cIndxKEY,,,OemToAnsi(STR0013))   //"Organizando Arquivo..."
+IndRegua( cFileTRB,cFileTRB,cIndxKEY,,,OemToAnsi(STR0013))*/   //"Organizando Arquivo..."
 
 dbSelectArea( "SB2" )
 SetRegua(LastRec())
@@ -1721,13 +1721,13 @@ While !Eof()
 					EndCase
 				EndIf
 				
-				dbSelectArea( cFileTRB )
+				/*dbSelectArea( cFileTRB )
 				If lAglutLoc .Or. lAglutFil
 				    lAchou := MsSeek(cSeek)
 					RecLock(cFileTRB,!lAchou)
 				Else
 					RecLock(cFileTRB,.T.)
-				EndIf
+				EndIf*/
 				  
 				
 								
@@ -2486,7 +2486,7 @@ Return( Nil )
 Static Function MA260PergU()
 
 Local aAreaAnt := GetArea()
-Local nTamSX1  := Len(SX1->X1_GRUPO)
+/*Local nTamSX1  := Len(SX1->X1_GRUPO)
 
 If lCusUnif //-- Ajusta as perguntas para Custo Unificado
 	dbSelectArea('SX1')
@@ -2507,7 +2507,7 @@ If lCusUnif //-- Ajusta as perguntas para Custo Unificado
 		MsUnlock()
 	EndIf
 EndIf	
-
+*/
 RestArea(aAreaAnt)
 
 Return Nil
@@ -2529,6 +2529,7 @@ Static Function AjustaSX1()
 
 Local nTamSX1 := Len(SX1->X1_GRUPO)
 
+/*
 PutSx1('MTR260', '21' , 'Listar Prods C/ Valor Zerado ?', ;
 	'Muestra Valores a Cero ?      ', ;
 	'Show Zeroed Values ?          ', 'mv_chk', 'C', 1, 0, 2, 'C', '', '', '', '', 'mv_par21', ;
@@ -2553,6 +2554,7 @@ dbSelectArea("SX1")
 dbSetOrder(1)
 If dbSeek(PADR("MTR260",nTamSX1)+"15")
 	Reclock("SX1",.F.)
+		
 	Replace X1_DEFSPA1 With "Actual"	       // Espanhol
 	Replace X1_DEFENG1 With "Actual"	       // Ingles
 	Replace X1_DEF04   With "Fechamento FIFO"  // Portugues
@@ -2563,4 +2565,5 @@ If dbSeek(PADR("MTR260",nTamSX1)+"15")
 	Replace X1_DEFENG5 With "FIFO Movement"    // Ingles
 	MsUnlock()
 EndIf
+*/
 Return Nil

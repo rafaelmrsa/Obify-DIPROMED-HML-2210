@@ -125,6 +125,8 @@ U_DIPPROC(ProcName(0),U_DipUsr()) // JBS 05/10/2005 - Gravando o nome do Program
 cCadastro := "Listando produtos com período de promoção Vencido"
 
 aStrut := {}
+
+/*
 AADD(aStrut,{"B1_OK2"    ,"C",AvSx3("B1_OK2"    ,3) }) 
 AADD(aStrut,{"B1_COD"    ,"C",AvSx3("B1_COD"    ,3) })
 AADD(aStrut,{"B1_DESC"   ,"C",AvSx3("B1_DESC"   ,3) })
@@ -136,20 +138,34 @@ AADD(aStrut,{"B1_PRVMINI","N",AvSx3("B1_PRVMINI",3) })
 AADD(aStrut,{"B1_PRVPROM","N",AvSx3("B1_PRVPROM",3) })
 AADD(aStrut,{"B1_NPROMOC","C",AvSx3("B1_NPROMOC",3) })
 AADD(aStrut,{"B1_MOSTPRO","C",AvSx3("B1_MOSTPRO",3) })
+*/
+
+AADD(aStrut,{"B1_OK2"    ,"C",GetSx3Cache("B1_OK2","X3_TAMANHO"),GetSx3Cache("B1_OK2","X3_DECIMAL") }) 
+AADD(aStrut,{"B1_COD"    ,"C",GetSx3Cache("B1_COD","X3_TAMANHO"),GetSx3Cache("B1_COD","X3_DECIMAL") })
+AADD(aStrut,{"B1_DESC"   ,"C",GetSx3Cache("B1_DESC","X3_TAMANHO"),GetSx3Cache("B1_DESC","X3_DECIMAL") })
+AADD(aStrut,{"B1_PROC"   ,"C",GetSx3Cache("B1_PROC","X3_TAMANHO"),GetSx3Cache("B1_PROC","X3_DECIMAL") })
+AADD(aStrut,{"B1_PERPROM","C",GetSx3Cache("B1_PERPROM","X3_TAMANHO"),GetSx3Cache("B1_PERPROM","X3_DECIMAL") })
+AADD(aStrut,{"B1_PRV1"   ,"N",GetSx3Cache("B1_PRV1","X3_TAMANHO"),GetSx3Cache("B1_PRV1","X3_DECIMAL")})
+AADD(aStrut,{"B1_PRVSUPE","N",GetSx3Cache("B1_PRVSUPE","X3_TAMANHO"),GetSx3Cache("B1_PRVSUPE","X3_DECIMAL") })
+AADD(aStrut,{"B1_PRVMINI","N",GetSx3Cache("B1_PRVMINI","X3_TAMANHO"),GetSx3Cache("B1_PRVMINI","X3_DECIMAL") })
+AADD(aStrut,{"B1_PRVPROM","N",GetSx3Cache("B1_PRVPROM","X3_TAMANHO"),GetSx3Cache("B1_PRVPROM","X3_DECIMAL") })
+AADD(aStrut,{"B1_NPROMOC","C",GetSx3Cache("B1_NPROMOC","X3_TAMANHO"),GetSx3Cache("B1_NPROMOC","X3_DECIMAL") })
+AADD(aStrut,{"B1_MOSTPRO","C",GetSx3Cache("B1_MOSTPRO","X3_TAMANHO"),GetSx3Cache("B1_MOSTPRO","X3_DECIMAL") })
+
 
 // cria a tabela temporária              
 /*
 cTRB := CriaTrab(aStrut, .T.)
 dbUseArea(.T.,,cTRB,"TRBSB1")
 */
-	If(oTempTable <> NIL)
-		oTempTable:Delete()
-		oTempTable := NIL
-	EndIf
-	oTempTable := FWTemporaryTable():New("TRBSB1")
-	oTempTable:SetFields( aStrut )
-	oTempTable:AddIndex("1", {"B1_COD"} )
-	oTempTable:Create()
+If(oTempTable <> NIL)
+	oTempTable:Delete()
+	oTempTable := NIL
+EndIf
+oTempTable := FWTemporaryTable():New("TRBSB1")
+oTempTable:SetFields(aStrut)
+oTempTable:AddIndex("1", {"B1_COD"} )
+oTempTable:Create()
 
 U_DipMonTmp()             
 
@@ -760,7 +776,7 @@ While !lSaida
 			nPVD := nNewPVD
 			nPVC := nNewPVC
 			
-			If !('DIPM_B1'$FUNNAME()) .And. (Type("l010Auto")=="U" .Or. !l010Auto)
+			If !('DIPM_B1'$FUNNAME()) .And. (VarType("l010Auto")=="U" .Or. !l010Auto)
 				If SB1->B1_XCODDES<>'' .And. SB1->B1_XCXFECH == '1' .And.  SB1->B1_XVLDCXE == '1' .And. !Empty(SB1->B1_XCODDES)
 					MsgBox("FAVOR ALTERAR  AS  MESMAS INFORMAÇÕES NO CÓDIGO "+SB1->B1_XCODDES+"!","ATENÇÃO","OK")
 				Endif
@@ -842,7 +858,7 @@ While !lSaida
 		    	RestArea( aAreaAux )
 	    	EndIf
 	    	
-			If !('DIPM_B1'$FUNNAME()) .And. (Type("l010Auto")=="U" .Or. !l010Auto)
+			If !('DIPM_B1'$FUNNAME()) .And. (VarType("l010Auto")=="U" .Or. !l010Auto)
 				If SB1->B1_XCODDES<>'' .And. SB1->B1_XCXFECH == '1' .And.  SB1->B1_XVLDCXE == '1' .And. !Empty(SB1->B1_XCODDES)
 					MsgBox("FAVOR ALTERAR  AS  MESMAS INFORMAÇÕES NO CÓDIGO "+SB1->B1_XCODDES+"!","ATENÇÃO","OK")
 				Endif
@@ -882,7 +898,7 @@ While !lSaida
 		    	RestArea( aAreaAux )
 	    	EndIf  
 	    	
-			If !('DIPM_B1'$FUNNAME()) .And. (Type("l010Auto")=="U" .Or. !l010Auto)
+			If !('DIPM_B1'$FUNNAME()) .And. (VarType("l010Auto")=="U" .Or. !l010Auto)
 				If SB1->B1_XCODDES<>'' .And. SB1->B1_XCXFECH == '1' .And.  SB1->B1_XVLDCXE == '1' .And. !Empty(SB1->B1_XCODDES)
 					MsgBox("FAVOR ALTERAR  AS  MESMAS INFORMAÇÕES NO CÓDIGO "+SB1->B1_XCODDES+"!","ATENÇÃO","OK")
 				Endif

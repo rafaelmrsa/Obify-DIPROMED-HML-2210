@@ -334,7 +334,7 @@ For nCntPed := 1 To Len(aPed)
 					Aviso("Atencao","Nao existem pedidos disponiveis para separacao !!!",{"Ok"})
 					RestArea(aAreaSB2)
 					RestArea(aArea)
-					Return (.F.)
+					lRet	:= .F.
 				Endif
 				
 			EndIf

@@ -360,7 +360,7 @@ If Len(aCols)>0
 
 						SEND MAIL FROM cFrom ;
 						TO      	Lower(cTo);
-						CC      	Lower("maximo.canuto@dipromed.com.br");
+						CC      	Lower(SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br"));
 						BCC     	Lower("");
 						SUBJECT 	"Inclusão da SAT Nr. " + cSat+ " - " +cEmpresa+ "  ";
 						BODY    	cMensagem;
@@ -476,7 +476,7 @@ If Len(aCols)>0
 
 						SEND MAIL FROM cFrom ;
 						TO      	Lower(cEmail);
-						CC      	Lower("maximo.canuto@dipromed.com.br");
+						CC      	Lower(SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br"));
 						BCC     	Lower("");
 						SUBJECT 	"Confirmação de Atendimento SAT Nr. " + cSat+ " - " +cEmpresa+ " ";
 						BODY    	cMensagem;

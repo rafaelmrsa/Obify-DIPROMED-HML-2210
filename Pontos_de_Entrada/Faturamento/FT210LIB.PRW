@@ -20,7 +20,7 @@ User Function FT210LIB()
 *--------------------------------------------------------------------------*
 Local nVlrped     := 0
 Local cDeIc       :=  Lower(Alltrim(Posicione("SU7",1,xFilial("SU7")+SC5->C5_OPERADO,"U7_EMAIL")))
-Local cEmailIc    := GetMv("ES_MSTTS_1",,"maximo.canuto@dipromed.com.br")+";"+cDeIc
+Local cEmailIc    := GetMv("ES_MSTTS_1",,SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br"))+";"+cDeIc
 Local cAssuntoIc  := "LIBERADO - Pedido A Vista "
 Local cAttachIc   :=  "  a"
 Local cFuncSentIc :=   "FT210LIB.prw "

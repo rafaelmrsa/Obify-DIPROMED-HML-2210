@@ -94,6 +94,8 @@ Local cC5COND  := GetNewPar("ES_C5COND","001','002")
 Local _dSab_Fer
 Local _dDomingo
 
+//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo adicionada
+cEmail := IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),cEmail,GETMV("MV_#EMLSCH"))
 
 
 // Montagem do array com feriados
@@ -148,6 +150,8 @@ While  DIPR92->(!Eof())
 	_cFilial := (Iif (DIPR92->C5_FILIAL == '01',"MTZ","CD"))
     cEmailOp := Lower(AllTrim(Posicione("SU7",1,xFilial("SU7")+DIPR92->CODOPER,"U7_EMAIL")))
     cCICOp   := Upper(AllTrim(Posicione("SU7",1,xFilial("SU7")+DIPR92->CODOPER,"U7_CICNOME")))
+	//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo adicionada
+	cEmailOp := IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),cEmailOp,GETMV("MV_#EMLSCH"))
          
 	If ! cEmailOp $ cEmail
 		cEmail := cEmail+";"+cEmailOp
@@ -216,7 +220,6 @@ While  DIPR92->(!Eof())
 EndDo
 	cAssunto := EncodeUTF8("ATENÇÃO - PEDIDO DE VENDAS "+cAssuntA+"COM ATRASO NO FATURAMENTO!","cp1252") 			
 	If Len(aMsgMail) > 0 // Se não possuir nenhuma linha no array, não chama a função do e-mail - RBORGES 15/08/17
-//		cEmail:="reginaldo.borges@dipromed.com.br"
 		U__EMailPR(cEmail,cAssunto,aMsgMail) // Função para disparar o e-mail - RBORGES 15/08/17 
 	EndIf
 

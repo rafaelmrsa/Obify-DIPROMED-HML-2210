@@ -847,7 +847,7 @@ Local cBuffer	  := ""
 Local cOperador   := ""
 Local cMsg        := ""
 Local nCusto	  := 0
-
+Local xx
 Default lJob := .f.
 
 For nId := 1 to len(aDadosReq)
@@ -1608,7 +1608,6 @@ Static Function ExistTran(lTotSolic)
 Local cQuery    := ""              
 Local lRet      := .F.
 Local nQtdTran  := 0
-Local xx      
 
 Default lTotSolic := .F.
 

@@ -114,7 +114,10 @@ While  cSQLSC7->(!Eof())
 	_cCompra := ALLTRIM(Posicione("SA2",1,xFilial("SA2")+cSQLSC7->cFornec,"A2_COMPRA"))
 	_cNomeCo := "COMPRADOR: "+_cCompra+" - "+ALLTRIM(Posicione("SY1",1,xFilial("SY1")+_cCompra,"Y1_NOME"))
 	_cEmCompr:= "compras@dipromed.com.br" //ALLTRIM(Posicione("SY1",1,xFilial("SY1")+_cCompra,"Y1_EMAIL"))
-	
+	//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo comentada
+	//_cEmCompr:= "compras@dipromed.com.br" //ALLTRIM(Posicione("SY1",1,xFilial("SY1")+_cCompra,"Y1_EMAIL"))
+	//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo substituida
+	_cEmCompr:= IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),"compras@dipromed.com.br",GETMV("MV_#EMLSCH"))
 	*   1        2         3       4        5       6     7         8       9         10     11       12      13     14
 	//	aadd(aMsgI,{_cPedid,_cProduto,_nQuant,_nQuantE,_nQuantP,_dData,_EntDip,_cFornec,_cFornecN,_cItem,_nPreco,_cContato,_cTel,_cNomeCo})
 	
@@ -124,7 +127,7 @@ While  cSQLSC7->(!Eof())
 	Else
 		
 		If Len(aMsgJ) > 0 // SE NÃO POSSUIR NENHUMA LINHA NO ARRAY NÃO ENVIA NADA  -  RBORGES 26/11/15
-			cEmail :=_cEmCompr+";"+"reginaldo.borges@dipromed.com.br"//E-mail do Comprador - RBORGES 26/11/15
+			cEmail :=_cEmCompr
 			cAssunto:= EncodeUTF8('ATENÇÃO - PEDIDOS DE COMPRA COM ATRASO NA ENTREGA - '+aMsgJ[1,8]+''+aMsgJ[1,9],"cp1252")//+' - ' +AllTrim(SM0->M0_NOME)//+"/"+AllTrim(SM0->M0_FILIAL)
 			U__EMailPC(cEmail,cAssunto,aMsgJ) //RBORGES 26/11/15 - Dispara E-mail de entrega vencida por pedido e comprador
 			
@@ -143,7 +146,7 @@ EndDo
 cSQLSC7->(dbCloseArea())
 
 If Len(aMsgJ) > 0 // SE NÃO POSSUIR NENHUMA LINHA NO ARRAY NÃO ENVIA NADA  -  RBORGES 26/11/15
-	cEmail :=_cEmCompr+";"+"reginaldo.borges@dipromed.com.br"// E-mail do Comprador - RBORGES 26/11/15
+	cEmail :=_cEmCompr
 	cAssunto:= EncodeUTF8('ATENÇÃO - PEDIDOS DE COMPRA COM ATRASO NA ENTREGA - '+aMsgJ[1,8]+''+aMsgJ[1,9],"cp1252")//+' - ' +AllTrim(SM0->M0_NOME)//+"/"+AllTrim(SM0->M0_FILIAL)
 	U__EMailPC(cEmail,cAssunto,aMsgJ) //RBORGES 26/11/15 - Dispara E-mail de entrega vencida por pedido e comprador
 EndIf

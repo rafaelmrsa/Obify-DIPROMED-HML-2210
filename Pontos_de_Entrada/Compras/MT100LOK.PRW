@@ -26,7 +26,6 @@ Local cMsgErr       := "Item com divergencia de lote: " + CHR(13)+CHR(10) + CHR(
 
 Private cValResult:=  "" // giovani 09/08/11
 Private aMsg      := {}
-Public aDipSenhas
 Private _nPosClasif := aScan(aHeader, { |x| Alltrim(x[2]) ==  "D1_CLASFIS"})
 
 //Validar o preenchimento do item da NF de Origem HQ - Felipe Duran 03/06/2020
@@ -35,6 +34,7 @@ Private _nPosItOri  := aScan(aHeader, { |x| Alltrim(x[2]) ==  "D1_ITEMORI"})
 Private cNFOri    := aCols[n,_nPosNFOri]
 Private cItemOri  := aCols[n,_nPosItOri]
 
+Public aDipSenhas
 
 //validação para bloqueio de criação de doc de entrada de devolução de vendas com as tes abaixo, solicitada por Sirlene 08/09/2020 Blandino
 //Regra desabilitada dia 08/09/22 - Solicitado pela Renata Rigo

@@ -84,13 +84,13 @@ pergunte("FIN710",.F.)
 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 //³ Inicia a data para debito com a data base do sistema			  ³
 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-dbSelectArea("SX1")
+/*dbSelectArea("SX1")
 
 If dbSeek (Padr( "FIN710" , Len( X1_GRUPO ) , ' ' )+"03")  // Busca a pergunta para mv_par03
 	Reclock("SX1",.F.)
 	Replace X1_CNT01 With "'"+dtoc(dDataBase)+"'"
 	MsUnlock()
-Endif
+Endif*/
 
 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 //³Criacao do componente de impressao                                      ³
@@ -762,12 +762,12 @@ pergunte("FIN710",.F.)
 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 //³ Inicia a data para debito com a data base do sistema			  ³
 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-dbSelectArea("SX1")
+/*dbSelectArea("SX1")
 If dbSeek (Padr( "FIN710" , Len( X1_GRUPO ) , ' ' )+"03")  // Busca a pergunta para mv_par03
 	Reclock("SX1",.F.)
 	Replace X1_CNT01 With "'"+dtoc(dDataBase)+"'"
 	MsUnlock()
-Endif
+Endif*/
 
 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 //³ Envia controle para a funcao SETPRINT 							  ³

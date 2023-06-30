@@ -293,7 +293,7 @@ If !Inclui .And. _lRet // A Inclusao deve ser tratada no PE M030Inc, pois aqui a
 				
 				_cEmail  := Iif(!Empty(_cMailVN).and.Empty(_dDeslVN),_cMailVN+";","")
 				_cEmail  += Iif(!Empty(_cMailVO).and.Empty(_dDeslVO),_cMailVO+";","")
-				_cEmail  +="erich.pontoldio@dipromed.com.br;maximo.canuto@dipromed.com.br"
+				_cEmail  +="erich.pontoldio@dipromed.com.br;"+SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")
 				
 				If i=1
 					_cEmail  += Iif((_cTipoVO='I' .OR. _cTipoVN='I') .AND. (i=1 .OR. i=11),";patricia.mendonca@dipromed.com.br","")
@@ -326,7 +326,7 @@ If !Inclui .And. _lRet // A Inclusao deve ser tratada no PE M030Inc, pois aqui a
 					
 					If SA1->A1_COD <= "019018"
 						_cEmail := "vendas@healthquality.ind.br;lucas@healthquality.ind.br;"
-						_cEmail += "diretor@healthquality.ind.br;maximo.canuto@dipromed.com.br"
+						_cEmail += "diretor@healthquality.ind.br;"+SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")
 					EndIF
 					 
 				// _cEmail := "reginaldo.borges@dipromed.com.br" 
@@ -336,7 +336,7 @@ If !Inclui .And. _lRet // A Inclusao deve ser tratada no PE M030Inc, pois aqui a
 					Aadd( _aMsg , { "ALTERAR na Empresa" , "DIPROMED" 		} )
 					
 					_cEmail := "patricia.mendonca@dipromed.com.br;elizabete.rodrigues@dipromed.com.br;"
-					_cEmail += "maximo.canuto@dipromed.com.br"
+					_cEmail += SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")
 					
 				   //_cEmail := "reginaldo.borges@dipromed.com.br" 
 				EndIf

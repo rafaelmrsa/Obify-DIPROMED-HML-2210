@@ -703,7 +703,7 @@ Static Function D2RatFret(aRecRat)
 Local i        := 1
 Local _cExc    := ""
 Local aError   :={}
-Local cEmail   := "maximo.canuto@dipromed.com.br"
+Local cEmail   := SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")
 Local cAssunto := "Erro No Rateio de Frete "
 Local cAttach  := ""
 Local cDe      := ""

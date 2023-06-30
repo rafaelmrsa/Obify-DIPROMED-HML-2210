@@ -72,7 +72,7 @@ Local cTamD2Qt  := TamSX3('D2_QUANT')[1]
 LOCAL cPicD2Cust:= PesqPict("SD2","D2_CUSTO1",18)
 Local cTamD2Cust:= TamSX3('D2_CUSTO1')[1]
 Local lVEIC 	:= UPPER(GETMV("MV_VEICULO"))=="S"
-Local nTamSX1 	:= Len(SX1->X1_GRUPO)
+//Local nTamSX1 	:= Len(SX1->X1_GRUPO)
 Local cTamD1CF  := TamSX3('D1_CF')[1]
 Local nTamData 	:= IIF(__SetCentury(),10,8)
 //⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
@@ -90,24 +90,24 @@ EndIf
 //⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
 //≥ Ajusta perguntas no SX1 									 ≥
 //¿ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ
-AjustaSX1()
+//AjustaSX1()
 //⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
 //≥ Remove grupo de perguntas incluido                           ≥
 //¿ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ
-dbSelectArea("SX1")
+/*dbSelectArea("SX1")
 dbSetOrder(1)
 If dbSeek(PADR("MTR910",nTamSX1)+"22")
 	RecLock("SX1",.F.)
 	dbDelete()
 	MsUnlock()
-EndIf
+EndIf*/
 //⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
 //≥ Ajustar o SX1 para SIGAVEI, SIGAPEC e SIGAOFI                ≥
 //¿ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ
 aSB1Cod	:= TAMSX3("B1_COD")
 aSB1Ite	:= TAMSX3("B1_CODITE")
 
-If lVEIC
+/*If lVEIC
 
 	dbSelectArea("SX1")
 	dbSetOrder(1)
@@ -142,7 +142,7 @@ Else
 		dbSkip()
 	EndDo
 	dbCommitAll()
-EndIf
+EndIf*/
 //⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
 //≥Criacao do componente de impressao                                      ≥
 //≥                                                                        ≥
@@ -299,7 +299,7 @@ Local nInd,cIndice	:="",cCampo1,cCampo2,cCampo3,cCampo4
 Local cNumSeqTr := "" , nRegTr := 0
 Local cSeqIni 	:= Replicate("z",6)
 Local nTotRegs  := 0
-Local nTamSX1 := Len(SX1->X1_GRUPO)
+//Local nTamSX1 := Len(SX1->X1_GRUPO)
 // Indica se esta listando relatorio do almox. de processo
 Local lLocProc:= mv_par08 == GetMv("MV_LOCPROC")
 // Indica se deve imprimir movimento invertido (almox. de processo)
@@ -2181,13 +2181,13 @@ If lImpTermos // Impressao dos Termos
 		EndIf
 	Next
 
-	dbSelectArea("SX1")
+	/*dbSelectArea("SX1")
 	dbSeek(PADR("MTR910",nTamSX1)+"01")
 
 	While SX1->X1_GRUPO==PADR("MTR910",nTamSX1)
 		AADD(aVariaveis,{Rtrim(Upper(X1_VAR01)),&(X1_VAR01)})
 		dbSkip()
-	EndDo
+	EndDo*/
 
 	If !File(cArqAbert)
 		aSavSet:=__SetSets()
@@ -2282,7 +2282,7 @@ LOCAL wnrel     := "MATR910"
 LOCAL Tamanho   := "G"
 LOCAL cString   := "SB1"
 LOCAL lRet		:= .T.
-LOCAL nTamSX1   := Len(SX1->X1_GRUPO)
+//LOCAL nTamSX1   := Len(SX1->X1_GRUPO)
 
 //⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
 //≥ Variaveis tipo Local para SIGAVEI, SIGAPEC e SIGAOFI         ≥
@@ -2319,18 +2319,18 @@ EndIf
 //⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
 //≥ Ajusta perguntas no SX1 									 ≥
 //¿ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ
-AjustaSX1()
+//AjustaSX1()
 
 //⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
 //≥ Remove grupo de perguntas incluido                           ≥
 //¿ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ
-dbSelectArea("SX1")
+/*dbSelectArea("SX1")
 dbSetOrder(1)
 If dbSeek(PADR("MTR910",nTamSX1)+"22")
 	RecLock("SX1",.F.)
 	dbDelete()
 	MsUnlock()
-EndIf
+EndIf*/
 
 //⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
 //≥ Ajustar o SX1 para SIGAVEI, SIGAPEC e SIGAOFI                ≥
@@ -2338,7 +2338,7 @@ EndIf
 aSB1Cod	:= TAMSX3("B1_COD")
 aSB1Ite	:= TAMSX3("B1_CODITE")
 
-If lVEIC
+/*If lVEIC
 
 	dbSelectArea("SX1")
 	dbSetOrder(1)
@@ -2377,7 +2377,7 @@ Else
 	EndDo
 	dbCommitAll()
 	RestArea(aArea1)
-EndIf
+EndIf*/
 
 Pergunte("MTR910",.F.)
 
@@ -2494,7 +2494,7 @@ LOCAL lLocProc:= mv_par08 == GetMv("MV_LOCPROC")
 LOCAL lInverteMov :=.F.
 LOCAL lPriApropri :=.T.
 
-Local nTamSX1 := Len(SX1->X1_GRUPO)
+//Local nTamSX1 := Len(SX1->X1_GRUPO)
 //⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
 //≥ Verifica se existe ponto de entrada                          ≥
 //¿ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ
@@ -4159,13 +4159,13 @@ If lImpTermos // Impressao dos Termos
 		EndIf
 	Next
 
-	dbSelectArea("SX1")
+	/*dbSelectArea("SX1")
 	dbSeek(PADR("MTR910",nTamSX1)+"01")
 
 	While SX1->X1_GRUPO==PADR("MTR910",nTamSX1)
 		AADD(aVariaveis,{Rtrim(Upper(X1_VAR01)),&(X1_VAR01)})
 		dbSkip()
-	EndDo
+	EndDo*/
 
 	If !File(cArqAbert)
 		aSavSet:=__SetSets()
@@ -4454,7 +4454,7 @@ Return lRet
 */
 Static Function MTR910CUnf(lCusUnif)
 Local aSvAlias:=GetArea()
-Local nTamSX1 :=Len(SX1->X1_GRUPO)
+/*Local nTamSX1 :=Len(SX1->X1_GRUPO)
 dbSelectArea("SX1")
 If dbSeek(PADR("MTR910",nTamSX1)+"08",.F.)
 	If !("MTR910VAlm" $ X1_VALID)
@@ -4471,7 +4471,7 @@ If dbSeek(PADR("MTR910",nTamSX1)+"08",.F.)
 		Replace X1_CNT01 With "**"
 		MsUnlock()
 	EndIf
-EndIf
+EndIf*/
 RestArea(aSvAlias)
 Return(NIL)
 
@@ -4518,6 +4518,7 @@ Return lRet
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ
 /*/
+/*
 Static Function AjustaSX1()
 
 Local aArea := { Alias(), IndexOrd() } , aPerg:={}
@@ -4575,7 +4576,7 @@ EndIf
 
 dbSelectArea( aArea[1] )
 dbSetOrder( aArea[2] )
-Return
+Return*/
 
 /*
 ‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹

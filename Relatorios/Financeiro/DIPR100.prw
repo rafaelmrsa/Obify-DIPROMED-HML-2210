@@ -145,6 +145,9 @@ If Len(aEmDipr100) > 0
 		Else
 			
 			Msgbody(nDiasVenc,nDiasVenc_R,dDataVenc,@cAssunto,@cMsgbody,@cMsgCabe)
+
+			//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo adicionada
+			cEmail	:= IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),cEmail,GETMV("MV_#EMLSCH"))	
 			 
 			ENV_100(cEmail,cAssunto,aEmDip100b,cMsgbody,cMsgCabe)
 			
@@ -174,7 +177,10 @@ If Len(aEmDipr100) > 0
 	Next
 	
 	Msgbody(nDiasVenc,nDiasVenc_R,dDataVenc,@cAssunto,@cMsgbody,@cMsgCabe)
-	
+
+	//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo adicionada
+	cEmail	:= IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),cEmail,GETMV("MV_#EMLSCH"))	
+			
 	ENV_100(cEmail,cAssunto,aEmDip100b,cMsgbody,cMsgCabe)
 	
 	
@@ -210,6 +216,13 @@ Local lAutOk	:= .F.
 Local nI        := 0
 Local nLin      := 0
 Local CATTACH := ""
+
+
+//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo adicionada - INICIO
+cEmailTo	:= IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),cEmail,GETMV("MV_#EMLSCH"))	
+cEmailCc	:= IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),cEmailCc,GETMV("MV_#EMLSCH"))	
+cEmailBcc	:= IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),cEmailBcc,GETMV("MV_#EMLSCH"))	
+//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo adicionada - FIM	
 
     
 //旼컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴�

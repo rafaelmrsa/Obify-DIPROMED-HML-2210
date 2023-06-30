@@ -1,3 +1,8 @@
+#Include "Protheus.ch"
+#Include "Topconn.ch"
+#INCLUDE "RWMAKE.CH"
+#INCLUDE "TBICONN.CH"
+#INCLUDE "TRYEXCEPTION.CH"
 
 /*
 |=====================================================================================|
@@ -37,20 +42,15 @@
 |Maximo     | 24/07/09 - Toda rotina de pedido de venda/orçamento foi alterada        |
 |=====================================================================================|
 */
-#Include "Protheus.ch"
-#Include "Topconn.ch"
-#INCLUDE "RWMAKE.CH"
-#INCLUDE "TBICONN.CH"
-#INCLUDE "TRYEXCEPTION.CH"
 #DEFINE TELEMARKETING 1 // JBS 03/11/2005
 #DEFINE TELEVENDAS    2 // JBS 03/11/2005
 #DEFINE TELECOBRANCA  3 // JBS 03/11/2005
 #DEFINE CEND CHR(10)+CHR(13)
-#Translate MSGBOX( => IW_MsgBox(
+//#Translate MSGBOX( => IW_MsgBox(
 
-*----------------------------------------*
+//*----------------------------------------*
 User Function MTA410()
-*----------------------------------------*
+//*----------------------------------------*
 Local _lRetorno := .F.
 Local _xAlias   := GetArea()
 local _areaSB1 := SB1->(getarea())
@@ -974,8 +974,9 @@ EndIf
 If _lRetorno .And. !("TMK"$FunName()) .And. !("DIPAL10" $ Funname())
 	If (M->C5_TPFRETE <> "F" .And. M->C5_TRANSP <> '100000'  .And. M->C5_TRANSP <> '000111')
 		For _nAux := 1 to Len(aCols)			
-			If !aCols[_nAux,Len(aHeader)+1] .And. AllTrim(aCols[_nAux,_nPosFor])$"100091/000227" .And. !AllTrim(aCols[_nAux,_nPosprod]) $ GetNewPar("ES_PRODEXC","018585")
-			 	MsgInfo("O produto "+AllTrim(aCols[_nAux,_nPosprod])+" só pode ser enviado por FOB ou pela EMOVERE.","100091/000227 - ES_PRODEXC")
+			If !aCols[_nAux,Len(aHeader)+1] .And. ((AllTrim(aCols[_nAux,_nPosFor])$"100091/000227" .And. !AllTrim(aCols[_nAux,_nPosprod]) $ GetNewPar("ES_PRODEXC","018585")) .OR.;
+												   (AllTrim(aCols[_nAux,_nPosFor])$"051508/000476" .And.  AllTrim(aCols[_nAux,_nPosprod]) $ GetNewPar("ES_PRODEXC","018585")))
+			 	MsgInfo("O produto "+AllTrim(aCols[_nAux,_nPosprod])+" só pode ser enviado por FOB ou pela EMOVERE.","100091/000227/051508 - ES_PRODEXC")
 			 	_lRetorno := .F. 
 			 	Exit
 			EndIf
@@ -3779,31 +3780,6 @@ For nI:=1 to Len(aCols)
 		aCols[nI,_nPosComis1] := 3
 	EndIf
 	
-	//Utilizamos o campo de B1_COMIS para definir os acessórios e assim direcionar a comissão correta. 02/03/2020
-	If cEmpAnt=="04" .And. Posicione("SB1",1,xFilial("SB1")+AllTrim(aCols[nI,_nPosProd]),"B1_COMIS") > 0 //Colocar comissão informada no produto  para grupo de acessórios na HQ - Regra válida 01/02/2020
-		If aCols[nI,_nPosPrcven] < aCols[nI,_nPosMini]
-		
-			aCols[nI,_nPosComis1] := 3
-			
-		ElseIf  aCols[nI,_nPosPrcven] = aCols[nI,_nPosMini] .or. aCols[nI,_nPosPrcven] > aCols[nI,_nPosMini] .and.  aCols[nI,_nPosComis1] < 5
-		
-			aCols[nI,_nPosComis1] := 5
-			
-		EndIf
-	EndIf
-	
-	If cEmpAnt=="04" .And. M->C5_CLIENTE$"000418/017875" //19/02/2015 - Colocar comissão 3% da HQ  para os clientes 000418  e  017875 (e-mail Máximo)
-		aCols[nI,_nPosComis1] := 3
-	EndIf
-	
-	If cEmpAnt=="04" .And. M->C5_VEND1=="006796" .And.  M->C5_CLIENTE$"007214/018738/019034/06259" //19/02/2015 - Colocar comissão 1% da Talita na HQ como automático e fixo (07214,018738,019034,06259) (e-mail Máximo)
-		aCols[nI,_nPosComis1] := 1
-	EndIf
-	
-	If cEmpAnt=="04" .And. M->C5_VEND1=="006819" .And.  M->C5_CLIENTE$"019062/019235" //19/02/2015 - Colocar comissão 5% do Renato na HQ como automático e fixo (019062) (e-mail Carolina HQ) - CLiente 019235 incluído em 06/04/20 para fixar 2.5 de comissão - Carol por e-mail
-		aCols[nI,_nPosComis1] := 2.5  //02/06/2015 alterado para 2.5 e-mail do Lucas HQ
-	EndIf
-	
 	If DtoS(dDataBase)<="20181113" .And. M->C5_VEND1=="006819" .And. AllTrim(aCols[nI,_nPosProd])$"028092/028103".And. M->C5_CLIENTE=="006837" .And. aCols[nI,_nPosPrcven]==33.50 //07/04/2017 - Amarrar a comissão de 2% p/Renato ok Sr.Ademir, produto 028103 incluido em 07/11/17 - Prazo alterado para 13/11/2018 em 06/03/2018
 		aCols[nI,_nPosComis1] := 2
 	EndIf
@@ -3822,57 +3798,6 @@ For nI:=1 to Len(aCols)
 
 	If DtoS(dDataBase)<="20181221" .And. M->C5_VEND1=="006819" .And. AllTrim(aCols[nI,_nPosProd])$"028097/028104" .And. M->C5_CLIENTE=="006668" .And. aCols[nI,_nPosPrcven]==34.50 //04/04/2018 - Amarrar a comissão de 2% p/Renato ok Sr.Ademir
 		aCols[nI,_nPosComis1] := 2
-	EndIf
-
-	If cEmpAnt=="04" .And. (M->C5_CLIENTE$GetNewPar("ES_ZERCOMI","") .Or. M->C5_CLIENTE$GetNewPar("ES_ZERCOM2","")) //03/07/2015 - Zera comissoes para clientes que estao no parametro ES_ZERCOMI e ES_ZERCOM2
-		aCols[nI,_nPosComis1] := 0  //e-mail enviado pela Carol
-	EndIf
-	
-	If cEmpAnt=="04" .And. M->C5_VEND1=="006864" .And.  M->C5_CLIENTE$"001417" // 06/11/2015 - Colocar comissão 2.5% para o Keiller na HQ como automático e fixo (HCOR) (e-mail Carol/Lucas)
-		aCols[nI,_nPosComis1] := 2.5
-	EndIf
-	
-	If cEmpAnt=="04" .And. M->C5_VEND1=="006864" .And. SA1->A1_GRPVEN$"000023"  // 07/04/2017 - Travar a comissão do Keiller para o grupo de clientes 000023 (Einstein) em 3% (e-mail Carol/Lucas)
-		aCols[nI,_nPosComis1] := 3
-	EndIf
-	
-	If cEmpAnt=="04" .And. M->C5_CLIENTE$"002347" // 18/11/2015 - Colocar comissão 10% fixo para o cliente (002347) / alterado para 5% em 01/08/2016 (e-mail Carol)
-		aCols[nI,_nPosComis1] := 5
-	EndIf
-	
-	/* Retirado regra dia 04/08/16 - Solicitado pela Carol por e-mail
-	If cEmpAnt=="04" .And. M->C5_CLIENTE$"019120" // 18/11/2015 - Colocar comissão  5% fixo para o cliente (019120) (e-mail Carol)
-		aCols[nI,_nPosComis1] := 5
-	EndIf
-	*/
-	
-	If cEmpAnt=="04" .And. M->C5_CLIENTE$"004096" // 04/12/2015 - Colocar comissão  1% fixo para o cliente (004096 ) (e-mail Carol)
-		aCols[nI,_nPosComis1] := 1
-	EndIf    
-	            
-	//Regra desativada em 03/05/2019 e solicitado pela Carol por e-email
-	/*If cEmpAnt=="04" .And. M->C5_CLIENTE$"014399/001827" .And. AllTrim(aCols[nI,_nPosProd])$"227017/227018/222169/222207/212093/222144/212100/222076" // 04/08/16 - Colocar comissão  15% fixo para o cliente ConSaúde (014399/001827) para os produtos 227017/227018/222169/222207/212093/222144/222076  (e-mail Carol), Cód. 212100 incluído em 02/09/16,  Cód. 222076 incluído em 03/11/16
-		aCols[nI,_nPosComis1] := 15
-	EndIf*/ 
-	
-	If cEmpAnt=="04" .And. M->C5_VEND1$"000192/006694/006757/006786/006796/006828/006863/006896/006899/006903/006912/006919/006922/006929/006932/006944/006945"  // 08/04/2016 - Colocar comissão 1% para Katia/Maura/Talita/Elaine/Ana/Renata
-		aCols[nI,_nPosComis1] := 1
-	EndIf
-	          
-	If cEmpAnt=="04" .And. M->C5_CLIENTE$"001860"  .And. AllTrim(aCols[nI,_nPosProd])$"225027/225028/225022" // 07/12/2016 - Colocar comissão 3% para cliente 001860  no produto 225027, Códigos 225028/225022 incluídos em 08/03/2017
-		aCols[nI,_nPosComis1] := 3
-	EndIf   
-	
-	If cEmpAnt=="04" .And. M->C5_CLIENTE$"000415"  // 07/06/2017 - Colocar comissão 2% para cliente 000415
-		aCols[nI,_nPosComis1] := 2
-	EndIf
-	
-	If cEmpAnt=="04" .And. M->C5_CLIENTE$"008238/002313" .And. M->C5_VEND1$"006933" // 02/08/2017 - Colocar comissão 2% para cliente 008238 e 002313 
-		aCols[nI,_nPosComis1] := 2
-	EndIf
-	
-	If cEmpAnt=="04" .And. M->C5_VEND1$"006955" //23/04/2018 - Colocar comissão 10% para vendedor 006955 
-		aCols[nI,_nPosComis1] := 10
 	EndIf
 	                                                
 	If SA1->A1_GRPVEN $ "000001"  .And. DtoS(dDataBase) <= "20171130"
@@ -3894,20 +3819,8 @@ For nI:=1 to Len(aCols)
 		EndIf
 	Endif
 	
-	If cEmpAnt=="04" .And. M->C5_CLIENTE$"005388/002329"  // 06/12/2017 - Colocar comissão 2% para cliente 005388 - CLIENTE 002329 COM COMISSÃO EM 2% DESDE 01/04/2018 COM BAIXAS TB NESTE PERÍODO
+	If AllTrim(aCols[nI,_nPosProd])$"028209".And. M->C5_CLIENTE=="006837" //21/06/2023 - Amarrar a comissão de 2% - ok Sr.Ademir, produto 028028209 incluido - Solicitação 6702
 		aCols[nI,_nPosComis1] := 2
-	EndIf
-	
-	If cEmpAnt=="04" .And. M->C5_CLIENTE$"019147" .And. M->C5_VEND1$"006924" // 14/06/2018 - Colocar comissão 3% para cliente 019147 - Vendedor Paulo
-		aCols[nI,_nPosComis1] := 1  //Alterado para 1  - solicitado em 09/2018
-	EndIf
-	
-	If cEmpAnt=="04" .And. SA1->A1_GRPVEN $ "000021" .And. M->C5_VEND1$"006933/006924" .And. AllTrim(aCols[nI,_nPosProd])$"222073/222192/222203/222145/227033/227016/227016/227018/222218/222165/222195/225029/225032/227013/227017/227023/222207/227027/222245/222243/222244"// 16/05/2019 - Colocar comissão 0% para grupo amil 000021 - Vendedor Alex
-		aCols[nI,_nPosComis1] := 0
-	EndIf
-	
-	If cEmpAnt=="04" .And. M->C5_VEND1=="006938" .And.  M->C5_CLIENTE$"019425/003565" //05/05/2020 - Colocar comissão 5% do vINÍCIUS na HQ como automático e fixo (e-mail Carolina HQ)  
-		aCols[nI,_nPosComis1] := 5 
 	EndIf
 		
 Next nI

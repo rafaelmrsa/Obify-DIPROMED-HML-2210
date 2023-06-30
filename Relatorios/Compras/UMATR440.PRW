@@ -119,6 +119,7 @@ LOCAL cbCont   := 0
 LOCAL cLocCQ   := GetMV("MV_CQ")
 Local dDataRela:= Iif(Empty(MV_PAR16),dDataBase,MV_PAR16)
 Local cPicture := Left(PesqPictQt("B2_QATU",12),len(PesqPictQt("B2_QATU",12))-3)
+lOCAL nX
 
 nTipo  := IIF(aReturn[4]==1,15,18)
 /*                                                                                                                                                                                                                                                           
@@ -495,6 +496,7 @@ Local nValTot  	:= 0
 Local nValFor  	:= 0
 Local _nEtqDias	:= 0
 Local _nQtdSI   := 0
+Local nX
 Private titulo  := "Itens em Ponto de Pedido - Consolidado"
 
 nTipo  := IIF(aReturn[4]==1,15,18)
@@ -539,11 +541,16 @@ cSQL += "		   B1_XQE, B1_UM , B1_LOTEDIP, B1_TIPO,B1_ETQDIAS "
 cSQL += " ORDER BY B1_PROC, B1_DESC "
 
 cSQL := ChangeQuery(cSQL)
-dbUseArea(.T.,"TOPCONN",TcGenQry(,,cSQL),"QRYSB1",.T.,.T.)     
 
-SetRegua(QRYSB1->(RecCount()))
+If Select("QRYSB1X") > 0
+	QRYSB1X->(dbCloseArea())
+EndIf
 
-While !QRYSB1->(Eof())
+dbUseArea(.T.,"TOPCONN",TcGenQry(,,cSQL),"QRYSB1X",.T.,.T.)     
+
+SetRegua(QRYSB1X->(RecCount()))
+
+While !QRYSB1X->(Eof())
 	
 	If lEnd
 		@PROW()+1,001 PSAY "CANCELADO PELO OPERADOR"
@@ -553,43 +560,43 @@ While !QRYSB1->(Eof())
 	IncRegua()	
 
 	SA2->(DbSetOrder(1))
-	If SA2->(dbSeek(xFilial("SA2")+QRYSB1->B1_PROC))	
+	If SA2->(dbSeek(xFilial("SA2")+QRYSB1X->B1_PROC))	
 		If SA2->A2_COMPRA < mv_par14 .OR. SA2->A2_COMPRA > mv_par15 .Or. SA2->A2_NAOIPP == "N" 
-			QRYSB1->(dbSkip())
+			QRYSB1X->(dbSkip())
 			Loop			
 		EndIf		          
 	Else
-		QRYSB1->(dbSkip())
+		QRYSB1X->(dbSkip())
 		Loop			
 	EndIf
 	
-	nSaldo := DipCalSld(QRYSB1->B1_COD,MV_PAR09,MV_PAR10,cLocCQ,MV_PAR13)
+	nSaldo := DipCalSld(QRYSB1X->B1_COD,MV_PAR09,MV_PAR10,cLocCQ,MV_PAR13)
 
-	nEstSeg := CalcEstSeg(QRYSB1->B1_ESTFOR)
+	nEstSeg := CalcEstSeg(QRYSB1X->B1_ESTFOR)
 	
-	If QRYSB1->B1_TIPO <> "BN"
+	If QRYSB1X->B1_TIPO <> "BN"
 		nSaldo  -= nEstSeg    
 	EndIf
 	
 	If nSaldo > 0 .Or. mv_par11==1	
 		Do Case
-			Case QRYSB1->B1_EMIN <> 0 .And. MV_PAR11 == 1
+			Case QRYSB1X->B1_EMIN <> 0 .And. MV_PAR11 == 1
 				If nSaldo < 0			
-					nNeces := Abs(nSaldo)+QRYSB1->B1_EMIN
+					nNeces := Abs(nSaldo)+QRYSB1X->B1_EMIN
 				Else 
-					nNeces := QRYSB1->B1_EMIN-nSaldo
+					nNeces := QRYSB1X->B1_EMIN-nSaldo
 				EndIf					
-			Case QRYSB1->B1_EMIN <> 0 .And. MV_PAR11 == 2
+			Case QRYSB1X->B1_EMIN <> 0 .And. MV_PAR11 == 2
 				If nSaldo < 0			
 					nNeces := Abs(nSaldo)
 				Else 
-					nNeces := QRYSB1->B1_EMIN-nSaldo
+					nNeces := QRYSB1X->B1_EMIN-nSaldo
 				EndIf								
-			Case (QRYSB1->B1_LE <> 0 .And. (nSaldo < 0 .Or. mv_par11 == 2))			
+			Case (QRYSB1X->B1_LE <> 0 .And. (nSaldo < 0 .Or. mv_par11 == 2))			
 				If MV_PAR11 == 2 .And. nSaldo < 0
 					nNeces := Abs(nSaldo)+SB1->B1_LE
 				Else
-					nNeces := If( Abs(nSaldo)<QRYSB1->B1_LE,QRYSB1->B1_LE,if(nSaldo<0,Abs(nSaldo),0))
+					nNeces := If( Abs(nSaldo)<QRYSB1X->B1_LE,QRYSB1X->B1_LE,if(nSaldo<0,Abs(nSaldo),0))
 				EndIf
 			OtherWise
 				If MV_PAR11==1 .And. nSaldo < 0
@@ -599,8 +606,8 @@ While !QRYSB1->(Eof())
 				EndIf
 		End Case
 	Else
-		If QRYSB1->B1_EMIN > 0
-			nNeces := QRYSB1->B1_EMIN
+		If QRYSB1X->B1_EMIN > 0
+			nNeces := QRYSB1X->B1_EMIN
 		Else
 			nNeces := 0
 		Endif
@@ -609,30 +616,30 @@ While !QRYSB1->(Eof())
 	If nNeces > 0
 		//³ Verifica se o produto tem estrutura                       ³
 		dbSelectArea("SG1")
-		If dbSeek( xFilial("SG1")+QRYSB1->B1_COD )
-			aQtdes := CalcLote(QRYSB1->B1_COD,nNeces,"F")
+		If dbSeek( xFilial("SG1")+QRYSB1X->B1_COD )
+			aQtdes := CalcLote(QRYSB1X->B1_COD,nNeces,"F")
 		Else
-			aQtdes := CalcLote(QRYSB1->B1_COD,nNeces,"C")
+			aQtdes := CalcLote(QRYSB1X->B1_COD,nNeces,"C")
 		Endif
 		For nX := 1 to Len(aQtdes)
 			nQuant += aQtdes[nX]
 		Next
 	EndIf                          
 	
-	If cEmpAnt=="04" .And. Substr(QRYSB1->B1_COD,1,1) == "8"
-    	_nQtdSI := U_SalEsPCP(QRYSB1->B1_COD,.T.) 
+	If cEmpAnt=="04" .And. Substr(QRYSB1X->B1_COD,1,1) == "8"
+    	_nQtdSI := U_SalEsPCP(QRYSB1X->B1_COD,.T.) 
 	EndIf	
 	
-	If cEmpAnt=="04" .And. Substr(QRYSB1->B1_COD,1,1) <> "8"
-    	_nQtdSI := U_SalEstHQ(QRYSB1->B1_COD,.T.)   		
+	If cEmpAnt=="04" .And. Substr(QRYSB1X->B1_COD,1,1) <> "8"
+    	_nQtdSI := U_SalEstHQ(QRYSB1X->B1_COD,.T.)   		
   	EndIf
 		
-	If ((nQuant > 0 .And. Substr(QRYSB1->B1_COD,1,1) <> "8") .Or.(_nQtdSI > 0))
+	If ((nQuant > 0 .And. Substr(QRYSB1X->B1_COD,1,1) <> "8") .Or.(_nQtdSI > 0))
 		//³ Pega o prazo de entrega do material         ³
-		nPrazo := CalcPrazo(QRYSB1->B1_COD,nQuant)
+		nPrazo := CalcPrazo(QRYSB1X->B1_COD,nQuant)
 		
 		//³ Calcula a tolerancia do item                ³
-		nToler   := (QRYSB1->B1_LE * QRYSB1->B1_TOLER)/100
+		nToler   := (QRYSB1X->B1_LE * QRYSB1X->B1_TOLER)/100
 		If li > 55
 			Cabec(titulo,cabec1,cabec2,nomeprog,Tamanho,nTipo)
 		EndIf
@@ -641,43 +648,43 @@ While !QRYSB1->(Eof())
 		nCntImpr++
 		
 		//³ Verifica qual dos precos e' mais recente servir de base ³
-		dData    := U_DipRetDat(QRYSB1->B1_COD)
+		dData    := U_DipRetDat(QRYSB1X->B1_COD)
 			
         SB3->( DbSetOrder(1) )
-        SB3->( DbSeek(xFilial("SB3")+QRYSB1->B1_COD))
+        SB3->( DbSeek(xFilial("SB3")+QRYSB1X->B1_COD))
         
-		_nQuant := (Round(nQuant/QRYSB1->B1_XQE,0)*QRYSB1->B1_XQE)
-		_nQuant := IIF(_nQuant<nQuant,_nQuant+QRYSB1->B1_XQE,_nQuant)
+		_nQuant := (Round(nQuant/QRYSB1X->B1_XQE,0)*QRYSB1X->B1_XQE)
+		_nQuant := IIF(_nQuant<nQuant,_nQuant+QRYSB1X->B1_XQE,_nQuant)
 		
-	   //	If QRYSB1->B1_UCOM < QRYSB1->B1_DATREF
-	  //		nValUnit := QRYSB1->B1_CUSTD
+	   //	If QRYSB1X->B1_UCOM < QRYSB1X->B1_DATREF
+	  //		nValUnit := QRYSB1X->B1_CUSTD
 	  //	Else
-			nValUnit := Posicione("SB1",1,xFilial("SB1")+QRYSB1->B1_COD,"B1_CUSDIP")
+			nValUnit := Posicione("SB1",1,xFilial("SB1")+QRYSB1X->B1_COD,"B1_CUSDIP")
 	  //	EndIf		
 		
 		nValor    := _nQuant * nValUnit
 		
-		_nEtqDias := QRYSB1->B1_ETQDIAS    
+		_nEtqDias := QRYSB1X->B1_ETQDIAS    
 		
-		@ li,000 PSAY SubStr(QRYSB1->B1_COD,1,6)
-		@ li,Pcol()+2 PSAY SubStr(QRYSB1->B1_DESC,1,60)
-		@ li,Pcol()+1 PSAY QRYSB1->B1_UM
+		@ li,000 PSAY SubStr(QRYSB1X->B1_COD,1,6)
+		@ li,Pcol()+2 PSAY SubStr(QRYSB1X->B1_DESC,1,60)
+		@ li,Pcol()+1 PSAY QRYSB1X->B1_UM
 		@ li,Pcol()+2 PSAY nSaldo    Picture cPicture  
 		If cEmpAnt=="04"
 			@ li,Pcol()+2 PSAY _nQtdSI   Picture cPicture
 		EndIf
-		@ li,Pcol()+2 PSAY DipMesB3(QRYSB1->B1_COD,dDataRela,3,.F.) Picture cPicture
-		@ li,Pcol()+2 PSAY DipMesB3(QRYSB1->B1_COD,dDataRela,2,.F.) Picture cPicture
-		@ li,Pcol()+2 PSAY DipMesB3(QRYSB1->B1_COD,dDataRela,1,.F.) Picture cPicture
-		@ li,Pcol()+2 PSAY DipMesB3(QRYSB1->B1_COD,dDataRela,0,.F.) Picture cPicture
-		@ li,Pcol()+2 PSAY QRYSB1->B1_EMIN   Picture cPicture
-		@ li,Pcol()+2 PSAY QRYSB1->B1_XQE     Picture cPicture
+		@ li,Pcol()+2 PSAY DipMesB3(QRYSB1X->B1_COD,dDataRela,3,.F.) Picture cPicture
+		@ li,Pcol()+2 PSAY DipMesB3(QRYSB1X->B1_COD,dDataRela,2,.F.) Picture cPicture
+		@ li,Pcol()+2 PSAY DipMesB3(QRYSB1X->B1_COD,dDataRela,1,.F.) Picture cPicture
+		@ li,Pcol()+2 PSAY DipMesB3(QRYSB1X->B1_COD,dDataRela,0,.F.) Picture cPicture
+		@ li,Pcol()+2 PSAY QRYSB1X->B1_EMIN   Picture cPicture
+		@ li,Pcol()+2 PSAY QRYSB1X->B1_XQE     Picture cPicture
 		@ li,Pcol()+3 PSAY _nQuant   Picture cPicture
 //		@ li,Pcol()+2 PSAY nValor    Picture cPicture
-		@ li,Pcol()+3 PSAY QRYSB1->B1_LOTEDIP
+		@ li,Pcol()+3 PSAY QRYSB1X->B1_LOTEDIP
 		@ li,Pcol()+2 PSAY DtoC(dData)
 		@ li,Pcol()+2 PSAY nValUnit  Picture "@e 999999.99"
-		@ li,Pcol()+2 PSAY QRYSB1->B1_IPI    Picture "99"
+		@ li,Pcol()+2 PSAY QRYSB1X->B1_IPI    Picture "99"
 		@ li,Pcol()+2 PSAY nPrazo    Picture "99999" 
 		
 		nValFor += nValor
@@ -691,9 +698,9 @@ While !QRYSB1->(Eof())
 	nQuant := 0
 	_nQtdSI := 0
 	
-	QRYSB1->(dbSkip())
+	QRYSB1X->(dbSkip())
 	
-	If QRYSB1->B1_PROC <> SA2->A2_COD	
+	If QRYSB1X->B1_PROC <> SA2->A2_COD	
    		If nCntFOR > 0
 
 			Li++                          
@@ -712,7 +719,7 @@ While !QRYSB1->(Eof())
 		EndIf
 	EndIf
 EndDo
-QRYSB1->(dbCloseArea())
+QRYSB1X->(dbCloseArea())
 
 If li != 80
 	Li++

@@ -63,7 +63,7 @@ Local _aMsgRiscoD := {}
 Local _cAssRiscoD := ""                                                                                                                   
 Local _cFroRiscoD :=  "protheus@dipromed.com.br"
 Local _cRiscoDest := GetNewPar("ES_CICRISD","MAXIMO.CANUTO")    //GetNewPar("ES_CICRISD","ANA.PEREIRA,LUCIANA.MATIAZZO,MAXIMO.CANUTO")    
-Local _cRiscoDmail:= GetNewPar("ES_MAIRISD","luciana.matiazzo@dipromed.com.br;maximo.canuto@dipromed.com.br") 
+Local _cRiscoDmail:= GetNewPar("ES_MAIRISD","luciana.matiazzo@dipromed.com.br;"+SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")) 
 Local cPedLog	  := ""     
 Local nVlrZZB	  := 0
 Local nVlrCons    := 0
@@ -1151,7 +1151,7 @@ Static Function CicVista()
 //*--------------------------------------------------------------------------*
 Local nVlrped     := 0
 Local cDeIc       :=  "protheus@dipromed.com.br"  //Lower(Alltrim(Posicione("SU7",1,xFilial("SU7")+SC5->C5_OPERADO,"U7_EMAIL")))
-Local cEmailIc    := GetMv("ES_MSTTS_1",,"maximo.canuto@dipromed.com.br")+";"+cDeIc
+Local cEmailIc    := GetMv("ES_MSTTS_1",,SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br"))+";"+cDeIc
 Local cAttachIc   :=  "  a"
 Local cFuncSentIc :=   " M410stts.prw "
 Local cOpFatDest  := GetMv("ES_MSTTS_2",,"MAXIMO.CANUTO")
@@ -1214,7 +1214,7 @@ Static Function MilCicMail()
 //*--------------------------------------------------------------------------*
 Local nVlrped     := 0
 Local cDeIc       := "protheus@dipromed.com.br"  //Lower(Alltrim(Posicione("SU7",1,xFilial("SU7")+SC5->C5_OPERADO,"U7_EMAIL")))
-Local cEmailIc    := GetMv("ES_MSTTS_3",,"maximo.canuto@dipromed.com.br")+";"+cDeIc
+Local cEmailIc    := GetMv("ES_MSTTS_3",,SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br"))+";"+cDeIc
 Local cAssuntoIc  := "AVISO - Pedido Acima 5 Mil "
 Local cAttachIc   :=  "  a"
 Local cFuncSentIc :=   " M410stts.prw "
@@ -3079,7 +3079,7 @@ Local _cFrom     := "protheus@dipromed.com.br"
 Local _cFuncSent := "DipCicPri(M410STTS.PRW)       			
 Local _cAssunto  := "PRIORIDADE - CX. FECHADA"
 Local _cMsgCICCx := GetNewPar("ES_CICCXFE","DIEGO.DOMINGOS,MAXIMO.CANUTO,EXPEDICAOCD,EDVAN.MATIAS")
-Local _cMsgMaiCx := GetNewPar("ES_MAICXFE","diego.domingos@dipromed.com.br;maximo.canuto@dipromed.com.br;expedicao@dipromed.com.br;edvan.matias@dipromed.com.br")
+Local _cMsgMaiCx := GetNewPar("ES_MAICXFE","diego.domingos@dipromed.com.br;"+SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")+";expedicao@dipromed.com.br;edvan.matias@dipromed.com.br")
 DEFAULT cPedido  := ""
 
 cMsgCIC := "PRIORIDADE - CX. FECHADA"+CHR(10)+CHR(13)
@@ -3118,7 +3118,7 @@ Local _cFrom     := "protheus@dipromed.com.br"
 Local _cFuncSent := "DipProbCx(M410STTS.PRW)       			
 Local _cAssunto  := "Aceite produto fracionado"
 Local _cMsgCICCx := GetNewPar("ES_CICCXFE","DIEGO.DOMINGOS,MAXIMO.CANUTO,EXPEDICAOCD,EDVAN.MATIAS")
-Local _cMsgMaiCx := GetNewPar("ES_MAICXFE","diego.domingos@dipromed.com.br;maximo.canuto@dipromed.com.br;expedicao@dipromed.com.br;edvan.matias@dipromed.com.br")
+Local _cMsgMaiCx := GetNewPar("ES_MAICXFE","diego.domingos@dipromed.com.br;"+SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")+";expedicao@dipromed.com.br;edvan.matias@dipromed.com.br")
 Local nI
 DEFAULT cPedido  := ""
 DEFAULT aMsgCIC  := {}
@@ -3288,7 +3288,7 @@ Static Function DIPVEMAIL(_cCliente,_cNomeCli,_cVended)
 //*--------------------------------------------------------------------------*
 
 Local cDeIc       := "protheus@dipromed.com.br"
-Local cEmailIc    := GetNewPar("ES_M410EMA","maximo.canuto@dipromed.com.br")  //Usuários que receberão e-mails
+Local cEmailIc    := GetNewPar("ES_M410EMA",SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br"))  //Usuários que receberão e-mails
 //Local cAssuntoIc  := EncodeUTF8("AVISO - CLIENTE COM LICENÇA VENCIDA, " +_cCliente+ "! ","cp1252")
 Local cAssuntoIc  := "AVISO - CLIENTE COM LICENÇA VENCIDA, " +_cCliente+ "! "
 Local cAttachIc   :=  "  a"

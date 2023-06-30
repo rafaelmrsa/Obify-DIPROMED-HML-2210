@@ -811,13 +811,13 @@ For _x := 1 to 150
 	IncProc( "Processando...Faturamento ")
 Next
 
-If Select("SX2_2") > 0
+/*If Select("SX2_2") > 0
 	SX2_2->( DbCloseArea() )
-EndIf
+EndIf*/
 
-cFilSD2 := fFilial(_cEmpresa,'SD2',_cFilial)
-cFilSF4 := fFilial(_cEmpresa,'SF4',_cFilial)
-cFilSB1 := fFilial(_cEmpresa,'SB1',_cFilial)
+cFilSD2 := cFilAnt //fFilial(_cEmpresa,'SD2',_cFilial)
+cFilSF4 := cFilAnt //fFilial(_cEmpresa,'SF4',_cFilial)
+cFilSB1 := cFilAnt //fFilial(_cEmpresa,'SB1',_cFilial)
 
 cQuery := "SELECT D2_FORNEC,A2_NREDUZ, SUM(Case F4_DUPLIC  when 'S' then D2_TOTAL else 0 End ) T_FATURAMENTO, "
 
@@ -975,10 +975,10 @@ For _x := 1 to 150
 	IncProc( "Processando...Devoluções ")
 Next
 
-cFilSB1 := fFilial(_cEmpresa,'SB1',_cFilial)  // JBS 03/08/2010
-cFilSD1 := fFilial(_cEmpresa,'SD1',_cFilial)
-cFilSD2 := fFilial(_cEmpresa,'SD2',_cFilial)
-cFilSF4 := fFilial(_cEmpresa,'SF4',_cFilial)
+cFilSB1 := cFilAnt //fFilial(_cEmpresa,'SB1',_cFilial)  // JBS 03/08/2010
+cFilSD1 := cFilAnt //fFilial(_cEmpresa,'SD1',_cFilial)
+cFilSD2 := cFilAnt //fFilial(_cEmpresa,'SD2',_cFilial)
+cFilSF4 := cFilAnt //fFilial(_cEmpresa,'SF4',_cFilial)
 
 cQuery := "SELECT D2_FORNEC,A2_NREDUZ,SUM( case F4_DUPLIC when 'S' then D1_TOTAL else 0 End) D1_TOTAL, "
 
@@ -1134,7 +1134,7 @@ Return(lRet)
 Static Function fFilial(_cEmpresa,_cTabela,_cFilial)
 
 Local _cNewFilial := Space(2)
-Local _cFile      := 'SX2'+_cEmpresa
+/*Local _cFile      := 'SX2'+_cEmpresa
 Local _cFileIdx   := _cFile
 
 If Select("SX2_2") = 0
@@ -1148,7 +1148,7 @@ If SX2_2->( DbSeek(_cTabela) )
 	EndIf
 Else
 	_cNewFilial := xFilial(_cTabela)
-EndIf
+EndIf*/
 
 Return(_cNewFilial)
 

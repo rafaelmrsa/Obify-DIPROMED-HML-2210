@@ -477,7 +477,7 @@ If Len(_aDados) == 0
 				cPara := ""
 			EndIf
 			
-			If lCopia=="L" .And. lCopia 
+			If Valtype(lCopia) == "L" .And. lCopia 
 			    If SX3->X3_TIPO<>"N"
 					If Empty(&("M->"+AllTrim(SX3->X3_CAMPO))) .And. !Empty(SX3->X3_RELACAO)
 						//&("M->"+AllTrim(SX3->X3_CAMPO)) := &(SX3->X3_RELACAO)

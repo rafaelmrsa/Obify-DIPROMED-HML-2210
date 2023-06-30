@@ -155,7 +155,7 @@ WHILE  !QRYB3->(EOF())
 
 		//Rafael Moraes Rosa Obify - 02/12/2022 - Linhas reajustadas - INICIO
 		cQueryD2	:= "SELECT D2_EMISSAO, D2_TIPO, D2_CLIENTE, D2_TES, D2_DOC, D2_SERIE, D2_QUANT FROM "+RetSqlName("SD2")+ " SD2  "
-		cQueryD2	+= "INNER JOIN "+RetSqlName("SF4")+ " SF4  ON SD2.D2_FILIAL = SF4.F4_FILIAL AND SD2.D2_TES = SF4.F4_CODIGO "
+		cQueryD2	+= "INNER JOIN "+RetSqlName("SF4")+ " SF4  ON SD2.D2_FILIAL = SF4.F4_FILIAL AND SD2.D2_TES = SF4.F4_CODIGO AND SF4.D_E_L_E_T_ = '' "
 
 		cQueryD2	+= "WHERE SD2.D_E_L_E_T_ = '' "
 		cQueryD2	+= "AND SD2.D2_FILIAL = '"+ cFilSB3 +"' "
@@ -260,7 +260,8 @@ WHILE  !QRYB3->(EOF())
 		cQueryD3		+= "AND SUBSTRING(SD3.D3_EMISSAO,5,2) = '" + SUBSTR(DTOS(_dInicial),5,2) + "' "
 		cQueryD3		+= "AND ((SD3.D3_TM = '532' "
 			cQueryD3	+= "AND (SD3.D3_IDENT = 'UNI   ' OR SD3.D3_IDENT = '1     ' OR SD3.D3_IDENT = '2     ' OR SD3.D3_IDENT = '003   '  OR SD3.D3_IDENT = '004   ')) "
-			cQueryD3	+= "OR (SD3.D3_TM = '501' AND SD3.D3_CF = 'RE0' AND SD3.D3_ESTORNO <> 'S')) "
+			cQueryD3	+= "OR (SD3.D3_TM = '501' AND SD3.D3_CF = 'RE0' AND SD3.D3_ESTORNO <> 'S' AND SD3.D3_EXPLIC NOT LIKE '%TRANSFERENCIA AUTOMATICA ENTRE CD%' )) "
+			cQueryD3	+= "AND (SD3.D3_TIPO = 'MC' OR SD3.D3_TIPO = 'PA'  OR SD3.D3_TIPO = 'AI' ) "	
 		cQueryD3		+= "AND SD3.D3_TIPO LIKE '%" + Iif(cEmpAnt='01','MC','MC/MP') + "%' "
 		
 		cQueryD3		+= "ORDER BY D3_FILIAL,D3_COD,D3_LOCAL,D3_EMISSAO,D3_NUMSEQ"

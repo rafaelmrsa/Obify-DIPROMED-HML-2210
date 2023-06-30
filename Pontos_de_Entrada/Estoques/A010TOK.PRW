@@ -347,10 +347,10 @@ User Function Env_Pro(cEmail,cAssunto,aMsg,aAttach)
 	// Envia para os demais interessados - Incluído televendas no e-mail 04/11/2008
 	cEmail   := GetNewPar("ES_ENV_PRO","compras@dipromed.com.br;callcenter@dipromed.com.br;publico@dipromed.com.br;apoio@dipromed.com.br") 
 	cEmailCc := ""
-	cEmailBcc:= "maximo.canuto@dipromed.com.br"
+	cEmailBcc:= SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")
 
 	If (AllTrim(Upper(U_DipUsr()))$'MCANUTO')  // Apenas para teste MCVN - 08-06-11
-		cEmail   := "maximo.canuto@dipromed.com.br"
+		cEmail   := SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")
 		cEmailCc := ""
 		cEmailBcc:= ""
 	Endif

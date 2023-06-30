@@ -74,7 +74,7 @@ Local cPicD2Cust:= PesqPict("SD2","D2_CUSTO1",18)
 Local cTamD2Cust:= TamSX3('D2_CUSTO1')[1]
 Local cTamD1CF  := TamSX3('D1_CF')[1]
 Local lVEIC 	:= Upper(GetMV("MV_VEICULO"))=="S"
-Local nTamSX1	:= Len(SX1->X1_GRUPO)
+//Local nTamSX1	:= Len(SX1->X1_GRUPO)
 Local nTamData 	:= IIF(__SetCentury(),10,8)
 
 //⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
@@ -93,7 +93,7 @@ EndIf
 //⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
 //≥ Ajusta perguntas no SX1 									 ≥
 //¿ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ
-AjustaSX1()
+//AjustaSX1()
 
 //⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
 //≥ Ajustar o SX1 para SIGAVEI, SIGAPEC e SIGAOFI                ≥
@@ -101,7 +101,7 @@ AjustaSX1()
 aSB1Cod	:= TAMSX3("B1_COD")
 aSB1Ite	:= TAMSX3("B1_CODITE")
 
-If lVeic
+/*If lVeic
    dbSelectArea("SX1")
    dbSetOrder(1)
    dbSeek(PADR("MTR900",nTamSX1))
@@ -133,7 +133,7 @@ Else
       dbSkip()
    EndDo
    dbCommitAll()
-EndIf
+EndIf*/
 //⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
 //≥Criacao do componente de impressao                                      ≥
 //≥                                                                        ≥
@@ -1901,7 +1901,7 @@ Local cDesc2   := STR0003		//"dos produtos selecionados, ordenados sequencialmen
 Local cDesc3   := ""
 Local cString  := "SB1"
 Local lRet     := .T.
-Local nTamSX1  := Len(SX1->X1_GRUPO)
+//Local nTamSX1  := Len(SX1->X1_GRUPO)
 
 //⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
 //≥ Variaveis tipo Local para SIGAVEI, SIGAPEC e SIGAOFI         ≥
@@ -1963,7 +1963,7 @@ EndIf
 //⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
 //≥ Ajusta perguntas no SX1 									 ≥
 //¿ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ
-AjustaSX1()
+//AjustaSX1()
 
 //⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
 //≥ Ajustar o SX1 para SIGAVEI, SIGAPEC e SIGAOFI                ≥
@@ -1971,7 +1971,7 @@ AjustaSX1()
 aSB1Cod	:= TAMSX3("B1_COD")
 aSB1Ite	:= TAMSX3("B1_CODITE")
 
-If lVEIC
+/*If lVEIC
 
    dbSelectArea("SX1")
    dbSetOrder(1)
@@ -2006,7 +2006,7 @@ Else
    EndDo
    dbCommitAll()
    RestArea(aArea1)
-EndIf
+EndIf*/
 
 //⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
 //≥ Verifica as perguntas selecionadas                           ≥
@@ -3783,7 +3783,7 @@ Return lRet
 */
 Static Function MTR900CUnf(lCusUnif)
 Local aSvAlias:=GetArea()
-Local nTamSX1 :=Len(SX1->X1_GRUPO)
+/*Local nTamSX1 :=Len(SX1->X1_GRUPO)
 dbSelectArea("SX1")
 If dbSeek(PADR("MTR900",nTamSX1)+"08",.F.)
 	If !("MTR900VAlm" $ X1_VALID)
@@ -3800,7 +3800,7 @@ If dbSeek(PADR("MTR900",nTamSX1)+"08",.F.)
 		Replace X1_CNT01 With "**"
 		MsUnlock()
 	EndIf
-EndIf
+EndIf*/
 RestArea(aSvAlias)
 Return(NIL)
 
@@ -3847,6 +3847,7 @@ Return lRet
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ
 /*/
+/*
 Static Function AjustaSX1()
 
 Local aAreaAnt := GetArea()
@@ -3955,7 +3956,7 @@ PutSx1('MTR900',;                //-- 01 - X1_GRUPO
 
 RestArea(aAreaAnt)
 
-Return
+Return*/
 
 /*
 ‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹

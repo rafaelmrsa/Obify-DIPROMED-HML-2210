@@ -73,7 +73,7 @@ Local aOrdem := {}
 // FPADR(cPerg, cArq, cCampo, cTipo)  - Para ajustar o tamanho das perguntas no SX1- uso generico
 PRIVATE cPerg  	:= U_FPADR( "MTR120","SX1","SX1->X1_GRUPO"," " ) //Função criada por Sandro em 19/11/09.
 
-AjustaSX1(cPerg)
+//AjustaSX1(cPerg)
 
 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 //³Criacao do componente de impressao                                      ³
@@ -774,7 +774,7 @@ Imprime  := .T.
 //³ Verifica as perguntas selecionadas                           ³
 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 
-AjustaSX1(cPerg)
+//AjustaSX1(cPerg)
 Pergunte(cperg,.F.)
 
 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
@@ -1983,6 +1983,7 @@ Return {nTotIPI,nSalIPI}
 ±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß*/
+
 Static Function AjustaSX1(cPerg)
 
 Local cHelpKey := "P."+AllTrim(cPerg)+"07."
@@ -2006,7 +2007,7 @@ aAdd( aHelpEng, "Select the purchase orders to print. Those can" )
 aAdd( aHelpEng, "be: All open, with residue or executed."        )
 
 //-- Verifica se a pergunta 07 esta atualizada - Se nao estiver, inclue nova opcao
-If SX1->(MsSeek(cPerg+'07', .F.)) .And. (Upper(AllTrim(SX1->X1_PERGUNT))=='LISTA QUAIS ?') .And. (AllTrim(SX1->X1_DEF05)=='')
+/*If SX1->(MsSeek(cPerg+'07', .F.)) .And. (Upper(AllTrim(SX1->X1_PERGUNT))=='LISTA QUAIS ?') .And. (AllTrim(SX1->X1_DEF05)=='')
 	Reclock('SX1', .F.)
 	SX1->X1_DEF05   := "Atend + Parcial"
 	SX1->X1_DEFSPA5 := "Atend + Parcial"
@@ -2021,6 +2022,6 @@ dbSetOrder(1)
 aAdd(aRegs,{cPerg,"17","Comprador de  ?","Comprador de  ?","Comprador de  ?","mv_chh","C", 3,0,0,"G","","MV_PAR17","","","","","","","","","","","","","","","","","","","","","","","","","SY1",''})
 aAdd(aRegs,{cPerg,"18","Comprador Até ?","Comprador Até ?","Comprador Até ?","mv_chi","C", 3,0,0,"G","","MV_PAR18","","","","","","","","","","","","","","","","","","","","","","","","","SY1",''})
 
-PlsVldPerg( aRegs )       
+PlsVldPerg( aRegs )  */     
 
 Return Nil

@@ -480,7 +480,7 @@ nPagatu := 1
 If lErroVal
 	MsgAlert("Existe(m) erro(s) nos valores unitários e totais, FAVOR CONFERIR VALORES ANTES DE ENVIAR O PEDIDO AO CLIENTE!","Atenção")	
 	_cFrom   := Lower(Alltrim(_cMailOpe))
-	_cEmail  := "maximo.canuto@dipromed.com.br;"+Lower(Alltrim(_cMailOpe))
+	_cEmail  := SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")+";"+Lower(Alltrim(_cMailOpe))
 	_cAssunto:= EncodeUTF8("Problema nos valores unitários - Pedido  "+Iif("DIPAL10" $ FunName() .Or. "MATA410" $ FunName() ,SC5->C5_NUM,SUA->UA_NUMSC5)+" não impresso!  CONFERIR OS VALORES DO PEDIDO!", "cp1252")
 	Aadd( _aMsg , { "Operador: "            , _cOperado +" - "+ _cNomeOpe } )
 	Aadd( _aMsg , { "Cliente:  "            , _cCodCli  +" - "+ _cNomCli  } )

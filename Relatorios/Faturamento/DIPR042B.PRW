@@ -253,9 +253,9 @@ For nId := 1  to len(aEmpresa)
 	//------------------------------------------------------------------------------------
 	// Fecha o SX2 auxiliar para abri-lo para a proxima empresa informada na array
 	//------------------------------------------------------------------------------------
-	If Select('SX2_2') > 0
+	/*If Select('SX2_2') > 0
 		SX2_2->( DbCloseArea() )
-	EndIf
+	EndIf*/
 	
 	_aEmiFat := {}
 	_aEmiPed := {}
@@ -2117,8 +2117,8 @@ Static Function fQuery01( _cEmpresa ,_cFilial, lAnalitico)
 
 Local lRet    := .T.
 Local cQry1   := ""
-Local cFilSF2 := fFilial(_cEmpresa,'SF2',_cFilial)  // iif(!Empty(xFilial('SF2')),_cFilial,Space(2))
-Local cFilSF4 := fFilial(_cEmpresa,'SF4',_cFilial)  //  iif(!Empty(xFilial('SF4')),_cFilial,Space(2))
+Local cFilSF2 := cFilAnt //fFilial(_cEmpresa,'SF2',_cFilial)  // iif(!Empty(xFilial('SF2')),_cFilial,Space(2))
+Local cFilSF4 := cFilAnt //fFilial(_cEmpresa,'SF4',_cFilial)  //  iif(!Empty(xFilial('SF4')),_cFilial,Space(2))
 Local nId     := 0
 Local _x
 
@@ -2284,9 +2284,9 @@ Static Function fQuery02(_cEmpresa,_cFilial,lAnalitico)
 
 Local lRet    := .T.
 Local cQry2   := ""
-Local cFilSD1 := fFilial(_cEmpresa,'SD1',_cFilial) // Se nao for compaartilhado, traz a filial informada no _cFilial
-Local cFilSF2 := fFilial(_cEmpresa,'SF2',_cFilial) // Idem  - JBS 06/08/2010
-Local cFilSF4 := fFilial(_cEmpresa,'SF4',_cFilial) // Idem  - JBS 06/08/2010
+Local cFilSD1 := cFilAnt //fFilial(_cEmpresa,'SD1',_cFilial) // Se nao for compaartilhado, traz a filial informada no _cFilial
+Local cFilSF2 := cFilAnt //fFilial(_cEmpresa,'SF2',_cFilial) // Idem  - JBS 06/08/2010
+Local cFilSF4 := cFilAnt //fFilial(_cEmpresa,'SF4',_cFilial) // Idem  - JBS 06/08/2010
 Local _x
 
 //---------------------------------------------------------------------------------------------
@@ -2407,8 +2407,8 @@ Static Function fQuery03(_cEmpresa,_cFilial)
 
 Local lRet    := .T.
 Local cQry3   := ""
-Local cFilSC5 := fFilial(_cEmpresa,'SC5',_cFilial)  // iif(!Empty(xFilial('SC5')),_cFilial,Space(2))
-Local cFilSF4 := fFilial(_cEmpresa,'SF4',_cFilial)  // iif(!Empty(xFilial('SF4')),_cFilial,Space(2))
+Local cFilSC5 := cFilAnt //fFilial(_cEmpresa,'SC5',_cFilial)  // iif(!Empty(xFilial('SC5')),_cFilial,Space(2))
+Local cFilSF4 := cFilAnt //fFilial(_cEmpresa,'SF4',_cFilial)  // iif(!Empty(xFilial('SF4')),_cFilial,Space(2))
 Local _x
 
 For _x := 1 to 150
@@ -2503,19 +2503,20 @@ Local cCodPub   := '000004' // MCVN - 04/05/09
 Local cCodRep   := '000005' // MCVN - 04/05/09
 
 Local lRet      := .T.
-Local cFilSZF   := ''
-Local cFilSZF   := iif(!Empty(xFilial('SZF')),cFilial,Space(2))
+//Local cFilSZF   := ''
+//Local cFilSZF   := iif(!Empty(xFilial('SZF')),cFilial,Space(2))
+Local cFilSZF:= xFilial('SZF') 
 Local nId
 
 _aMeta := {}
 
 For nId := 1 to len(aEmpresa)
 	
-	If Select('SX2_2') > 0
+	/*If Select('SX2_2') > 0
 		SX2_2->( DbCloseArea() )
-	EndIf
+	EndIf*/
 	
-	cFilSZF := fFilial(aEmpresa[nId][01][01],'SZF',aEmpresa[nId][01][02]) // JBS 10/03/2010 iif(!Empty(xFilial('SF4')),aEmpresa[nId][02],Space(2))
+	//cFilSZF := fFilial(aEmpresa[nId][01][01],'SZF',aEmpresa[nId][01][02]) // JBS 10/03/2010 iif(!Empty(xFilial('SF4')),aEmpresa[nId][02],Space(2))
 	
 	aadd(_aMeta,{ fBusc_aMeta(cFilSZF,aEmpresa[nId][01][01],cCodTel,cMes + "/" + cAno),; // nMetTel
 	              fBusc_aMeta(cFilSZF,aEmpresa[nId][01][01],cCodRep,cMes + "/" + cAno),; // nMetRep
@@ -2668,7 +2669,7 @@ Return(.T.)
 Static Function fFilial(_cEmpresa,_cTabela,_cFilial)
 
 Local _cNewFilial := Space(2)
-Local _cFile      := 'SX2'+_cEmpresa
+/*Local _cFile      := 'SX2'+_cEmpresa
 Local _cFileIdx   := _cFile
 
 If Select("SX2_2") = 0
@@ -2682,7 +2683,7 @@ If SX2_2->( DbSeek(_cTabela) )			  //
 	EndIf
 Else
 	_cNewFilial := xFilial(_cTabela)
-EndIf
+EndIf*/
 
 Return(_cNewFilial)
 /*

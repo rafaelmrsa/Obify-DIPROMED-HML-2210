@@ -56,7 +56,7 @@ Private cCar_002 := " "
 @ 070,050 BmpButton Type 1 Action Close(oDlg)
 Activate Dialog oDlg Centered*/
 
-AjustaSX1(cPerg)
+//AjustaSX1(cPerg)
 
 pergunte(cPerg,.F.)
 
@@ -1389,6 +1389,7 @@ Return cString
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 /*/
+/*
 Static Function AjustaSX1(cPerg)
 Local _sAlias	:= Alias()
 Local cOrdem
@@ -1445,7 +1446,7 @@ For nX:=1 to Len(aRegs)
 	Endif
 Next
 dbSelectArea(_sAlias)
-Return
+Return*/
 
 /*====================================================================================\
 |Programa  | FINR130E    | Autor  | Reginaldo Borges, RSB   | Data | 14/04/2015      |

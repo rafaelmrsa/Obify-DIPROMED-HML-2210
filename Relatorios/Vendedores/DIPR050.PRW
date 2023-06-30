@@ -215,7 +215,8 @@ While QRY1->(!Eof())
 		cArq001 := "vendedores\zmail.txt" // arquivo vazio apenas teste...
 		Aadd(cAttach,cArq001) //  ATACHA APENAS OS 5 PRIMEIROS E MENORES RELATÓRIOS
 		cEmail := AllTrim(QRY1->A3_EMAIL) // EMAIL DO REPRESENTANTES
-		//cEmail := "rafael@dipromed.com.br" // EMAIL DO REPRESENTANTES
+		//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo adicionada
+		cEmail := IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),cEmail,GETMV("MV_#EMLSCH"))
 		lRetorno := EMail(cEmail,cAss_Rep,aMsg,cAttach)	// CHAMADA DA FUNçãO DE ENVIO DE EMAIL
 	Else	
 		// CRIA O NOME DOS ARQUIVOS QUE SERÃO ENVIADOS AOS REPRESENTANTES
@@ -255,7 +256,8 @@ While QRY1->(!Eof())
 		Aadd(cAttach,cArq005)
 		Aadd(cAttach,cArq008)
 		cEmail := AllTrim(QRY1->A3_EMAIL) // EMAIL DO REPRESENTANTES
-	//	cEmail := "rafael@dipromed.com.br" // EMAIL DO REPRESENTANTES
+		//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo adicionada
+		cEmail := IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),cEmail,GETMV("MV_#EMLSCH"))
 		
 		If (File(cArq001) .Or. File(cArq002) .Or. File(cArq003) .Or. File(cArq004) .Or. File(cArq005) .Or. File(cArq008)) //Só envia e-mail se existe arquivo  - MCVN - 28/08/2008
 			//cAssunto := "Relatórios de Representantes - Comissões / Baixas - "+If (("0401" $ cWCodEmp+cWCodFil),"HEALTH QUALITY","DIPROMED")

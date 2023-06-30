@@ -784,7 +784,7 @@ cMsgCic += "Usuário: "+U_DipUsr()
 		
 U_DIPCIC(cMsgCic,GetNewPar("ES_CICD067","MAXIMO.CANUTO"))//envia cic
 
-U_UEnvMail(GetNewPar("ES_MAID067","maximo.canuto@dipromed.com.br"),cAssunto,aMsg,"",cFrom,cFuncSent)
+U_UEnvMail(GetNewPar("ES_MAID067",SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")),cAssunto,aMsg,"",cFrom,cFuncSent)
 
 Return      
 /*

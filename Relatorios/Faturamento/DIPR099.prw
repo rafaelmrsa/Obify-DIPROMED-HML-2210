@@ -42,6 +42,11 @@ Private cEmailTo  := Lower(GetNewPar("ES_R099EME","luciana.matiazzo@dipromed.com
 Private cEmailCc  := ""
 Private cEmailBcc := ""
 
+//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo adicionada - INICIO
+cEmailTo	:= IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),cEmailTo,GETMV("MV_#EMLSCH"))	
+cEmailCc	:= IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),cEmailCc,GETMV("MV_#EMLSCH"))	
+cEmailBcc	:= IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),cEmailBcc,GETMV("MV_#EMLSCH"))	
+//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo adicionada - FIM
 
 cSQL := "  SELECT  DISTINCT(C9_PEDIDO), C9_FILIAL "
 cSQL += " 	FROM "

@@ -105,10 +105,13 @@ Static Function R096EMAIL(cCod, cDesc, cRegAnv, cDatAnv, cClaAnv)
 *--------------------------------------------------------------------*
 
 Local cDeIc       := "protheus@dipromed.com.br"
-Local cEmailIc    := GetNewPar("ES_R096EMA","qualidade@dipromed.com.br;reginaldo.borges@dipromed.com.br")  //Usuários que receberão e-mails
+Local cEmailIc    := GetNewPar("ES_R096EMA","qualidade@dipromed.com.br")  //Usuários que receberão e-mails
 Local cAssuntoIc  := "AVISO - PRODUTO COM VALIDADE ANVISA VENCIDA, "+AllTrim(cCod)+ "! "
 Local cAttachIc   :=  "  a"
 Local cFuncSentIc :=   "DIPR096.PRW"
+
+//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo adicionada
+cEmailIc := IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),cEmailIc,GETMV("MV_#EMLSCH"))
 
 _aMsgIc := {}
 

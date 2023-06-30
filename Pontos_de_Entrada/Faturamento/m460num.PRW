@@ -545,14 +545,14 @@ If !QRYNUM->(Eof()) .And. cNumero <> SOMA1(QRYNUM->NUM)
 	
 	cNumero := SOMA1(QRYNUM->NUM)
 	
-	SX5->(DbSetOrder(1))
+	/*SX5->(DbSetOrder(1))
 	If SX5->(DbSeek(xFilial("SX5")+"01"+cSerie)) 
 		SX5->(RecLock("SX5",.F.))
 			SX5->X5_DESCRI  := Soma1(cNumero)
 			SX5->X5_DESCSPA := Soma1(cNumero)
 			SX5->X5_DESCENG := Soma1(cNumero)
 		SX5->(MsUnLock())
-	EndIf  
+	EndIf*/  
 	
 	U_DIPCIC(cMsgCic,"DIEGO.DOMINGOS,MAXIMO.CANUTO")
 EndIf

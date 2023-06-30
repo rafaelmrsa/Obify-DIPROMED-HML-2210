@@ -443,15 +443,15 @@ For nEmp := 1 to len(aEmpresa)
 	
 	If !Empty(mv_par07) 
 		cQuery += "  Select Count( R_E_C_N_O_ ) TOTREC "
-		cQuery += "    From SE2" + aEmpresa[nEmp][01] + " SE2 "
-		cQuery += "   Where E2_FILIAL = '" + fFilial(aEmpresa[nEmp][01],'SE2',aEmpresa[nEmp][02]) + "' "
+		cQuery += "    From " +RetSqlName("SE2")+ " SE2 "
+		cQuery += "   Where E2_FILIAL = '" + xFilial("SE2") + "' "
 		cQuery += "     and E2_VENCREA >= '" + DtoS(mv_par07) + "' "
 		cQuery += "     and E2_VENCREA <= '" + DtoS(mv_par08) + "'  "
 		cQuery += "     and SE2.D_E_L_E_T_ = ' '"
 	Else
 		cQuery += "  Select Count( R_E_C_N_O_ ) TOTREC "
-		cQuery += "    From SE2" + aEmpresa[nEmp][01] + " SE2 "
-		cQuery += "   Where E2_FILIAL = '" + fFilial(aEmpresa[nEmp][01],'SE2',aEmpresa[nEmp][02]) + "' "
+		cQuery += "    From " +RetSqlName("SE2")+ " SE2 "
+		cQuery += "   Where E2_FILIAL = '" + xFilial("SE2") + "' "
 		cQuery += "     and E2_EMISSAO >= '" + DtoS(mv_par13) + "' "
 		cQuery += "     and E2_EMISSAO <= '" + DtoS(mv_par14) + "' "
 		cQuery += "     and SE2.D_E_L_E_T_ = ' '"
@@ -756,8 +756,8 @@ For nEmp := 1 to len(aEmpresa)
 	cQuery += "         E2_VRETINS,  "                                         
 	cQuery += "         E2_PRETINS,  " 
 	cQuery += "         E2_IDDARF  "       
-	cQuery += "    From SE2" + aEmpresa[nEmp][01] + " SE2 "
-	cQuery += "   Where E2_FILIAL = '" + fFilial(aEmpresa[nEmp][01],'SE2',aEmpresa[nEmp][02]) + "' "
+	cQuery += "    From " + RetSqlName("SE2") + " SE2 "
+	cQuery += "   Where E2_FILIAL = '" + xFilial("SE2") + "' "
 	cQuery += "     and SE2.D_E_L_E_T_ = ' ' "
 	cQuery += "     and E2_NUM     BETWEEN '"+ mv_par01+ "' AND '"+ mv_par02 + "'"
 	cQuery += "     and E2_PREFIXO BETWEEN '"+ mv_par03+ "' AND '"+ mv_par04 + "'"
@@ -1020,7 +1020,7 @@ Do While SE2->( !EOF() )
 				// Subtrai decrescimo para recompor o saldo na data escolhida.
 				If Str(SE2->E2_VALOR,17,2) == Str(nSaldo,17,2) .And. SE2->E2_DECRESC > 0 .And. SE2->E2_SDDECRE == 0
 					nSAldo -= SE2->E2_DECRESC
-				Endif mcanuto
+				Endif
 				// Soma Acrescimo para recompor o saldo na data escolhida.
 				If Str(SE2->E2_VALOR,17,2) == Str(nSaldo,17,2) .And. SE2->E2_ACRESC > 0 .And. SE2->E2_SDACRES == 0
 					nSAldo += SE2->E2_ACRESC

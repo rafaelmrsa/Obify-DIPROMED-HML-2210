@@ -61,7 +61,7 @@ aAdd(aDados,Nil)              // 13
 //---------------------------------------------------------------------------------------
 // Cria o grupo de perguntas
 //---------------------------------------------------------------------------------------
-fAjustSX1()
+//fAjustSX1()
 If !Pergunte(cPerg, .T.)
     Return(.F.)
 EndIf
@@ -179,6 +179,7 @@ Return(!TRB_PC->( EOF().and.BOF()))
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 */
+/*
 Static Function fAjustSX1(cNome)
 
 Local nId_SX1
@@ -223,7 +224,7 @@ For nId_SX1:=1 to Len(aRegs)
 
 Next nId_SX1
 RestArea(aArea)
-Return(lRet)   
+Return(lRet)*/   
 
 Static Function fQuebra()
 

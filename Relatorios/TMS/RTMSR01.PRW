@@ -57,7 +57,7 @@ U_DIPPROC(ProcName(0),U_DipUsr()) //MCVN - 22/01/2009
 
 //--Ajuste      
 
-AjustaSX1(cPerg)
+//AjustaSX1(cPerg)
 
 cPerg := PADR(cPerg, Len(SX1->X1_GRUPO), " " ) // Incluido por Sandro em 17/11/09.
 
@@ -78,7 +78,7 @@ If	cFilAnt $ cSelFis
 	//≥ MV_PAR02	// Serie do Selo ?                                         ≥
 	//¿ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ
 
-	PutSx1( cPerg, "02","Serie Selo ?","øSerie Sello?","Seal Series?","mv_ch2","C" ,3,0,0,"G","","","","","mv_par02","","","","","")
+	//PutSx1( cPerg, "02","Serie Selo ?","øSerie Sello?","Seal Series?","mv_ch2","C" ,3,0,0,"G","","","","","mv_par02","","","","","")
 
 	If	Pergunte('TMA200',.T.)
 		cSeloFis := mv_par01
@@ -969,7 +969,7 @@ Return Nil
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ
 */
-
+/*
 Static Function AjustaSX1()
 
 Local nTam := 0
@@ -996,7 +996,7 @@ If SX1->(dbSeek(Padr("RTMR01",Len(SX1->X1_GRUPO),' ')+"04")) .And. SX1->X1_TAMAN
 	MsUnlock()
 EndIf
 
-Return Nil
+Return Nil*/
 /*
 ‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±

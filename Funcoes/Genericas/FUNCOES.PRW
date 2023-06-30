@@ -2148,10 +2148,10 @@ User Function EnvSenhMail(cChaSen,aMsg)
 	
 
 	If cChaSen == "B"
-		cEmail     := "maximo.canuto@dipromed.com.br"   //E-mail exclusivo para receber a senha da liberação do lote
+		cEmail     := SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")   //E-mail exclusivo para receber a senha da liberação do lote
 	EndIf
 	If cChaSen == "C"
-		cEmail     := "maximo.canuto@dipromed.com.br" //E-mail exclusivo para receber a senha da liberação da tes
+		cEmail     := SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br") //E-mail exclusivo para receber a senha da liberação da tes
 		cTiMail    := EncodeUTF8(" ATENÇÃO - LIBERAÇÃO DE TES POR SENHA  ","cp1252")
 		cAssunto  :=  EncodeUTF8(" LIBERAÇÃO DE TES","cp1252")
 	EndIf
@@ -2283,7 +2283,7 @@ User Function M261Email(aMsg,cTiMail,cEmail,aMsgIt)
 	Private cPassword := Alltrim(GetMv("MV_RELPSW"))
 	Private cServer   := Alltrim(GetMv("MV_RELSERV"))
 	Private cEmailTo  := "protheus@dipromed.com.br"
-	Private cEmailCc  := "maximo.canuto@dipromed.com.br"//"maximo.canuto@dipromed.com.br ;  rt@dipromed.com.br"
+	Private cEmailCc  := SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")
 	Private cEmailBcc := " "
 	Private lResult   := .F.
 	Private cError    := " "
@@ -2579,7 +2579,7 @@ User Function CopySB1MAIL(nChav)
 	Local _xAlias   := GetArea()
 	Local _areaSB1  := SB1->(getarea())
 	Local cDe       := "protheus@dipromed.com.br"
-	Local cEmail    := GetMv("ES_COPYSB1",,"maximo.canuto@dipromed.com.br")        //grupo de usuarios para recebimento de e-mail
+	Local cEmail    := GetMv("ES_COPYSB1",,SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br"))        //grupo de usuarios para recebimento de e-mail
 	Local cAssunto  := ""
 	Local cAttach   := "a"
 	Local cFuncSent := "COPYSB1MAIL.PRW"
@@ -2588,7 +2588,7 @@ User Function CopySB1MAIL(nChav)
 	Local cPassword := Alltrim(GetMv("MV_RELPSW"))
 	Local cServer   := Alltrim(GetMv("MV_RELSERV"))
 	Local cEmailTo  := ""
-	Local cEmailCc  := ""// maximo.canuto@dipromed.com.br"
+	Local cEmailCc  := ""
 	Local cEmailBcc := ""
 	Local lResult   := .F.
 	Local cError    := ""
@@ -2661,13 +2661,13 @@ User Function CopySB1MAIL(nChav)
 				For k := 1 To Len(aSxCam)
 
 					If alltrim(TMP1->&(aSxCam[k,1])) <> alltrim(SB1->&(aSxCam[k,1]))
-						If type("SB1->"+(aSxCam[k,1])) == "C"
+						If Type("SB1->"+(aSxCam[k,1])) == "C"
 							aAdd( aMsg , { aSxCam[k,2]   , SB1->&(aSxCam[k,1]) } )
 							nB1+=1
-						ElseIf type("SB1->"+(aSxCam[k,1])) == "N"
+						ElseIf Type("SB1->"+(aSxCam[k,1])) == "N"
 							aAdd( aMsg , { aSxCam[k,2]   , cvaltochar(SB1->&(aSxCam[k,1])) } )
 							nB1+=1
-						ElseIf type("SB1->"+(aSxCam[k,1])) == "D"
+						ElseIf Type("SB1->"+(aSxCam[k,1])) == "D"
 							aAdd( aMsg , { aSxCam[k,2]   , DTOC(SB1->&(aSxCam[k,1])) } )
 							nB1+=1
 						ENDIF
@@ -4390,6 +4390,7 @@ User Function VldTesCF(cTes,cProduto)
 	Local cGrpTrib := SB1->B1_GRTRIB
 	Local lST	   := .F.
 	Local aDadosCfo:= {}
+	Local lPertenceMono
 	DEFAULT cTes   := ""
 	DEFAULT cProduto := ""
 	If Empty(cProduto)
@@ -4598,6 +4599,75 @@ User Function VldTesCF(cTes,cProduto)
 		cTes := ""
 	EndIf
 
+	/* INICIO CUSTOMIZACAO MONOFASICO - CST 04
+	-----------------------------------------------------------------------------
+	| Adicionadas regras para realizar o gatilho do TES com CST Monofásico,		|
+	| conforme regra informada pelo departamento fiscal:						|
+	|																			|
+	|	MATRIZ: Vendas Internas (SP) c/ ST 	= 716								|
+	|	MATRIZ: Vendas Internas (SP) s/ ST 	= 715								|
+	|			Vendas Interestaduais 		= 717								|
+	|																			|
+	|	CD: 	Vendas Internas (SP) 		= 715								|
+	|			Vendas Interestaduais 		= 771								|
+	|																			|
+	| Thais Reis - Obify - 24/04/2023											|
+	-----------------------------------------------------------------------------
+	*/
+		
+	If cEmpAnt == "01" .And. cFilAnt == "01" 
+		cMonNCM := GetNewPar("ES_CST04_1","")
+		If AllTrim(SB1->B1_POSIPI)$cMonNCM 
+			
+			If cTes == "501" .or. cTes == "625"
+				If SA1->A1_EST=="SP"
+					cTes := "716"
+				EndIf
+			Endif
+
+
+			//If cTes =="501" .and. !Empty(cGrpTrib) .and. SA1->A1_EST <> "SP"
+			If !Empty(cGrpTrib) .and. SA1->A1_EST <> "SP"
+				DbSelectArea("SF7")
+				DbSetOrder(1)
+				DbSeek(xFilial("SF7")+cGrpTrib)
+				While SF7->F7_FILIAL+SF7->F7_GRTRIB==XFILIAL("SF7")+cGrpTrib
+					If SF7->F7_EST == SA1->A1_EST 
+						lPertenceMono := .T.
+					else
+						lPertenceMono := .F.
+					EndIf
+					SF7->(dbSkip())
+				END
+			
+				If lPertenceMono
+					cTes := "717"
+				else
+					cTes := "715"
+				EndIf
+			EndIf
+		
+		Endif
+
+	Else
+	
+		If cEmpAnt == "01"  .And. cFilAnt == "04"
+			cMonNCM := GetNewPar("ES_CST04_1","")
+		
+			If cTes == "501" .or. cTes == "752"
+				If AllTrim(SB1->B1_POSIPI)$cMonNCM .And. SA1->A1_EST=="SP"
+					cTes := "715"
+				EndIf
+
+				If AllTrim(SB1->B1_POSIPI)$cMonNCM .And. SA1->A1_EST<>"SP"
+					cTes := "771"
+				EndIf
+
+			Endif
+		Endif
+	Endif
+	/* FIM CUSTOMIZACAO MONOFASICO - CST 04 */
+
 RestArea(aAreaSB1)
 Return cTes
 /*
@@ -4620,7 +4690,7 @@ User Function DipICMSCF(cPedido)
 	Local cSQL 		:= ""
 	Local cMsgCIC	:= ""
 	Local aMsg		:= {}
-	Local cEmail	:= GetNewPar("ES_DIPMACF","diego.domingos@dipromed.com.br;maximo.canuto@dipromed.com.br;sirlene.creatto@dipromed.com.br;edvan.matias@dipromed.com.br;expedicao@dipromed.com.br")
+	Local cEmail	:= GetNewPar("ES_DIPMACF","diego.domingos@dipromed.com.br;"+SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")+";sirlene.creatto@dipromed.com.br;edvan.matias@dipromed.com.br;expedicao@dipromed.com.br")
 	Local cCICEnv	:= GetNewPar("ES_DIPCACF","DIEGO.DOMINGOS,MAXIMO.CANUTO,SIRLENE.CREATTO,EXPEDICAOCD,EDVAN.MATIAS")
 	Local cFrom 	:= "protheus@dipromed.com.br"
 	Local cAssunto  := EncodeUTF8("ATENÇÃO! PEDIDO TEM PRIORIDADE (GUIA DE ICMS PARA CONSUMIDOR FINAL)","cp1252")
@@ -4692,7 +4762,7 @@ User Function DipICMSNF(cDoc,cSerie,cCliente,cLoja,cTransp,cPedido,cUFDest)
 	Local cSQL 		:= ""
 	Local cMsgCIC	:= ""
 	Local aMsg		:= {}
-	Local cEmail	:= GetNewPar("ES_DIPMCCF","diego.domingos@dipromed.com.br;maximo.canuto@dipromed.com.br;sirlene.creatto@dipromed.com.br;edvan.matias@dipromed.com.br;expedicao@dipromed.com.br;notafiscal@dipromed.com.br;notafiscal2@dipromed.com.br")
+	Local cEmail	:= GetNewPar("ES_DIPMCCF","diego.domingos@dipromed.com.br;"+SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")+";sirlene.creatto@dipromed.com.br;edvan.matias@dipromed.com.br;expedicao@dipromed.com.br;notafiscal@dipromed.com.br;notafiscal2@dipromed.com.br")
 	Local cCICEnv	:= GetNewPar("ES_DIPCCCF","DIEGO.DOMINGOS,MAXIMO.CANUTO,SIRLENE.CREATTO,EXPEDICAOCD,EDVAN.MATIAS,NOTAFISCAL,NOTAFISCAL2")
 	Local cFrom 	:= "protheus@dipromed.com.br"
 	Local cAssunto  := EncodeUTF8("ATENÇÃO! CONFIRMACAO - NF NÃO PODE SAIR SEM GUIA (ICMS CONSUMIDOR FINAL)","cp1252")
@@ -6689,7 +6759,7 @@ Return(.T.)
 +--------------------------------------------------------------*/
 User Function GDToExcel(aHeader,aCols,cWorkSheet,cTable,lTotalize,lPicture)
 
-Local oFWMSExcel := FWMSExcel():New()
+Local oFWMSExcel := FwMsExcelXlsx():New()
 
 Local oMsExcel
 
@@ -7057,3 +7127,41 @@ User Function VldProFrt(cPedido,cAlias)
 	RestArea(aArea)
 
 Return lRet
+
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
+±±ºPrograma  ³DIPRETFILDºAutor  Maximo Canuto Vieira º Data ³  21/06/23   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºDesc.     ³  Retornar no browse do pedido de venda o nome do Cliente   º±±
+±±º          ³  ou no nome do Fornecedor de acordo com o Tipo do Pedido   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºUso       ³ AP                                                         º±±
+±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+
+User Function Dipretfild()
+	
+Local aArea 	  := GetArea()
+Local cNomeCliFor := ''
+	
+DEFAULT cAlias  := "SC5"
+
+	
+	IF SC5->C5_TIPO $ 'D/B'
+
+		cNomeCliFor := RetField("SA2",1,xFilial("SA2")+SC5->C5_CLIENTE+SC5->C5_LOJACLI,"SA2->A2_NOME") 
+
+	ELSE
+
+		cNomeCliFor := RetField("SA1",1,xFilial("SA1")+SC5->C5_CLIENTE+SC5->C5_LOJACLI,"SA1->A1_NOME") 
+
+	ENDIF
+		
+
+	RestArea(aArea)
+
+Return cNomeCliFor

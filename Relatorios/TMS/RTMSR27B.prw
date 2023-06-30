@@ -2686,7 +2686,7 @@ Local i			:= 0		// Auxiliar no Incremento da Estrutura de Laco
 Local aAuxClone	:= { }		// Copia da propriedade Comp do Objeto passado por parametro
 Local aAuxComp	:= { }		// Auxiliar no processamento de aAuxClone
 Local aResult	:= { }		// Retorno da Funcao
- If Valtype(XmlChildEx(oObject:_CTE:_INFCTE:_VPREST,"_COMP")) <> "U"
+ If ValType(XmlChildEx(oObject:_CTE:_INFCTE:_VPREST,"_COMP")) <> "U"
 	If	ValType(oObject:_CTE:_INFCTE:_VPREST:_COMP) == "A"
 		aAuxClone := ACLONE( oObject:_CTE:_INFCTE:_VPREST:_COMP )
 		For i := 1 To Len( aAuxClone )

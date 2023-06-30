@@ -61,7 +61,7 @@ SU7->(dbSeek(xFilial("SU7")+SC9->C9_OPERADO))
 cOpFatDest := SU7->U7_CICNOME                    
 cMailDest  := AllTrim(SU7->U7_EMAIL)
                
-cMailDest+=";maximo.canuto@dipromed.com.br;diego.domingos@dipromed.com.br"
+cMailDest+=SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")+";diego.domingos@dipromed.com.br"
 
 SA1->(dbSetOrder(1))
 SA1->(dbSeek(xFilial("SA1") + SC9->C9_CLIENTE + SC9->C9_LOJA))

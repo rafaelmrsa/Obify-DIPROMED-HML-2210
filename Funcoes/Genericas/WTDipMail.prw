@@ -19,6 +19,7 @@ Local cCodAnt := ""
 Local aMsg 	  := {}
 Local aDipDel := {} 
 Local cHtml	  := ""
+Local cZZIMail := "" //Rafael Moraes Rosa - 28/06/2023
                     
 RpcSetEnv("01","01",,,'FAT',, )
 
@@ -31,8 +32,13 @@ ConOut( dtoc( Date() )+" "+Time()+" Iniciando o job Mail...." )
 	ZZI->(dbSetOrder(1))
 	ZZI->(dbGoTop())
 	While !ZZI->(Eof())
-		If ZZI->ZZI_CODMSG <> cCodAnt 
-			cEmail 	 := AllTrim(ZZI->ZZI_EMAIL)+AllTrim(ZZI->ZZI_EMAIL2)
+		If ZZI->ZZI_CODMSG <> cCodAnt
+			//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo comentada
+			//cEmail 	 := AllTrim(ZZI->ZZI_EMAIL)+AllTrim(ZZI->ZZI_EMAIL2)
+			//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo substituida - INICIO
+			cZZIMail := AllTrim(ZZI->ZZI_EMAIL)+AllTrim(ZZI->ZZI_EMAIL2)
+			_cEmCompr := IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),cZZIMail,GETMV("MV_#EMLSCH"))
+			//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo substituida - FIM	
 			cAssunto := AllTrim(ZZI->ZZI_ASSUNT)
 			cAttach  := AllTrim(ZZI->ZZI_ANEXO)
 			cDe 	 := AllTrim(ZZI->ZZI_MAILDE)

@@ -366,7 +366,8 @@ Local cPath     := ""
 Local nI        := 0
 Local nJ        := 0
 Local oSQL
-oSQL := TSqlStatement()
+
+/*oSQL := TSqlStatement()
 
 cTexto  += "Inicio da Atualizacao" + " SX2" + CRLF + CRLF
 
@@ -573,7 +574,7 @@ For nI := 1 To Len( aSX2 )
 Next nI
 
 cTexto += CRLF + "Final da Atualizacao" + " SX2" + CRLF + Replicate( "-", 128 ) + CRLF + CRLF
-
+*/
 Return NIL
 /*
 ‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹
@@ -22109,9 +22110,9 @@ aAdd( aSX6, { ;
 	''																		, ; //X6_DESC2
 	''																		, ; //X6_DSCSPA2
 	''																		, ; //X6_DSCENG2
-	'reginaldo.borges@dipromed.com.br;maximo.canuto@dipromed.com.br', ; //X6_CONTEUD
-	'reginaldo.borges@dipromed.com.br;maximo.canuto@dipromed.com.br', ; //X6_CONTSPA
-	'reginaldo.borges@dipromed.com.br;maximo.canuto@dipromed.com.br', ; //X6_CONTENG
+	'reginaldo.borges@dipromed.com.br;'+SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br"), ; //X6_CONTEUD
+	'reginaldo.borges@dipromed.com.br;'+SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br"), ; //X6_CONTSPA
+	'reginaldo.borges@dipromed.com.br;'+SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br"), ; //X6_CONTENG
 	'U'																		, ; //X6_PROPRI
 	''																		} ) //X6_PYME  
 	

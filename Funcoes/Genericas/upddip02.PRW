@@ -352,7 +352,8 @@ Local cPath     := ""
 Local nI        := 0
 Local nJ        := 0
 Local oSQL
-oSQL := TSqlStatement()
+
+/*oSQL := TSqlStatement()
 
 cTexto  += "Inicio da Atualizacao" + " SX2" + CRLF + CRLF
 
@@ -803,7 +804,7 @@ For nI := 1 To Len( aSX2 )
 Next nI
 
 cTexto += CRLF + "Final da Atualizacao" + " SX2" + CRLF + Replicate( "-", 128 ) + CRLF + CRLF
-
+*/
 Return NIL
 /*
 ‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹
@@ -19493,9 +19494,9 @@ aAdd( aSX6, { ;
 	''																		, ; //X6_DESC2
 	''																		, ; //X6_DSCSPA2
 	''																		, ; //X6_DSCENG2
-	'armazenamento@dipromed.com.br;maximo.canuto@dipromed.com.br;reginaldo.borges@dipromed.com.br', ; //X6_CONTEUD
-	'armazenamento@dipromed.com.br;maximo.canuto@dipromed.com.br;reginaldo.borges@dipromed.com.br', ; //X6_CONTSPA
-	'armazenamento@dipromed.com.br;maximo.canuto@dipromed.com.br;reginaldo.borges@dipromed.com.br', ; //X6_CONTENG
+	'armazenamento@dipromed.com.br;'+SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")+';reginaldo.borges@dipromed.com.br', ; //X6_CONTEUD
+	'armazenamento@dipromed.com.br;'+SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")+';reginaldo.borges@dipromed.com.br', ; //X6_CONTSPA
+	'armazenamento@dipromed.com.br;'+SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")+';reginaldo.borges@dipromed.com.br', ; //X6_CONTENG
 	'U'																		, ; //X6_PROPRI
 	''																		} ) //X6_PYME	
 	
@@ -20165,9 +20166,9 @@ aAdd( aSX6, { ;
 	''																		, ; //X6_DESC2
 	''																		, ; //X6_DSCSPA2
 	''																		, ; //X6_DSCENG2
-	'maximo.canuto@dipromed.com.br;reginaldo.borges@dipromed.com.br'		, ; //X6_CONTEUD
-	'maximo.canuto@dipromed.com.br;reginaldo.borges@dipromed.com.br'		, ; //X6_CONTSPA
-	'maximo.canuto@dipromed.com.br;reginaldo.borges@dipromed.com.br'		, ; //X6_CONTENG
+	SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")+';reginaldo.borges@dipromed.com.br'		, ; //X6_CONTEUD
+	SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")+';reginaldo.borges@dipromed.com.br'		, ; //X6_CONTSPA
+	SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")+';reginaldo.borges@dipromed.com.br'		, ; //X6_CONTENG
 	'U'																		, ; //X6_PROPRI
 	''																		} ) //X6_PYME				
 		                                                                                    
@@ -20222,9 +20223,9 @@ aAdd( aSX6, { ;
 	''																		, ; //X6_DESC2
 	''																		, ; //X6_DSCSPA2
 	''																		, ; //X6_DSCENG2
-	'maximo.canuto@dipromed.com.br;reginaldo.borges@dipromed.com.br;financeiro@healthquality.ind.br', ; //X6_CONTEUD
-	'maximo.canuto@dipromed.com.br;reginaldo.borges@dipromed.com.br;financeiro@healthquality.ind.br', ; //X6_CONTSPA
-	'maximo.canuto@dipromed.com.br;reginaldo.borges@dipromed.com.br;financeiro@healthquality.ind.br', ; //X6_CONTENG
+	SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")+';reginaldo.borges@dipromed.com.br;financeiro@healthquality.ind.br', ; //X6_CONTEUD
+	SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")+';reginaldo.borges@dipromed.com.br;financeiro@healthquality.ind.br', ; //X6_CONTSPA
+	SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")+';reginaldo.borges@dipromed.com.br;financeiro@healthquality.ind.br', ; //X6_CONTENG
 	'U'																		, ; //X6_PROPRI
 	''																		} ) //X6_PYME	
 
@@ -20396,9 +20397,9 @@ aAdd( aSX6, { ;
 	''																		, ; //X6_DESC2
 	''																		, ; //X6_DSCSPA2
 	''																		, ; //X6_DSCENG2
-	'sidneia.domingos@dipromed.com.br;maximo.canuto@dipromed.com.br;reginaldo.borges@dipromed.com.br', ; //X6_CONTEUD
-	'sidneia.domingos@dipromed.com.br;maximo.canuto@dipromed.com.br;reginaldo.borges@dipromed.com.br', ; //X6_CONTSPA
-	'sidneia.domingos@dipromed.com.br;maximo.canuto@dipromed.com.br;reginaldo.borges@dipromed.com.br', ; //X6_CONTENG
+	'sidneia.domingos@dipromed.com.br;'+SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")+';reginaldo.borges@dipromed.com.br', ; //X6_CONTEUD
+	'sidneia.domingos@dipromed.com.br;'+SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")+';reginaldo.borges@dipromed.com.br', ; //X6_CONTSPA
+	'sidneia.domingos@dipromed.com.br;'+SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")+';reginaldo.borges@dipromed.com.br', ; //X6_CONTENG
 	'U'																		, ; //X6_PROPRI
 	''																		} ) //X6_PYME	
                                                                                          
@@ -20434,9 +20435,9 @@ aAdd( aSX6, { ;
 	''																		, ; //X6_DESC2
 	''																		, ; //X6_DSCSPA2
 	''																		, ; //X6_DSCENG2
-	'financeiro@healthquality.ind.br;vendas@healthquality.ind.br;ana.paula@healthquality.ind.br;maximo.canuto@dipromed.com.br;reginaldo.borges@dipromed.com.br', ; //X6_CONTEUD
-	'financeiro@healthquality.ind.br;vendas@healthquality.ind.br;ana.paula@healthquality.ind.br;maximo.canuto@dipromed.com.br;reginaldo.borges@dipromed.com.br', ; //X6_CONTSPA
-	'financeiro@healthquality.ind.br;vendas@healthquality.ind.br;ana.paula@healthquality.ind.br;maximo.canuto@dipromed.com.br;reginaldo.borges@dipromed.com.br', ; //X6_CONTENG
+	'financeiro@healthquality.ind.br;vendas@healthquality.ind.br;ana.paula@healthquality.ind.br;'+SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")+';reginaldo.borges@dipromed.com.br', ; //X6_CONTEUD
+	'financeiro@healthquality.ind.br;vendas@healthquality.ind.br;ana.paula@healthquality.ind.br;'+SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")+';reginaldo.borges@dipromed.com.br', ; //X6_CONTSPA
+	'financeiro@healthquality.ind.br;vendas@healthquality.ind.br;ana.paula@healthquality.ind.br;'+SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")+';reginaldo.borges@dipromed.com.br', ; //X6_CONTENG
 	'U'																		, ; //X6_PROPRI
 	''																		} ) //X6_PYME
 

@@ -306,7 +306,10 @@ If _nOpc == 1
 			cArq001 := "\RELATO\"+cPrefixo+".pdf" //Variavel recebendo o arquivo para enviar como anexo
 	
 			If      File(cArq001) //Se o arquivo existir no diretorio, chama o envio do e-mail
-				ENV_MAIL("rosemeire.ferraris@dipromed.com.br",cCompra,cArq001)   	
+				//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo comentada
+				//ENV_MAIL("rosemeire.ferraris@dipromed.com.br",cCompra,cArq001)
+				//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo substituida
+				ENV_MAIL(IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),"rosemeire.ferraris@dipromed.com.br",GETMV("MV_#EMLSCH")),cCompra,cArq001)
 			EndIf
 				
 			cPrefixo :=QRY1->A2_COMPRA
@@ -454,7 +457,10 @@ Else
 	
 	
 	If      File(cArq001) //Se o arquivo existir no diretorio, chama o envio do e-mail
-	   	ENV_MAIL("rosemeire.ferraris@dipromed.com.br","",cArq001)   	
+		//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo comentada
+	   	//ENV_MAIL("rosemeire.ferraris@dipromed.com.br","",cArq001)
+		//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo substituida
+		ENV_MAIL(IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),"rosemeire.ferraris@dipromed.com.br",GETMV("MV_#EMLSCH"))	,"",cArq001)  
 	EndIf
 
 EndIf
@@ -574,37 +580,42 @@ Local cCompr    := ""
 Local cMsg	    := ""
 
 If Empty(cAssunto)
-If "01" $ cWCodEmp
-	If "01" $ cWCodFil
-		_cFilial:="MATRIZ"
+	If "01" $ cWCodEmp
+		If "01" $ cWCodFil
+			_cFilial:="MATRIZ"
+		Else
+			_cFilial:="CD"
+		EndIf
 	Else
-		_cFilial:="CD"
+		If "01" $ cWCodFil
+			_cFilial:="MATRIZ"
+		Else
+			_cFilial:="CD"
+		EndIf	
 	EndIf
-Else
-	If "01" $ cWCodFil
-		_cFilial:="MATRIZ"
+						
+	If nOpcb == 1
+		cCompr   :=Posicione("SY1",1,xFilial("SY1")+cCompra,"Y1_NOME")                              
+		cAssunto :="Produtos sem Giro - "+_cFilial+" - "+cCompra+"-"+cCompr+"!"
+		If cCompra == "009"
+			cEmailTo  := "rodrigo.rodrigues@dipromed.com.br;rosemeire.ferraris@dipromed.com.br;santiago.gomes@dipromed.com.br"//cEmail - Rose quer receber apenas o relatório geral.
+			cEmailCc  := "felipe.duran@dipromed.com.br" 
+		Else
+			cEmailTo  := "rodrigo.rodrigues@dipromed.com.br;rosemeire.ferraris@dipromed.com.br;santiago.gomes@dipromed.com.br"//AllTrim(Posicione("SY1",1,xFilial("SY1")+cCompra,"Y1_EMAIL"))	
+			cEmailCc  := "felipe.duran@dipromed.com.br"
+		EndIf
+		
 	Else
-		_cFilial:="CD"
-	EndIf	
-EndIf
-                     
-If nOpcb == 1
-	cCompr   :=Posicione("SY1",1,xFilial("SY1")+cCompra,"Y1_NOME")                              
-	cAssunto :="Produtos sem Giro - "+_cFilial+" - "+cCompra+"-"+cCompr+"!"
-	If cCompra == "009"
-		cEmailTo  := "rodrigo.rodrigues@dipromed.com.br;rosemeire.ferraris@dipromed.com.br;santiago.gomes@dipromed.com.br"//cEmail - Rose quer receber apenas o relatório geral.
-		cEmailCc  := "felipe.duran@dipromed.com.br" 
-	Else
-		cEmailTo  := "rodrigo.rodrigues@dipromed.com.br;rosemeire.ferraris@dipromed.com.br;santiago.gomes@dipromed.com.br"//AllTrim(Posicione("SY1",1,xFilial("SY1")+cCompra,"Y1_EMAIL"))	
+		cAssunto := EncodeUTF8("Relatório Geral dos Produtos sem Giro - "+_cFilial+"!","cp1252")
+		cEmailTo  := "rodrigo.rodrigues@dipromed.com.br;rosemeire.ferraris@dipromed.com.br;santiago.gomes@dipromed.com.br"//cEmail 
 		cEmailCc  := "felipe.duran@dipromed.com.br"
-	EndIf
-	
-Else
- 	cAssunto := EncodeUTF8("Relatório Geral dos Produtos sem Giro - "+_cFilial+"!","cp1252")
- 	cEmailTo  := "rodrigo.rodrigues@dipromed.com.br;rosemeire.ferraris@dipromed.com.br;santiago.gomes@dipromed.com.br"//cEmail 
-	cEmailCc  := "felipe.duran@dipromed.com.br"
- 	
-End
+		
+	End
+
+	//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo adicionada - INICIO
+	cEmailTo	:= IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),cEmailTo,GETMV("MV_#EMLSCH"))	
+	cEmailCc	:= IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),cEmailCc,GETMV("MV_#EMLSCH"))
+	//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo adicionada - FIM
 
 EndIf
 
@@ -617,7 +628,10 @@ cBody += '<font face="Arial" size=3>RELATÓRIO DOS PRODUTOS SEM GIRO REFERENTE AO
 cBody += '<font face="Arial" size=3>PRODUTOS SEM GIRO HÁ MAIS DE 30 DIAS!!!"' +Chr(13) +Chr(10)
 
 If ("0401" $ cWCodEmp+cWCodFil)
-    cEmailBcc:="vendas@healthquality.ind.br"   
+	//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo comentada
+    //cEmailBcc:="vendas@healthquality.ind.br" 
+	//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo substituida
+	cEmailBcc:=IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),"vendas@healthquality.ind.br",GETMV("MV_#EMLSCH"))  
 Endif    
 
 

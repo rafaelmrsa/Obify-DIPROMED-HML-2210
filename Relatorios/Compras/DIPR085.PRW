@@ -120,7 +120,10 @@ If Len(aEnv_085a) > 0
 	
 	cComprador := aEnv_085a[1,6]
 //	cEmaCom    := Posicione("SY1",1,xFilial("SY1")+cComprador,"Y1_EMAIL")//Rose pediu para enviar somente para compras@dipromed.com.br 27/07/16
-	cEmaCom    := "compras@dipromed.com.br"
+	//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo comentada
+	//cEmaCom    := "compras@dipromed.com.br"
+	//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo substituida
+	cEmaCom    := IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),"compras@dipromed.com.br",GETMV("MV_#EMLSCH"))
 	
 	For nI := 1 To Len(aEnv_085a)
 		
@@ -131,11 +134,12 @@ If Len(aEnv_085a) > 0
 			
 		Else
 			If Empty(cEmaCom)
-				cEmaCom :="compras@dipromed.com.br"
-//				cEmaCom :="reginaldo.borges@dipromed.com.br"				
+				//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo comentada
+				//cEmaCom :="compras@dipromed.com.br"
+				//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo substituida
+				cEmaCom :=IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),"compras@dipromed.com.br",GETMV("MV_#EMLSCH"))	
 			EndIf
-			cEmail :=cEmaCom+";"+"reginaldo.borges@dipromed.com.br"// E-mail do Comprador - RBORGES 11/12/15
-//			cEmail :="reginaldo.borges@dipromed.com.br"// E-mail do Comprador - RBORGES 11/12/15			
+			cEmail :=cEmaCom		
 			cAssunto:= EncodeUTF8("ATENÇÃO! PRODUTO COM SALDO"+" - "+AllTrim(SM0->M0_NOME),"cp1252")
 			aEnv_085:= aSort(aEnv_085,,,{|x,y| x[1] < y[1] })
 			ENV_085(cEmail,cAssunto,aEnv_085)
@@ -148,17 +152,22 @@ If Len(aEnv_085a) > 0
 		EndIf
 		
 		cComprador := aEnv_085a[nI,6]
-//		cEmaCom    := Posicione("SY1",1,xFilial("SY1")+cComprador,"Y1_EMAIL")
   	    cEmaCom    := "compras@dipromed.com.br" // A pedido da Rose, todos os e-mails devem ser enviados para o e-mail de compras. 27/07/16
-		
+		//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo comentada
+		//cEmaCom :="compras@dipromed.com.br"
+		//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo substituida
+		cEmaCom :=IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),"compras@dipromed.com.br",GETMV("MV_#EMLSCH"))	
+
 	Next
 	
 	If Empty(cEmaCom)
-		cEmaCom :="compras@dipromed.com.br"
-//		cEmaCom :="reginaldo.borges@dipromed.com.br"		
+		//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo comentada
+		//cEmaCom :="compras@dipromed.com.br"
+		//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo substituida
+		cEmaCom :=IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),"compras@dipromed.com.br",GETMV("MV_#EMLSCH"))	
+		
 	EndIf
-	cEmail :=cEmaCom+";"+"reginaldo.borges@dipromed.com.br"// E-mail do Comprador - RBORGES 11/12/15
-//	cEmail :="reginaldo.borges@dipromed.com.br"// E-mail do Comprador - RBORGES 11/12/15	
+	cEmail :=cEmaCom
 	cAssunto:= EncodeUTF8("ATENÇÃO! PRODUTO COM SALDO"+" - "+AllTrim(SM0->M0_NOME),"cp1252")
 	aEnv_085:= aSort(aEnv_085,,,{|x,y| x[1] < y[1] })
 	ENV_085(cEmail,cAssunto,aEnv_085)

@@ -926,7 +926,7 @@ Local _aMsgVal 		:= {}
 Local cAsIc  		:=  " CONFIRMACAO - TES 654 UTILIZADA"
 Local cAttachIc   	:=  "  a"
 Local cEc       	:=  Lower(Alltrim(GetMv("MV_RELACNT")))
-Local cEIc    		:=  GetMv("ES_M460HQ",,"maximo.canuto@dipromed.com.br ")
+Local cEIc    		:=  GetMv("ES_M460HQ",,SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br"))
 Local cFuIc 		:=  "M460FIM.prw"
 Local cMSGcVal      :=  ""
 Local cEnvMsg       := "MAXIMO.CANUTO"
@@ -1001,7 +1001,7 @@ Local _nParcela  := 0
 Local _aBoletos  := {}          
 Local _cMscCic   := ""
 Local _cOpFatDest:= GetNewPar("ES_CICVBOL","MAXIMO.CANUTO")
-Local _cEmail    := GetNewPar("ES_MAIVBOL","maximo.canuto@dipromed.com.br")
+Local _cEmail    := GetNewPar("ES_MAIVBOL",SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br"))
 Local _cAssunto  := ""
 Local _aMsg      := {}
 Local _cFrom     := Lower(Alltrim(GetMv("MV_RELACNT")))
@@ -1105,7 +1105,7 @@ While _nOpcao<>1
        			
        			//Definindo usuários TI
        			_cOpFatDest:= ("MAXIMO.CANUTO,DIEGO.DOMINGOS")    
-				_cEmail    := ("diego.domingos@dipromed.com.br;maximo.canuto@dipromed.com.br")        
+				_cEmail    := ("diego.domingos@dipromed.com.br;"+SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br"))        
        			
        			//Enviando Cic para TI
 				_cMscCic := "BOLETO VALIDADO COM SUCESSO"+CR + CR
@@ -1267,7 +1267,7 @@ Return
 Static Function VERNCC(_cCliente,_cLoja)
 Local _xArea      := GetArea()
 Local cDeIc       := Lower(Alltrim(GetMv("MV_RELACNT")))
-Local cEmailIc    := GetNewPar("ES_VERNCC","sidneia.domingos@dipromed.com.br;reginaldo.borges@dipromed.com.br;maximo.canuto@dipromed.com.br")  //Usuários que receberão e-mails
+Local cEmailIc    := GetNewPar("ES_VERNCC","sidneia.domingos@dipromed.com.br;reginaldo.borges@dipromed.com.br;"+SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br"))  //Usuários que receberão e-mails
 Local cCICDest    := Upper(GetNewPar("ES_CIC_NCC","REGINALDO.BORGES,SIDNEIA.DOMINGOS,MAXIMO.CANUTO")) // Usuários que receberão CIC´s
 Local cAssuntoIc  := "AVISO - CLIENTE COM NCC PENDENTE PARA CRÉDITO, "+AllTrim(_cCliente)
 Local cAttachIc   :=  "  a"

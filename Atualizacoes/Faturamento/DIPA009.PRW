@@ -164,7 +164,7 @@ Local _aMsgCom	  := {}
 Local _cFrom	  := "protheus@dipromed.com.br"
 Local _cAssunto   := EncodeUTF8("Alteração de Comissão","cp1252")
 Local _cFuncSent  := "UATUCOMISS(DIPA009)"
-Local _cEmail	  := GetNewPar("ES_UATUCOM","maximo.canuto@dipromed.com.br;diego.domingos@dipromed.com.br")
+Local _cEmail	  := GetNewPar("ES_UATUCOM",SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br")+";diego.domingos@dipromed.com.br")
 Local _cEnvCIC	  := GetNewPar("ES_UATUCOC","MAXIMO.CANUTO,DIEGO.DOMINGOS")
 Local _nLin
 Local cExec := ""

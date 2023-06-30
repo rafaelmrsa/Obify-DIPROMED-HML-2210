@@ -92,8 +92,10 @@ While !QRYSC5->(Eof())
 		If QRYSC5->C5_OPERADO <> cOperado
 			If !Empty(cOperado)                                                         
 				  
-				_cEnvMail := AllTrim(_cEnvMail)+";diego.domingos@dipromed.com.br;maximo.canuto@dipromed.com.br" //Somente para período de teste
-				
+				_cEnvMail := AllTrim(_cEnvMail)+";"+SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br") //Somente para período de teste
+				//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo adicionada
+				_cEnvMail	:= IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),_cEnvMail,GETMV("MV_#EMLSCH"))
+
 				U_UEnvMail(_cEnvMail,_cAssunto,_aMsg,"",_cFrom,_cFuncSent)      
 				
 				cMSGcIC := "ATENÇÃO! RESERVA(S) EXCLUÍDA(S)" +CHR(13)+CHR(10)+CHR(13)+CHR(10)
@@ -185,6 +187,9 @@ QRYSC5->(dbCloseArea())
 ConOut(cEmpAnt+cFilAnt+".... Excluindo Reservas...." )
 
 If Len(_aMsg)>0
+	//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo adicionada
+	_cEnvMail	:= IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),_cEnvMail,GETMV("MV_#EMLSCH"))
+
 	U_UEnvMail(_cEnvMail,_cAssunto,_aMsg,"",_cFrom,_cFuncSent)      
 EndIf
 
@@ -351,9 +356,7 @@ If SU7->(dbSeek(xFilial("SU7")+SC5->C5_OPERADO))
 		cCICDest  += ","+GetNewPar("ES_CICARES","ERICH.PONTOLDIO,PATRICIA.MENDONCA,DIEGO.DOMINGOS,MAXIMO.CANUTO")                                                                
 		
 		_cEnvMail := AllTrim(SU7->U7_EMAIL)
-		_cEnvMail += ";"+GetNewPar("ES_MAIARES","erich.pontoldio@dipromed.com.br;patricia.mendonca@dipromed.com.br,diego.domingos@dipromed.com.br,maximo.canuto@dipromed.com.br")
-		
-	
+		_cEnvMail += ";"+GetNewPar("ES_MAIARES","erich.pontoldio@dipromed.com.br;patricia.mendonca@dipromed.com.br,"+SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br"))
  		If Aviso("Atenção","Deseja enviar o pedido para aprovação de reserva?",{"Não","Sim"},1)==2
 			If SC5->C5_XAVARES <> "S"
 				If DipObsRes()                            
@@ -375,8 +378,11 @@ If SU7->(dbSeek(xFilial("SU7")+SC5->C5_OPERADO))
 					Aadd(_aMsg,{"Reservado"	,DtoC(SC5->C5_XDATRES)+" ("+SC5->C5_XHORRES+")"}) 	
 					Aadd(_aMsg,{"Expira"	,DtoC(SC5->C5_XDATEXP)+" ("+SC5->C5_XHOREXP+")"}) 	
 					Aadd(_aMsg,{"Explicação",_cObsMail}) 	
-					Aadd(_aMsg,{"Operadora"	,_cNome}) 
-				
+					Aadd(_aMsg,{"Operadora"	,_cNome})
+
+					//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo adicionada
+					_cEnvMail	:= IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),_cEnvMail,GETMV("MV_#EMLSCH"))
+
 					U_UEnvMail(_cEnvMail,_cAssunto,_aMsg,"",_cFrom,_cFuncSent)
 					
 					cMSGcIC := "ATENÇÃO! SOLICITACAO DE VALIDAÇÃO DE RESERVA" +CHR(13)+CHR(10)+CHR(13)+CHR(10)
@@ -859,7 +865,7 @@ If SU7->(dbSeek(xFilial("SU7")+SC5->C5_OPERADO))
 	cCICDest  += ","+GetNewPar("ES_CICARES","ERICH.PONTOLDIO,PATRICIA.MENDONCA,DIEGO.DOMINGOS,MAXIMO.CANUTO")                                                                
 		
 	_cEnvMail := AllTrim(SU7->U7_EMAIL)
-	_cEnvMail += ";"+GetNewPar("ES_MAIARES","erich.pontoldio@dipromed.com.br;patricia.mendonca@dipromed.com.br,diego.domingos@dipromed.com.br,maximo.canuto@dipromed.com.br")
+	_cEnvMail += ";"+GetNewPar("ES_MAIARES","erich.pontoldio@dipromed.com.br;patricia.mendonca@dipromed.com.br,"+SUPERGETMV("MV_#EMLTI",.F.,"ti@dipromed.com.br"))
 
 	If lOk               
 		If dDataNew > dDatExp .Or. (dDataNew==dDatExp .And. cHoraNew > cHorExp)
@@ -922,6 +928,9 @@ If SU7->(dbSeek(xFilial("SU7")+SC5->C5_OPERADO))
 		    aAdd(_aMsg,{"Observação   ",_cObsMail})             
 			
 			If Len(_aMsg)>0
+				//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo adicionada
+				_cEnvMail	:= IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),_cEnvMail,GETMV("MV_#EMLSCH"))
+
 				U_UEnvMail(_cEnvMail,_cAssunto,_aMsg,"",_cFrom,_cFuncSent)      
 			EndIf
 			If Len(cMSGcIC)>0				   	

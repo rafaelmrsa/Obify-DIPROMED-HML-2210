@@ -411,9 +411,9 @@ cQuery := ""
 
 For nEmp := 1 to len(aEmpresa)
 
-	 If Select('SX2_2') > 0
+	 /*If Select('SX2_2') > 0
 	     SX2_2->( DbCloseArea() ) 
-	 EndIf
+	 EndIf*/
 
      cQuery += cUniao + fQuery01(aEmpresa[nEmp][01],aEmpresa[nEmp][02])
      cUniao  := "  UNION  " 
@@ -476,9 +476,9 @@ cQuery := ""
  
 For nEmp := 1 to len(aEmpresa)
 
-	If Select('SX2_2') > 0
+	/*If Select('SX2_2') > 0
 	    SX2_2->( DbCloseArea() ) 
-	EndIf
+	EndIf*/
 
      cQuery += cUniao + fQuery02(aEmpresa[nEmp][01],aEmpresa[nEmp][02])
      cUniao  := "  UNION  " 
@@ -1815,10 +1815,10 @@ Return
 Static Function fQuery01( _cEmpresa ,_cFilial)
 
 Local cQuery  := ""
-Local cFilSD2 := fFilial(_cEmpresa,'SD2',_cFilial)
-Local cFilSF4 := fFilial(_cEmpresa,'SF4',_cFilial)
-Local cFilSU7 := fFilial(_cEmpresa,'SU7',_cFilial) // JBS 30/07/2010
-Local cFilSX5 := fFilial(_cEmpresa,'SX5',_cFilial)
+Local cFilSD2 := cFilAnt//fFilial(_cEmpresa,'SD2',_cFilial)
+Local cFilSF4 := cFilAnt//fFilial(_cEmpresa,'SF4',_cFilial)
+Local cFilSU7 := cFilAnt//fFilial(_cEmpresa,'SU7',_cFilial) // JBS 30/07/2010
+Local cFilSX5 := cFilAnt//fFilial(_cEmpresa,'SX5',_cFilial)
 Local nId     := 0
 Local _x
 
@@ -2093,11 +2093,11 @@ Return(cQuery)
 Static Function fQuery02( _cEmpresa ,_cFilial)
 
 Local cQuery   := ""
-Local cFilSD1 := fFilial(_cEmpresa,'SD1',_cFilial)
-Local cFilSD2 := fFilial(_cEmpresa,'SD2',_cFilial)
-Local cFilSU7 := fFilial(_cEmpresa,'SU7',_cFilial) // JBS 30/07/2010
-Local cFilSF4 := fFilial(_cEmpresa,'SF4',_cFilial)
-Local cFilSX5 := fFilial(_cEmpresa,'SX5',_cFilial)
+Local cFilSD1 := cFilAnt//fFilial(_cEmpresa,'SD1',_cFilial)
+Local cFilSD2 := cFilAnt//fFilial(_cEmpresa,'SD2',_cFilial)
+Local cFilSU7 := cFilAnt//fFilial(_cEmpresa,'SU7',_cFilial) // JBS 30/07/2010
+Local cFilSF4 := cFilAnt//fFilial(_cEmpresa,'SF4',_cFilial)
+Local cFilSX5 := cFilAnt//fFilial(_cEmpresa,'SX5',_cFilial)
 Local nId     := 0
 Local _x
 
@@ -2371,7 +2371,7 @@ Return(cQuery)
 Static Function fFilial(_cEmpresa,_cTabela,_cFilial)
  
 Local _cNewFilial := Space(2)
-Local _cFile      := 'SX2'+_cEmpresa
+/*Local _cFile      := 'SX2'+_cEmpresa
 Local _cFileIdx   := _cFile 
 
 If Select("SX2_2") = 0
@@ -2385,7 +2385,7 @@ If SX2_2->( DbSeek(_cTabela) )
     EndIf 
 Else
     _cNewFilial := xFilial(_cTabela) 
-EndIf
+EndIf*/
 
 Return(_cNewFilial) 
 

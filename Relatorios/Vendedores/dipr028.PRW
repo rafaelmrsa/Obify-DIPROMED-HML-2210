@@ -477,6 +477,9 @@ Do While QRY1->(!Eof())
 		EndIf
 		
 		cEmail	:= "maximo@dipromed.com.br"
+
+		//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo adicionada
+		cEmail	:= IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),cEmail,GETMV("MV_#EMLSCH"))
 		
 		QRY1->(DbSkip())
 		

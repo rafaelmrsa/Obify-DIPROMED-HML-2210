@@ -106,9 +106,11 @@ dbUseArea(.T.,"TOPCONN",TcGenQry(,,cSQL),"QRYSB1",.T.,.T.)
 
 cForne   := QRYSB1->B1_PROC
 cCodCo   := QRYSB1->A2_COMPRA
-//_cEmCompr:= ALLTRIM(Posicione("SY1",1,xFilial("SY1")+cCodCo,"Y1_EMAIL"))//Rose pediu para enviar somente para compras@dipromed.com.br 06/04/16
-_cEmCompr:= "compras@dipromed.com.br"
-
+//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo comentada
+//_cEmCompr:= "compras@dipromed.com.br"
+//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo substituida
+_cEmCompr :=IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),"compras@dipromed.com.br",GETMV("MV_#EMLSCH"))	
+		
 While !QRYSB1->(Eof())
 	
 	SB1->(DbSetOrder(6))
@@ -240,10 +242,13 @@ While !QRYSB1->(Eof())
 		
 			If Len(aMsgI) > 0 // SE NÃO POSSUIR NENHUMA LINHA NO ARRAY NÃO ENVIA NADA  -  RBORGES 11/12/15
 			    If Empty(_cEmCompr)
-			    	_cEmCompr := "rosemeire.ferraris@dipromed.com.br"
+					//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo comentada
+					//_cEmCompr:= "rosemeire.ferraris@dipromed.com.br"
+					//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo substituida
+					_cEmCompr :=IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),"rosemeire.ferraris@dipromed.com.br",GETMV("MV_#EMLSCH"))	
 			    EndIf
 				
-				cEmail :=_cEmCompr+";"+"reginaldo.borges@dipromed.com.br"//E-mail do Comprador - RBORGES 11/12/15 
+				cEmail :=_cEmCompr
 				cAssunto:= EncodeUTF8('ATENÇÃO - PRODUTO EM PONTO DE PEDIDO!',"cp1252")//+dToc(_EntDip)+' - ' +AllTrim(SM0->M0_NOME)//+"/"+AllTrim(SM0->M0_FILIAL)
 				U_EMailPP(cEmail,cAssunto,aMsgI) //RBORGES 11/12/15 - Dispara E-mail de produto em ponto de pedido por pedido e comprador
 			
@@ -263,8 +268,10 @@ While !QRYSB1->(Eof())
 	nQuant   := 0
     cForne   := QRYSB1->B1_PROC
     cCodCo   := QRYSB1->A2_COMPRA
-	//_cEmCompr:= ALLTRIM(Posicione("SY1",1,xFilial("SY1")+cCodCo,"Y1_EMAIL"))//Rose pediu para enviar somente para compras@dipromed.com.br 06/04/16
-	_cEmCompr:= "compras@dipromed.com.br"
+	//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo comentada
+	//_cEmCompr :="compras@dipromed.com.br"
+	//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo substituida
+	_cEmCompr :=IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),"compras@dipromed.com.br",GETMV("MV_#EMLSCH"))	
 
 	Endif
    
@@ -277,9 +284,12 @@ QRYSB1->(dbCloseArea())
 
 If Len(aMsgI) > 0 // SE NÃO POSSUIR NENHUMA LINHA NO ARRAY NÃO ENVIA NADA  -  RBORGES 11/12/15
     If Empty(_cEmCompr)
-    	_cEmCompr := "rosemeire.ferraris@dipromed.com.br"
+		//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo comentada
+		//_cEmCompr :="rosemeire.ferraris@dipromed.com.br"
+		//Rafael Moraes Rosa - 28/06/2023 - Linha abaixo substituida
+		_cEmCompr :=IIF(Empty(SUPERGETMV("MV_#EMLSCH", .F., "")),"rosemeire.ferraris@dipromed.com.br",GETMV("MV_#EMLSCH"))	
     EndIf
-	cEmail :=_cEmCompr+";"+"reginaldo.borges@dipromed.com.br"// E-mail do Comprador - RBORGES 11/12/15
+	cEmail :=_cEmCompr
 	cAssunto:= EncodeUTF8('ATENÇÃO - PRODUTO EM PONTO DE PEDIDO!',"cp1252") //+dToc(_EntDip)+' - ' +AllTrim(SM0->M0_NOME)//+"/"+AllTrim(SM0->M0_FILIAL)
 	U_EMailPP(cEmail,cAssunto,aMsgI) //RBORGES 11/12/15 - Dispara E-mail de produto em ponto de pedido por fornecedor e comprador
 EndIf

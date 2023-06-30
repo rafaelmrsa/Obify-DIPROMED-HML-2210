@@ -80,7 +80,7 @@ U_DIPPROC(ProcName(0),U_DipUsr()) // JBS 05/10/2005 - Gravando o nome do Program
 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 //³ Verifica as perguntas selecionadas                           ³
 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-AjustaSX1(cPerg)      
+//AjustaSX1(cPerg)      
 //-------------------------------------------------------------------------------------------------------------------------------
 // Determina quais empresas devem ser processadas  - JBS 14/04/2010
 //-------------------------------------------------------------------------------------------------------------------------------
@@ -697,9 +697,9 @@ cQuery := ""
 
 For nEmp := 1 to len(aEmpresa)
 	
-	If Select('SX2_2') > 0
+	/*If Select('SX2_2') > 0
 		SX2_2->( DbCloseArea() )
-	EndIf
+	EndIf*/
 	
 	cQuery += cUniao + fQuery01(aEmpresa[nEmp][01],aEmpresa[nEmp][02])
 	cUniao  := "  UNION  "
@@ -958,9 +958,9 @@ If ( MV_PAR07 == 1 )
 	
 	For nEmp := 1 to len(aEmpresa)
 		
-		If Select('SX2_2') > 0
+		/*If Select('SX2_2') > 0
 			SX2_2->( DbCloseArea() )
-		EndIf
+		EndIf*/
 		
 		cQuery += cUniao + fQuery02(aEmpresa[nEmp][01],aEmpresa[nEmp][02])
 		cUniao  := "  UNION  "
@@ -1204,9 +1204,9 @@ cQuery := ""
 
 For nEmp := 1 to len(aEmpresa)
 	
-	If Select('SX2_2') > 0
+	/*If Select('SX2_2') > 0
 		SX2_2->( DbCloseArea() )
-	EndIf
+	EndIf*/
 	
 	cQuery += cUniao + fQuery03(aEmpresa[nEmp][01],aEmpresa[nEmp][02])
 	cUniao  := "  UNION  "
@@ -1297,9 +1297,9 @@ cQuery := ""
 
 For nEmp := 1 to len(aEmpresa)
 	
-	If Select('SX2_2') > 0
+	/*If Select('SX2_2') > 0
 		SX2_2->( DbCloseArea() )
-	EndIf
+	EndIf*/
 	
 	cQuery += cUniao + fQuery04(aEmpresa[nEmp][01],aEmpresa[nEmp][02])
 	cUniao  := "  UNION  "
@@ -1370,6 +1370,7 @@ Return(aPedBloq)
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 /*/
+/*
 Static Function AjustaSX1(cPerg)
 
 Local aPerg:={}
@@ -1389,7 +1390,7 @@ PutSx1(cPerg, "12","Grupo Clientes   ?","Grupo Clientes   ?","Grupo Clientes   ?
 PutSx1(cPerg, "13","FORNECEDOR       ?","FORNECEDOR       ?","FORNECEDOR       ?","mv_chH","C",06,0,0,"G",'Vazio() .or. ExistCpo("SA2")', "SA2","","","mv_par13"," "," "," ","","","","","","","","","","","",""," ","","","") //MCVN - 06/05/2009
 PutSx1(cPerg, "14","Outro FORNECEDOR ?","Outro FORNECEDOR ?","Outro FORNECEDOR ?","mv_chI","C",06,0,0,"G",'Vazio() .or. ExistCpo("SA2")', "SA2","","","mv_par14"," "," "," ","","","","","","","","","","","",""," ","","","") //MCVN - 03/05/2007
 
-Return
+Return*/
 /*
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
@@ -1417,9 +1418,9 @@ Local cNameSD2 := "SD2" + _cEmpresa
 Local cNameSF2 := "SF2" + _cEmpresa
 Local cNameSF4 := "SF4" + _cEmpresa
 
-Local cFilSD2  := fFilial(_cEmpresa,'SD2',_cFilial)
-Local cFilSF2  := fFilial(_cEmpresa,'SF2',_cFilial)
-Local cFilSF4  := fFilial(_cEmpresa,'SF4',_cFilial)
+Local cFilSD2  := cFilAnt//fFilial(_cEmpresa,'SD2',_cFilial)
+Local cFilSF2  := cFilAnt//fFilial(_cEmpresa,'SF2',_cFilial)
+Local cFilSF4  := cFilAnt//fFilial(_cEmpresa,'SF4',_cFilial)
 Local cFilterQry := ""
 Local cQryAd   := ""
 Local _x, nCampo, nX
@@ -1549,11 +1550,11 @@ Local aStru    := {}
 Local cName    := ''
 Local nId      := 0
 Local cQuery   := ""
-Local cFilSD1  := fFilial(_cEmpresa,'SD1',_cFilial)
-Local cFilSD2  := fFilial(_cEmpresa,'SD2',_cFilial)
-Local cFilSF1  := fFilial(_cEmpresa,'SF1',_cFilial)
-Local cFilSF2  := fFilial(_cEmpresa,'SF2',_cFilial)
-Local cFilSF4  := fFilial(_cEmpresa,'SF4',_cFilial)
+Local cFilSD1  := cFilAnt//fFilial(_cEmpresa,'SD1',_cFilial)
+Local cFilSD2  := cFilAnt//fFilial(_cEmpresa,'SD2',_cFilial)
+Local cFilSF1  := cFilAnt//fFilial(_cEmpresa,'SF1',_cFilial)
+Local cFilSF2  := cFilAnt//fFilial(_cEmpresa,'SF2',_cFilial)
+Local cFilSF4  := cFilAnt//fFilial(_cEmpresa,'SF4',_cFilial)
 Local cFilterQry := ""
 Local cQryAd   := ""
 Local _x,nCampo
@@ -1673,10 +1674,10 @@ Local aStru    := {}
 Local cName    := ''
 Local nId      := 0
 Local cQuery   := ""
-Local cFilSC5 := fFilial(_cEmpresa,'SC5',_cFilial)
-Local cFilSC6 := fFilial(_cEmpresa,'SC6',_cFilial)
-Local cFilSC9 := fFilial(_cEmpresa,'SC9',_cFilial)
-Local cFilSF4 := fFilial(_cEmpresa,'SF4',_cFilial)
+Local cFilSC5 := cFilAnt//fFilial(_cEmpresa,'SC5',_cFilial)
+Local cFilSC6 := cFilAnt//fFilial(_cEmpresa,'SC6',_cFilial)
+Local cFilSC9 := cFilAnt//fFilial(_cEmpresa,'SC9',_cFilial)
+Local cFilSF4 := cFilAnt//fFilial(_cEmpresa,'SF4',_cFilial)
 Local cFilterQry := ""
 Local cQryAd   := ""
 Local _x
@@ -1813,10 +1814,10 @@ Local aStru    := {}
 Local cName    := ''
 Local nId      := 0
 Local cQuery   := ""
-Local cFilSC5 := fFilial(_cEmpresa,'SC5',_cFilial)
-Local cFilSC6 := fFilial(_cEmpresa,'SC6',_cFilial)
-Local cFilSC9 := fFilial(_cEmpresa,'SC9',_cFilial)
-Local cFilSF4 := fFilial(_cEmpresa,'SF4',_cFilial)
+Local cFilSC5 := cFilAnt//fFilial(_cEmpresa,'SC5',_cFilial)
+Local cFilSC6 := cFilAnt//fFilial(_cEmpresa,'SC6',_cFilial)
+Local cFilSC9 := cFilAnt//fFilial(_cEmpresa,'SC9',_cFilial)
+Local cFilSF4 := cFilAnt//fFilial(_cEmpresa,'SF4',_cFilial)
 Local cFilterQry := ""
 Local cQryAd   := ""
 Local _x
@@ -1954,7 +1955,7 @@ Return(cQuery)
 Static Function fFilial(_cEmpresa,_cTabela,_cFilial)
 
 Local _cNewFilial := Space(2)
-Local _cFile      := 'SX2'+_cEmpresa
+/*Local _cFile      := 'SX2'+_cEmpresa
 Local _cFileIdx   := _cFile
 
 If Select("SX2_2") = 0
@@ -1968,6 +1969,6 @@ If SX2_2->( DbSeek(_cTabela) )
 	EndIf
 Else
 	_cNewFilial := xFilial(_cTabela)
-EndIf
+EndIf*/
 
 Return(_cNewFilial)

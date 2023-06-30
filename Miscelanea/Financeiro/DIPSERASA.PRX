@@ -1143,7 +1143,7 @@ ConOut("Starting...")
 //зддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
 //ЁAutenticando empresas validas                                      Ё
 //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
-dbUseArea(.T.,"DBFCDX","SIGAMAT.EMP", "SIGAMAT",.T.,.T.)
+/*dbUseArea(.T.,"DBFCDX","SIGAMAT.EMP", "SIGAMAT",.T.,.T.)
 dbSelectArea("SIGAMAT")
 dbGotop()
 While ( !Eof() )
@@ -1153,7 +1153,7 @@ While ( !Eof() )
 	dbSkip()
 EndDo
 dbSelectArea("SIGAMAT")
-dbCloseArea()
+dbCloseArea()*/
 //зддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
 //ЁInicialiacao do Repositorio                                        Ё
 //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
